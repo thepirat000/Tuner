@@ -10,7 +10,7 @@ async function Scan() {
 	const device = await navigator.bluetooth.requestDevice({
         //filters: [{name: ['Tuner by ThePirat']}]});
 		//filters: [{services: ['fe000000-fede-fede-0000-000000000000']}]});
-		acceptAllDevices: true});
+		acceptAllDevices: true, optionalServices: ['battery_service']});
 		
 	const server = await device.gatt.connect();
 	const services = await server.getPrimaryServices();
