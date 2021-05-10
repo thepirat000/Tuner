@@ -11,13 +11,13 @@ async function Scan() {
         filters: [{services: ['fe000000-fede-fede-0000-000000000000']}]});
 	let name = device.name;
 	let id = device.id;
-	alert(name + " " + id);
+
 	const server = await device.gatt.connect();
 	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
-	let characteristicCmd = await service.getCharacteristics('ca000000-fede-fede-0000-000000000001')[0];
-	let valueFreq = characteristicCmd.readValue();
+	let characteristicCmd = await service.getCharacteristics('ca000000-fede-fede-0000-000000000001');
+	let valueFreq = characteristicCmd[0].readValue();
 	alert("F: " + valueFreq);
-	let characteristicDuties = await service.getCharacteristics('ca000000-fede-fede-0000-000000000002')[0];
-	let valueDuties = characteristicCmd.readValue();
+	let characteristicDuties = await service.getCharacteristics('ca000000-fede-fede-0000-000000000002');
+	let valueDuties = characteristicDuties[0].readValue();
 	alert("D: " + valueDuties);
 }
