@@ -15,9 +15,9 @@ async function Scan() {
 	const server = await device.gatt.connect();
 	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
 	let characteristicCmd = await service.getCharacteristics('ca000000-fede-fede-0000-000000000001');
-	let valueFreq = characteristicCmd[0].readValue();
+	let valueFreq = await characteristicCmd[0].readValue();
 	alert("F: " + valueFreq);
 	let characteristicDuties = await service.getCharacteristics('ca000000-fede-fede-0000-000000000002');
-	let valueDuties = characteristicDuties[0].readValue();
+	let valueDuties = await characteristicDuties[0].readValue();
 	alert("D: " + valueDuties);
 }
