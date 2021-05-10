@@ -1,0 +1,74 @@
+body {
+  background: #20262E;
+  font-family: Helvetica;
+}
+
+.banner-message {
+  background: #fff;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 15px;
+  text-align: center;
+  transition: all 0.2s;
+  margin: 0 auto;
+}
+.clickable {
+  text-align: left;
+}
+
+button {
+    background: #0084ff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 14px;
+    margin-top: 10px;
+    color: #fff;
+    cursor: pointer;
+    font-size: large;
+}
+
+.footer {
+    background: #6D7B84;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: xx-small;
+    text-align: center;
+    transition: all 0.2s;
+    margin: 1em auto;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.section-title {
+    font-weight: bold;
+}
+
+.app-title {
+    font-size: large;
+    color: white;
+    text-align: center;
+    padding: 0em;
+    background-color: #08E;
+}
+
+.clickable {
+    display: block;
+    height: 90px;
+}
+
+.ui-accordion .ui-accordion-header {
+    padding: 0;
+}
+
+.text-muted {
+	background-color: lightgray;
+}
