@@ -7,6 +7,8 @@ $(document).ready(function () {
 });
 
 async function Scan() {
+	let xxx = navigator.bluetooth.getAdapterState(function(adapter) {console.log("Adapter " + adapter.address + ": " + adapter.name);});
+	
 	const device = await navigator.bluetooth.requestDevice({
         //filters: [{name: ['Tuner by ThePirat']}]});
 		//filters: [{services: ['fe000000-fede-fede-0000-000000000000']}]});
