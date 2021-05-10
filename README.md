@@ -1,11 +1,16 @@
+# UUID
+
+SVC UUID: ca000000-fede-fede-0000-000000000000
+CMD/FREQ UUID: ca000000-fede-fede-0000-000000000001
+DUTY UUID: ca000000-fede-fede-0000-000000000002
+
 # Commands
 
 ## Frequencies
 
 ### Set the base frequency for oscillators in Hertz
-BLE UUID: ca000000-fede-fede-0000-000000000001
+
 Format: d[,d[,d[,d]]]
-Serial port format: d[,d[,d[,d]]]
 
 Being: d=decimal number 
 	   > 0: frequency in Hertz
@@ -28,9 +33,7 @@ same as:
 
 ### Multipliers
 
-BLE UUID: ca000000-fede-fede-0000-000000000004
-Format: d[,d[,d[,d]]]
-Serial port format: *d[,d[,d[,d]]]
+Format: *d[,d[,d[,d]]]
 
 Being: d=decimal number 
 	   > 0: number to multiply the current frequency
@@ -52,9 +55,7 @@ Examples:
 
 ### Increments
 
-BLE UUID: ca000000-fede-fede-0000-000000000002
-Format: d[,d[,d[,d]]]
-Serial port format: +d[,d[,d[,d]]]
+Format: +d[,d[,d[,d]]]
 
 Being: d=decimal number 
 	   > 0: increment the frequency in d hertz
@@ -73,9 +74,7 @@ Examples:
 
 ## Duties
 
-BLE UUID: ca000000-fede-fede-0000-000000000003
-Format: d[,d[,d[,d]]]
-Serial port format: /d[,d[,d[,d]]]
+Format: /d[,d[,d[,d]]]
 
 Being: d=decimal number 
 	   > 0: duty for the oscillator (1-1023)
@@ -95,8 +94,6 @@ Examples:
 
 
 ## Generic commands
-
-BLE UUID: ca000000-fede-fede-0000-000000000099
 
 #### Reset
 Will reset the frequency and duty values to their config file value
