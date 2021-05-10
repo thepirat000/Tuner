@@ -15,10 +15,10 @@ async function Scan() {
 	const server = await device.gatt.connect();
 	const services = await server.getPrimaryServices();
 	const service = await services[0];
-	let characteristicCmd = await service.getCharacteristic('ca000000-fede-fede-0000-000000000001');
+	let characteristicCmd = await service.getCharacteristics('ca000000-fede-fede-0000-000000000001')[0];
 	let valueFreq = characteristicCmd.readValue();
-	alert("F: " + valueFreq.getString());
-	let characteristicDuties = await service.getCharacteristic('ca000000-fede-fede-0000-000000000002');
+	alert("F: " + valueFreq);
+	let characteristicDuties = await service.getCharacteristics('ca000000-fede-fede-0000-000000000002')[0];
 	let valueDuties = characteristicCmd.readValue();
-	alert("D: " + valueDuties.getString());
+	alert("D: " + valueDuties);
 }
