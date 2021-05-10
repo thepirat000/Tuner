@@ -8,7 +8,7 @@ $(document).ready(function () {
 
 async function Scan() {
 	const device = await navigator.bluetooth.requestDevice({
-        filters: [{namePrefix: ['Tuner by ThePirat']}]});
+        filters: [{services: ['fe000000-fede-fede-0000-000000000000']}]});
 	let name = device.name;
 	let id = device.id;
 	alert(name + " " + id);
