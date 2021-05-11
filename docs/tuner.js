@@ -23,8 +23,8 @@ async function Scan() {
 	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
 	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
 	characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
-	alert("D: " + GetDuties() + '\nF: ' + GetFreqs());
-	alert("D: " + GetDuties() + '\nF: ' + GetFreqs());
+	alert("D: " + (await GetDuties()) + '\nF: ' + (await GetFreqs()));
+	alert("D: " + (await GetDuties()) + '\nF: ' + (await GetFreqs()));
 }
 
 async function GetFreqs() {
