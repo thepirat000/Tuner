@@ -8,9 +8,10 @@ $(document).ready(function () {
 
 var characteristicCmd;
 var characteristicDuties;
+var device;
 
 async function Scan() {
-	const device = await navigator.bluetooth.requestDevice({
+	device = await navigator.bluetooth.requestDevice({
         filters: [{
 			namePrefix: 'Tuner'
 		}],
@@ -19,12 +20,9 @@ async function Scan() {
 	let name = device.name;
 	let id = device.id;
 
-	const server = await device.gatt.connect();
-	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
-	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
-	characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
-	alert("D: " + (await GetDuties()) + '\nF: ' + (await GetFreqs()));
-	alert("D: " + (await GetDuties()) + '\nF: ' + (await GetFreqs()));
+	device.addEventListener('gattserverdisconnected', onDisconnected);
+
+	await connectDeviceAndCacheCharacteristics();
 }
 
 async function GetFreqs() {
@@ -35,4 +33,32 @@ async function GetFreqs() {
 async function GetDuties() {
 	let valueDuties = new TextDecoder().decode(await characteristicDuties.readValue());
 	return valueDuties;
+}
+
+async function onDisconnected() {
+	console.log("Reconnect");
+	await connectDeviceAndCacheCharacteristics();
+}
+
+async function connectDeviceAndCacheCharacteristics() {
+	if (device.gatt.connected && characteristicCmd) {
+		return;
+	}
+	const server = await device.gatt.connect();
+	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
+	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
+	characteristicCmd.addEventListener('characteristicvaluechanged', handleFreqValueChange);
+	characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
+	characteristicDuties.addEventListener('characteristicvaluechanged', handleDutyValueChange);
+		
+}
+
+function handleFreqValueChange(event) {
+  let cmd = new TextDecoder().decode(event.target.value);
+  console.log("F: " + cmd);
+}
+
+function handleDutyValueChange(event) {
+  let cmd = new TextDecoder().decode(event.target.value);
+  console.log("D: " + cmd);
 }
