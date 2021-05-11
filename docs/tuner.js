@@ -8,6 +8,8 @@ $(document).ready(function () {
 
 var characteristicCmd;
 var characteristicDuties;
+var characteristicFreqs;
+
 var device;
 
 async function Scan() {
@@ -46,12 +48,13 @@ async function connectDeviceAndCacheCharacteristics() {
 	}
 	const server = await device.gatt.connect();
 	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
-	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
-	characteristicCmd.addEventListener('characteristicvaluechanged', handleFreqValueChange);
-	await characteristicCmd.startNotifications();
+	characteristicFreqs = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
+	characteristicFreqs.addEventListener('characteristicvaluechanged', handleFreqValueChange);
+	await characteristicFreqs.startNotifications();
 	characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
 	characteristicDuties.addEventListener('characteristicvaluechanged', handleDutyValueChange);
 	await characteristicDuties.startNotifications();
+	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
 }
 
 function handleFreqValueChange(event) {

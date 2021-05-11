@@ -16,6 +16,7 @@ Docs/Links:
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
+#include <BLE2902.h>
 #include <sstream>
 
 // FS/FLASH Includes
@@ -28,8 +29,9 @@ Docs/Links:
 // Defines and Consts
 #define SERVICE_NAME "Tuner by ThePirat"
 #define SERVICE_UUID             "fe000000-fede-fede-0000-000000000000"       // Bluetooth Service ID
-#define CHARACTERISTIC_CMDFREQ_UUID "ca000000-fede-fede-0000-000000000001"       // Bluetooth characteristic to get/set the frquencies of each oscillator
-#define CHARACTERISTIC_DUTY_UUID "ca000000-fede-fede-0000-000000000002"       // Bluetooth characteristic to set the duties for the oscillators (0 to 1023, default is 512)
+#define CHARACTERISTIC_FREQ_UUID "ca000000-fede-fede-0000-000000000001"       // Bluetooth characteristic to get the current frequencies of the oscillators in Hertz
+#define CHARACTERISTIC_DUTY_UUID "ca000000-fede-fede-0000-000000000002"       // Bluetooth characteristic to get the duties of the oscillators (0 to 1023)
+#define CHARACTERISTIC_CMD_UUID  "ca000000-fede-fede-0000-000000000099"       // Bluetooth characteristic to send commands and get the current status 
 #define CONFIG_FREQS_FILE        "/config_freqs.txt"
 #define CONFIG_DUTIES_FILE        "/config_duties.txt"
 #define LED_PIN 2
@@ -46,8 +48,11 @@ std::vector<double> _freqs = {0, 0, 0, 0};
 std::vector<double> _cacheFreqs = {0, 0, 0, 0};
 std::vector<double> _duties = {DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT};
 std::random_device _rnd;
-BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties;
+BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicCmd;
 std::queue<String> _bleCommandBuffer;
+BLEServer* bleServer = NULL;
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
 
 // Songs format: OriginalFrequencyMultipliersCSV:DurationInSeconds[:DutiesCSV]|...
 std::vector<String> _songs = {
@@ -128,6 +133,17 @@ void loop() {
     _bleCommandBuffer.pop();
     ProcessInput(recv);
   }
+
+  // Handle bluetooth reconnect
+  if (!deviceConnected && oldDeviceConnected) {
+      Serial.println("Will try to reconnect");
+      delay(500); // give time to bluetooth stack 
+      bleServer->startAdvertising(); // restart advertising
+      oldDeviceConnected = deviceConnected;
+  }
+  if (deviceConnected && !oldDeviceConnected) {
+      oldDeviceConnected = deviceConnected;
+  }
 }
 
 void ProcessInput(String recv) {
@@ -164,11 +180,23 @@ void ProcessInput(String recv) {
   PrintValues(_freqs, _duties);  
 }
 
-// BLE Callbacks
+// BLE characteristics Callbacks
 class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       String value = String(pCharacteristic->getValue().c_str());
       _bleCommandBuffer.push(value);
+    }
+};
+
+// BLE Server callbacks
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* server) {
+      Serial.println("Client connected...");
+      deviceConnected = true;
+    };
+    void onDisconnect(BLEServer* server) {
+      Serial.println("Client disconnected...");
+      deviceConnected = false;
     }
 };
 
@@ -187,16 +215,29 @@ void ResetFreqDuty() {
 
 void StartBLEServer() {
   BLEDevice::init(SERVICE_NAME);
-  BLEServer *pServer = BLEDevice::createServer();
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-  pCharacteristicFreqs = pService->createCharacteristic(CHARACTERISTIC_CMDFREQ_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-  pCharacteristicDuties = pService->createCharacteristic(CHARACTERISTIC_DUTY_UUID, BLECharacteristic::PROPERTY_READ);
-  pCharacteristicFreqs->setCallbacks(new MyCallbacks());
+  bleServer = BLEDevice::createServer();
+  bleServer->setCallbacks(new MyServerCallbacks());
+  BLEService *pService = bleServer->createService(SERVICE_UUID);
+  pCharacteristicFreqs = pService->createCharacteristic(CHARACTERISTIC_FREQ_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+  pCharacteristicDuties = pService->createCharacteristic(CHARACTERISTIC_DUTY_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+  pCharacteristicCmd = pService->createCharacteristic(CHARACTERISTIC_CMD_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
+
+  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
+  pCharacteristicFreqs->addDescriptor(new BLE2902());
+  pCharacteristicDuties->addDescriptor(new BLE2902());
+  pCharacteristicCmd->addDescriptor(new BLE2902());
+  
+  pCharacteristicCmd->setCallbacks(new MyCallbacks());
+  pService->start();
+  BLEAdvertising *pAdvertising = bleServer->getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(false);
+  pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
+  BLEDevice::startAdvertising();
+  //pAdvertising->start();
+
   SetBLEFreqValue();
   SetBLEDutyValue();
-  pService->start();
-  BLEAdvertising *pAdvertising = pServer->getAdvertising();
-  pAdvertising->start();
 }
 
 // Helper methods
@@ -291,11 +332,17 @@ void PrintValues(std::vector<double> &f, std::vector<double> &d) {
 void SetBLEFreqValue() {
   const char* strconfigValue = join(_freqs);
   pCharacteristicFreqs->setValue(strconfigValue);
+  if (deviceConnected) {
+    pCharacteristicFreqs->notify();
+  }
 }
 
 void SetBLEDutyValue() {
   const char* strconfigValue = join(_duties);
   pCharacteristicDuties->setValue(strconfigValue);
+  if (deviceConnected) {
+    pCharacteristicDuties->notify();
+  }
 }
 
 std::vector<String> splitString(String msg, const char delim) {
