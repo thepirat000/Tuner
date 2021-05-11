@@ -48,17 +48,9 @@ async function connectDeviceAndCacheCharacteristics() {
 	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
 	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
 	characteristicCmd.addEventListener('characteristicvaluechanged', handleFreqValueChange);
+	await characteristicCmd.startNotifications();
 	characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
 	characteristicDuties.addEventListener('characteristicvaluechanged', handleDutyValueChange);
-		
+	await characteristicDuties.startNotifications();
 }
 
-function handleFreqValueChange(event) {
-  let cmd = new TextDecoder().decode(event.target.value);
-  console.log("F: " + cmd);
-}
-
-function handleDutyValueChange(event) {
-  let cmd = new TextDecoder().decode(event.target.value);
-  console.log("D: " + cmd);
-}
