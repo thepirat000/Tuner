@@ -54,3 +54,14 @@ async function connectDeviceAndCacheCharacteristics() {
 	await characteristicDuties.startNotifications();
 }
 
+function handleFreqValueChange(event) {
+  let freqs = new TextDecoder().decode(event.target.value);
+  console.log(freqs);
+}
+
+function handleDutyValueChange(event) {
+  let duties  = new TextDecoder().decode(event.target.value);
+  console.log(duties);
+}
+
+
