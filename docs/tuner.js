@@ -79,7 +79,9 @@ function handleDutyValueChange(event) {
 
 function handleCmdValueChange(event) {
 	let value  = new TextDecoder().decode(event.target.value);
-	$('#command-output').append(document.createTextNode(value)); 
+	let cmdOut = $('#command-output');
+	cmdOut.append(document.createTextNode(value)); 
+	cmdOut.scrollTop(cmdOut.scrollHeight);
 }
 
 async function sendCommand() {
