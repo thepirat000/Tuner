@@ -82,8 +82,11 @@ function handleDutyValueChange(event) {
 
 function handleCmdValueChange(event) {
 	let value  = new TextDecoder().decode(event.target.value);
+	
 	let cmdOut = $('#command-output');
 	cmdOut.append(document.createTextNode(value)); 
+	if (value[value.length-1] == "\n") {
+	}
 	cmdOut.scrollTop(cmdOut.scrollHeight);
 }
 
