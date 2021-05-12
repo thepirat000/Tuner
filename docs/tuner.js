@@ -84,10 +84,10 @@ function handleCmdValueChange(event) {
 	let value  = new TextDecoder().decode(event.target.value);
 	
 	let cmdOut = $('#command-output');
-	cmdOut.append(document.createTextNode(value)); 
 	if (value[value.length-1] == "\n") {
 		value = value.replace("\n", "&#13;&#10;");
 	}
+	cmdOut.append(document.createTextNode(value)); 
 	cmdOut.scrollTop(cmdOut.scrollHeight);
 }
 
