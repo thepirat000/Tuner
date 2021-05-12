@@ -24,6 +24,9 @@ var device;
 const encoder = new TextEncoder('utf-8');
 
 async function Scan() {
+	if (device && device.gatt.connected) {
+		device.gatt.disconnect();
+	}
 	device = await navigator.bluetooth.requestDevice({
         filters: [{
 			namePrefix: 'Tuner'
