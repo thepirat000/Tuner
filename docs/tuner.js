@@ -88,7 +88,7 @@ function handleCmdValueChange(event) {
 		value = value.replace("\n", "&#13;&#10;");
 	}
 	cmdOut.append(value); 
-	cmdOut.scrollTop(cmdOut.scrollHeight);
+	cmdOut.scrollTop(cmdOut.scrollHeight());
 }
 
 async function sendCommand() {

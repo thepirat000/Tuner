@@ -408,10 +408,9 @@ std::vector<double> splitParseVector(String msg, std::vector<double> *completeWi
 void Log(String msg) {
   Serial.println(msg);
   if (debug_ble) {
+    msg = msg + "\n";
     if (msg.length() > 20) {
-      msg = msg + "\n";
       std::vector<std::string> chunks = SplitStringByNumber(msg.c_str(), 20);
-      
       for (size_t i = 0; i < chunks.size(); ++i) {
         pCharacteristicCmd->setValue(chunks[i]);
         if (deviceConnected) {
