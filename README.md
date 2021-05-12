@@ -128,3 +128,17 @@ Examples:
 - Play the song at index 0, Repeat 2 times, at 1.5x speed, using a randomization for the steps with seed = 5
 `play 0,2,1.5,5`
 
+#### Stop playing a song
+Will stop playing the current song (only available via BLE)
+
+Example:
+`stop`
+
+### Debug
+
+#### Switch debug mode
+Enable/Disable debug via BLE (default is false)
+
+Example:
+`debug`
+

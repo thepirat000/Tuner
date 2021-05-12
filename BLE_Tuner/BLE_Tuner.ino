@@ -10,6 +10,7 @@ Docs/Links:
 - BLE: https://randomnerdtutorials.com/esp32-bluetooth-low-energy-ble-arduino-ide
        https://www.arduino.cc/en/Reference/ArduinoBLE
        https://github.com/nkolban/esp32-snippets/blob/master/Documentation/BLE%20C%2B%2B%20Guide.pdf
+       https://github.com/nkolban/ESP32_BLE_Arduino/blob/master/examples/BLE_notify/BLE_notify.ino
 */
 
 // BLE Includes
@@ -33,7 +34,7 @@ Docs/Links:
 #define CHARACTERISTIC_DUTY_UUID "ca000000-fede-fede-0000-000000000002"       // Bluetooth characteristic to get the duties of the oscillators (0 to 1023)
 #define CHARACTERISTIC_CMD_UUID  "ca000000-fede-fede-0000-000000000099"       // Bluetooth characteristic to send commands and get the current status 
 #define CONFIG_FREQS_FILE        "/config_freqs.txt"
-#define CONFIG_DUTIES_FILE        "/config_duties.txt"
+#define CONFIG_DUTIES_FILE       "/config_duties.txt"
 #define LED_PIN 2
 #define MAX_OUTPUT 4
 #define DUTY_RESOLUTION_BITS 10
@@ -53,12 +54,15 @@ std::queue<String> _bleCommandBuffer;
 BLEServer* bleServer = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
+bool stop = false;  // Stop playing flag
+bool debug_ble = false; // Debug via BLE
 
 // Songs format: OriginalFrequencyMultipliersCSV:DurationInSeconds[:DutiesCSV]|...
 std::vector<String> _songs = {
-  "1,1,1,1:0:512,512,512,512|.5,.33:4|.33,.5:4|.25,2:2.5|2,.25:4|1.5,3:2|3,1.5:4|1,2:4|.125,.125:2|4,2:2|.5,4:2|1.5,3:2",
-  "1,1,1,1:0:512,512,512,512|1,1:2:800,800|1,1:1:512,512|1.5,1.33:4|1.33,1.5:4|.25,1.25:3|2,.25:4|.5,3:2|3,.5:2|1,2:6|1.125,1.125:2|4,2:2|.5,2.5:2|2.5,.5:2",
-  ".33,.33:1|.5,.5:1|.66,.66:1|1,1:1|2,2:1|3,3:1|4.02,4.02:1|5.02,5.02:1|6.03,6.03:1|7.05,7.05:1|10.14,10.14:1"
+  ".5,.33:4|.33,.5:4|.25,2:2.5|2,.25:4|1.5,3:2|3,1.5:4|1,2:4|.125,.125:2|4,2:2|.5,4:2|1.5,3:2",
+  "1.5,1.33:4|1.33,1.5:4|.25,1.25:3|2,.25:4|.5,3:2|3,.5:2|1,2:6|1.125,1.125:2|4,2:2|.5,2.5:2|2.5,.5:2",
+  ".25,.25:1|.33,.33:1|.5,.5:1|.66,.66:1|1,1:1|2,2:1|3,3:1|4.02,4.02:1|5.02,5.02:1|6.03,6.03:1|7.05,7.05:1|10.14,10.14:1",
+  ".25,.2:1|.4,.33:1|.5,1.5:1|1.66,.66:1|1,2:1|2,3:1|2,3:1|4,5:1|4,.25:1|7,6:1|6,7:1"
 };
 
 // Prototypes
@@ -83,14 +87,16 @@ void StoreConfigDuties();
 void ResetFreqDuty();
 void ProcessPlayCommand(String command);
 void PlaySong(int songIndex, int repeat, double tempoDivider, int variation);
+void Log(String msg);
+std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
 
 // MAIN
 void setup() {
   Serial.begin(115200);
-  Serial.println("Initializing");
+  Log("Initializing");
 
   //ESPFlashCounter flashCounter("/counter");
-  //Serial.println(String(flashCounter.get()) + " executions");
+  //Log(String(flashCounter.get()) + " executions");
   //flashCounter.increment();
   
   AttachOutputPins();
@@ -103,7 +109,7 @@ void setup() {
   }
   else {
     //Initialize PWM on 0hz
-    Serial.println("No valid freqs config file " + configValue);
+    Log("No valid freqs config file " + configValue);
     SetFreqsPWM();
   }
 
@@ -113,7 +119,7 @@ void setup() {
     UpdateDutyValues(configValue, false);
  } 
   else {
-    Serial.println("No valid duties config file " + configValue);
+    Log("No valid duties config file " + configValue);
   }
   PrintValues(_freqs, _duties);
 }
@@ -136,7 +142,7 @@ void loop() {
 
   // Handle bluetooth reconnect
   if (!deviceConnected && oldDeviceConnected) {
-      Serial.println("Will try to reconnect");
+      Log("Will try to reconnect");
       delay(500); // give time to bluetooth stack 
       bleServer->startAdvertising(); // restart advertising
       oldDeviceConnected = deviceConnected;
@@ -173,6 +179,10 @@ void ProcessInput(String recv) {
     // PLAY
     ProcessPlayCommand(recv);
   }
+  else if (recv.startsWith("debug")) {
+    Log("Will " + String(debug_ble ? "disable" : "enable") + " BLE debug");
+    debug_ble = !debug_ble;
+  }
   else if (isDigit(recv.charAt(0)) || recv.charAt(0) == '-') {
     // Frequencies (in hz)
     UpdateFrequencyValues(recv, false);
@@ -184,24 +194,29 @@ void ProcessInput(String recv) {
 class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       String value = String(pCharacteristic->getValue().c_str());
-      _bleCommandBuffer.push(value);
+      if (value.startsWith("stop")) {
+        stop = true;
+      }
+      else {
+        _bleCommandBuffer.push(value);
+      }
     }
 };
 
 // BLE Server callbacks
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* server) {
-      Serial.println("Client connected...");
+      Log("Client connected...");
       deviceConnected = true;
     };
     void onDisconnect(BLEServer* server) {
-      Serial.println("Client disconnected...");
+      Log("Client disconnected...");
       deviceConnected = false;
     }
 };
 
 void ResetFreqDuty() {
-  Serial.println("Will reset values");
+  Log("Will reset values");
   String configValue = GetConfigFreqs();
   if (configValue.length() > 0 && isDigit(configValue.charAt(0))) {
     UpdateFrequencyValues(configValue, false);
@@ -251,7 +266,7 @@ void AttachOutputPins() {
 
 // Freq newValue valid formats: d[,d,d,d]   d is a double
 void UpdateFrequencyValues(String newValue, bool isIncrement) {
-  Serial.println("New freq value received: " + newValue);
+  Log("New freq value received: " + newValue);
   if (isIncrement) {
     std::vector<double> increments = splitParseVector(newValue);
     for (size_t i = 0; i < increments.size(); ++i) {
@@ -269,7 +284,7 @@ void UpdateFrequencyValues(String newValue, bool isIncrement) {
 
 // Duty newValue valid formats: d[,d,d,d]   d is a double
 void UpdateDutyValues(String newValue, bool isIncrement) {
-  Serial.println("New duty value received: " + newValue);
+  Log("New duty value received: " + newValue);
   if (isIncrement) {
     std::vector<double> increments = splitParseVector(newValue);
     for (size_t i = 0; i < increments.size(); ++i) {
@@ -286,11 +301,11 @@ void UpdateDutyValues(String newValue, bool isIncrement) {
 void MultiplyFreqsPWM(std::vector<double> &mult) {
   for (size_t i = 0; i < mult.size(); ++i) {
     if (mult[i] < 0) {
-      Serial.println("Will mutiply " + String(i) + ": " + String(_cacheFreqs[i]) + " by " + String(-mult[i]) + " = " + String(_cacheFreqs[i] * -mult[i]));
+      Log("Will mutiply " + String(i) + ": " + String(_cacheFreqs[i]) + " by " + String(-mult[i]) + " = " + String(_cacheFreqs[i] * -mult[i]));
       _freqs[i] = _cacheFreqs[i] * -mult[i];
     }
     else {    
-      Serial.println("Will mutiply " + String(i) + ": " + String(_freqs[i]) + " by " + String(mult[i]) + " = " + String(_freqs[i] * mult[i]));
+      Log("Will mutiply " + String(i) + ": " + String(_freqs[i]) + " by " + String(mult[i]) + " = " + String(_freqs[i] * mult[i]));
       _freqs[i] = _freqs[i] * mult[i];
     }
     ledcWriteTone(i*2, _freqs[i]);
@@ -323,9 +338,9 @@ void SetDutiesPWM() {
 }  
 
 void PrintValues(std::vector<double> &f, std::vector<double> &d) {
-  Serial.println("Freq values:");
+  Log("Freq values:");
   for (size_t i = 0; i < f.size(); i++) {
-    Serial.println("  " + String(i) + ": " + String(f[i]) + " (Hz) Duty: " + String(d[i]));
+    Log("  " + String(i) + ": " + String(f[i]) + " (Hz) Duty: " + String(d[i]));
   }
 }
 
@@ -388,6 +403,41 @@ std::vector<double> splitParseVector(String msg, std::vector<double> *completeWi
     }
   }
   return result;
+}
+
+void Log(String msg) {
+  Serial.println(msg);
+  if (debug_ble) {
+    if (msg.length() > 20) {
+      msg = msg + "\n";
+      std::vector<std::string> chunks = SplitStringByNumber(msg.c_str(), 20);
+      
+      for (size_t i = 0; i < chunks.size(); ++i) {
+        pCharacteristicCmd->setValue(chunks[i]);
+        if (deviceConnected) {
+          pCharacteristicCmd->notify();
+        }
+      }
+    } 
+    else {
+      pCharacteristicCmd->setValue(msg.c_str());
+      if (deviceConnected) {
+        pCharacteristicCmd->notify();
+      }
+    }
+  }
+}
+
+std::vector<std::string> SplitStringByNumber(const std::string &str, int len)
+{
+    std::vector<std::string> entries;
+    for(std::string::const_iterator it(str.begin()); it != str.end();)
+    {
+        int nbChar = std::min(len,(int)std::distance(it,str.end()));
+        entries.push_back(std::string(it,it+nbChar));
+        it=it+nbChar;
+    };
+    return entries;
 }
 
 const char* join(std::vector<double> &v) {
@@ -457,12 +507,13 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
   String song = _songs[songIndex];
   std::default_random_engine rndSeeded(variation);
   String variationString = variation < 0 ? "original variation" : variation > 0 ? ("variation #" + String(variation)) : "random variation";
-  Serial.println("Will play song '" + song + "' " + variationString + " on " + String(repeat) + " iterations at speed " + String(speed) + "x");
+  Log("Will play song '" + song + "' " + variationString + " on " + String(repeat) + " iterations at speed " + String(speed) + "x");
   if (song.length() > 0) {
-    Serial.println("Begin song");
+    Log("Begin song");
+    stop = false;
     std::vector<String> steps = splitString(song, '|');
     for(int times = 0; times < repeat; ++times) {
-      Serial.println("Repeat " + String(times+1) + "/" + String(repeat));
+      Log("Repeat " + String(times+1) + "/" + String(repeat));
       // Variation (randomize steps)
       if (variation > 0) {
         std::shuffle(steps.begin(), steps.end(), rndSeeded);
@@ -472,7 +523,12 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
       }
       // Read and play
       for(size_t i = 0; i < steps.size(); ++i) {
-        Serial.println("  Step " + String(i+1) + "/" + String(steps.size()));
+        if (stop) {
+          Log("Stopping...");
+          ResetFreqDuty();
+          return;
+        }
+        Log("  Step " + String(i+1) + "/" + String(steps.size()));
         std::vector<String> values = splitString(steps[i], ':');
         std::vector<double> freqMults;
         std::vector<double> duties;
@@ -481,7 +537,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
           freqMults = splitParseVector(values[0]);
           for(size_t oscIndex = 0; oscIndex < freqMults.size(); ++oscIndex) {
             _freqs[oscIndex] = _cacheFreqs[oscIndex] * freqMults[oscIndex];
-            Serial.println("    Set " + String(oscIndex) + " freq to " + String(_cacheFreqs[oscIndex]) + " * " + String(freqMults[oscIndex]) + " = " + String(_freqs[oscIndex]) + " Hz");
+            Log("    Set " + String(oscIndex) + " freq to " + String(_cacheFreqs[oscIndex]) + " * " + String(freqMults[oscIndex]) + " = " + String(_freqs[oscIndex]) + " Hz");
             ledcWriteTone(oscIndex*2, _freqs[oscIndex]);
           }
           SetBLEFreqValue();
@@ -491,7 +547,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
           duties = splitParseVector(values[2]);
           for(size_t oscIndex = 0; oscIndex < duties.size(); ++oscIndex) {
             if (duties[oscIndex] >= 0) {
-              Serial.println("    Set " + String(oscIndex) + " duty to " + String(duties[oscIndex]));
+              Log("    Set " + String(oscIndex) + " duty to " + String(duties[oscIndex]));
               ledcWrite(oscIndex*2, (uint32_t)duties[oscIndex]);
             }
           }
@@ -500,12 +556,12 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
         if (values.size() > 1) {
           // Delay
           double duration = values[1].toDouble() / speed;
-          Serial.println("    Delay " + String(duration) + " secs.");
+          Log("    Delay " + String(duration) + " secs.");
           delay(duration * 1000);
         }
       }
     }
-    Serial.println("End song");
+    Log("End song");
     // Restore cache freqs, duties
     ResetFreqDuty();
   }

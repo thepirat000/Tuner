@@ -25,7 +25,7 @@
     <div id="big-one" style="max-width: 800px; margin: 0 auto;">
         <div class="banner-message">
             <div class="app-title">
-                <span style="margin: 0 auto;">
+                <span id="title" style="margin: 0 auto;">
                     Tuner By ThePirat
                 </span>
             </div>
@@ -33,6 +33,24 @@
 			<div>
 				<div><button id="btn-scan" class="scan-button">Connect</button></div>
 			</div>
+
+			<div id="oscillators" style="display:none;">
+				<div>
+					...
+				</div>
+			
+				<div id="console">
+					<div>
+						<input type="text" id="command" maxlength="20" style="" />
+						<input type="button" id="send-command" value="Send"/>
+					</div>
+					<div>
+						<textarea id="command-output" style="width: 100%;"></textarea>
+					</div>
+				</div>
+			</div>
+
+
 
             <footer class="border-top footer text-muted">
                 <div class="container">

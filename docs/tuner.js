@@ -3,14 +3,25 @@ $(document).ready(function () {
 		e.preventDefault();
 		Scan();
 	});
+	
+	$('#command').bind('keypress', function (e) {
+		if(e.which == 13) {
+			sendCommand();
+		}
+	});
+	$("#send-command").click(e => {
+		e.preventDefault();
+		sendCommand();
+	});
+	
 
 });
 
 var characteristicCmd;
 var characteristicDuties;
 var characteristicFreqs;
-
 var device;
+const encoder = new TextEncoder('utf-8');
 
 async function Scan() {
 	device = await navigator.bluetooth.requestDevice({
@@ -18,12 +29,8 @@ async function Scan() {
 			namePrefix: 'Tuner'
 		}],
 		optionalServices: ['fe000000-fede-fede-0000-000000000000']});
-
-	let name = device.name;
-	let id = device.id;
-
+	$("#title").text(device.name);
 	device.addEventListener('gattserverdisconnected', onDisconnected);
-
 	await connectDeviceAndCacheCharacteristics();
 }
 
@@ -55,16 +62,31 @@ async function connectDeviceAndCacheCharacteristics() {
 	characteristicDuties.addEventListener('characteristicvaluechanged', handleDutyValueChange);
 	await characteristicDuties.startNotifications();
 	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
+	characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
+	await characteristicCmd.startNotifications();
+	$("#oscillators").show();
 }
 
 function handleFreqValueChange(event) {
-  let freqs = new TextDecoder().decode(event.target.value);
-  console.log(freqs);
+	let freqs = new TextDecoder().decode(event.target.value);
+	console.log(freqs);
 }
 
 function handleDutyValueChange(event) {
-  let duties  = new TextDecoder().decode(event.target.value);
-  console.log(duties);
+	let duties  = new TextDecoder().decode(event.target.value);
+	console.log(duties);
 }
 
+function handleCmdValueChange(event) {
+	let value  = new TextDecoder().decode(event.target.value);
+	$('#command-output').append(document.createTextNode(value)); 
+}
 
+async function sendCommand() {
+	let cmd = $("#command").val();
+	if (cmd) {
+		let value = encoder.encode(cmd);
+		characteristicCmd.writeValue(value);
+	}
+	$("#command").val("");
+}
