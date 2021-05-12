@@ -86,6 +86,7 @@ function handleCmdValueChange(event) {
 	let cmdOut = $('#command-output');
 	cmdOut.append(document.createTextNode(value)); 
 	if (value[value.length-1] == "\n") {
+		value = value.replace("\n", "&#13;&#10;");
 	}
 	cmdOut.scrollTop(cmdOut.scrollHeight);
 }
