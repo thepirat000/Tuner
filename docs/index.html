@@ -82,13 +82,18 @@
 				<div class="separator"></div>
 				
 				<div id="console" class="console">
-					<p style="padding-bottom: 4px; margin: 0;">Console</p>
+					<span class="no-select">Console</span>
 					<div>
 						<input type="text" id="command" class="command-input" maxlength="20" style="width: calc(100% - 60px);" title="Enter command" />
 						<input type="button" id="send-command" value="Send" style="width: 47px;"/>
 					</div>
-					<div>
+					<div style="position: relative;">
 						<textarea id="command-output" readonly class="command-output"></textarea>
+						<span style="position:absolute; top:4px; right:4px;">
+							<input type="checkbox" id="debug" name="debug" />
+							<label for="debug" class="no-select" >debug</label>
+						</span>
+
 					</div>
 				</div>
 			</div>

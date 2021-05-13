@@ -10,6 +10,7 @@
   --osc-color: #F9E79F;
   --osc-shadow-color: #D4AC0D;
   --freq-color: #229954;
+  --border-color: #7F8C8D;
 }
 
 body {
@@ -138,11 +139,11 @@ button {
 }
 
 .command-output {
-	width: calc(100% - 7px); 
+	width: calc(100% - 6px); 
 	height: 200px;  
-	white-space: pre-wrap;
 	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
 	background-color: var(--console-background-color);
+	border: 0;
 }
 
 .command-input {
@@ -151,6 +152,7 @@ button {
 
 .console {
 	background-color: var(--console-background-color);
+	border: 1px solid var(--border-color);
 }
 
 .oscillator {
@@ -183,13 +185,13 @@ button {
 }
 
 .id-div {
-	border: 1px solid #7F8C8D;
+	border: 1px solid var(--border-color);
 	padding-bottom: 0px;
 	border-bottom: none;
 }
 
 .freq-div {
-	border: 1px solid #7F8C8D;
+	border: 1px solid var(--border-color);
 	
 	width: 50%;
 	float: left;
@@ -197,7 +199,7 @@ button {
 }
 
 .duty-div {
-	border: 1px solid #7F8C8D;
+	border: 1px solid var(--border-color);
 	margin-left: 50%;
 	height: 180px;
 }
