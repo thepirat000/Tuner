@@ -11,6 +11,7 @@
   --osc-shadow-color: #D4AC0D;
   --freq-color: #229954;
   --border-color: #7F8C8D;
+  --config-height: 200px;
 }
 
 body {
@@ -90,29 +91,29 @@ button {
 
 .freq {
 	font-family: 'digital-clock-font', Arial;
-	font-size: 68px;
-	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	font-size: 52px;
+	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	color: var(--freq-color);
 	cursor: default;
 }
 
 .freq-hz-text {
 	font-size: 18px;
-	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	cursor: default;
 }
 
 .duty {
 	font-family: 'digital-clock-font', Arial;
-	font-size: 42px;
-	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	font-size: 52px;
+	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	color: var(--freq-color);
 	cursor: default;
 }
 
 .mini-text {
 	font-size: 12px;
-	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	margin: 2px 2px 2px 2px;
 	cursor: default;
 }
@@ -159,29 +160,31 @@ button {
 	background-color: var(--osc-color);
 }
 
-.slider-duty {
+.slider {
   -webkit-appearance: none;
-  width: 160px;
+  width: 220px;
   height: 20px;
-  background: #d3d3d3;
+  background: #F4D03F;
   outline: none;
   opacity: 0.7;
   -webkit-transition: .2s;
   transition: opacity .2s;
 }
-.slider-duty::-webkit-slider-thumb {
+.slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 3px;
+  width: 4px;
   height: 25px;
   background: #04AA6D;
   cursor: pointer;
+  border: 1px solid #626567;
 }
-.slider-duty::-moz-range-thumb {
-  width: 3px;
+.slider::-moz-range-thumb {
+  width: 4px;
   height: 25px;
   background: #04AA6D;
   cursor: pointer;
+  border: 1px solid #626567;
 }
 
 .id-div {
@@ -192,19 +195,18 @@ button {
 
 .freq-div {
 	border: 1px solid var(--border-color);
-	
 	width: 50%;
 	float: left;
-	height: 180px;
+	height: var(--config-height);
 }
 
 .duty-div {
 	border: 1px solid var(--border-color);
 	margin-left: 50%;
-	height: 180px;
+	height: var(--config-height);
 }
 
 .config-container {
   margin: auto;
-  height: 180px;
+  height: var(--config-height);
 }

@@ -28,11 +28,15 @@ async function Scan() {
 	if (device && device.gatt.connected) {
 		device.gatt.disconnect();
 	}
-	device = await navigator.bluetooth.requestDevice({
-        filters: [{
-			namePrefix: 'Tuner'
-		}],
-		optionalServices: ['fe000000-fede-fede-0000-000000000000']});
+	try {
+		device = await navigator.bluetooth.requestDevice({
+			filters: [{
+				namePrefix: 'Tuner'
+			}],
+			optionalServices: ['fe000000-fede-fede-0000-000000000000']});
+	} catch(err) {
+		alert(err);
+	}
 	$("#title").text(device.name);
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();

@@ -45,6 +45,7 @@
 							<div class="freq-div">
 								<p class="mini-text no-select">Frequency</p>
 								<span id="freq-1" class="freq no-select">1230.50</span><span class="freq-hz-text no-select"> Hz</span>
+								<input id="slider-freq-1" class="slider" type="range" min="0" max="1023" value="512" />
 								<div class="separator"></div>
 								<input id="set-freq-1" type="button" class="set-button" value="Set" />
 								<input id="reset-freq-1" type="button" class="reset-button" value="Reset" />
@@ -60,10 +61,9 @@
 							<div class="duty-div">
 								<div>
 									<p class="mini-text no-select">Duty cycle</p>
-									<div class="separator"></div>
 									<span id="duty-1-text" class="duty no-select" >50</span><span class="freq-hz-text no-select"> %</span>
 								</div>
-								<input id="duty-1" class="slider-duty" type="range" min="0" max="1023" value="512" />
+								<input id="slider-duty-1" class="slider" type="range" min="0" max="1023" value="512" />
 								<div class="separator"></div>
 								<input id="set-duty-1" type="button" class="set-button" value="Set" />
 								<input id="reset-duty-1" type="button" class="reset-button" value="Reset" />
@@ -81,7 +81,7 @@
 				
 				<div class="separator"></div>
 				
-				<div id="console" class="console">
+				<div id="console" class="console mini-text">
 					<span class="no-select">Console</span>
 					<div>
 						<input type="text" id="command" class="command-input" maxlength="20" style="width: calc(100% - 60px);" title="Enter command" />
