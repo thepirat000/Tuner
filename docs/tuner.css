@@ -11,7 +11,7 @@
   --osc-shadow-color: #D4AC0D;
   --freq-color: #229954;
   --border-color: #7F8C8D;
-  --config-height: 200px;
+  --config-height: 190px;
 }
 
 body {
@@ -162,8 +162,8 @@ button {
 
 .slider {
   -webkit-appearance: none;
-  width: 220px;
   height: 20px;
+  width: 90%;
   background: #F4D03F;
   outline: none;
   opacity: 0.7;
@@ -195,14 +195,14 @@ button {
 
 .freq-div {
 	border: 1px solid var(--border-color);
-	width: 50%;
+	width: 70%;
 	float: left;
 	height: var(--config-height);
 }
 
 .duty-div {
 	border: 1px solid var(--border-color);
-	margin-left: 50%;
+	margin-left: 70%;
 	height: var(--config-height);
 }
 
