@@ -14,6 +14,11 @@
   --config-height: 190px;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background: #20262E;
   font-family: Helvetica;
@@ -209,4 +214,17 @@ button {
 .config-container {
   margin: auto;
   height: var(--config-height);
+}
+
+.set-button {
+	height: 24px;
+	width: 32px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+.reset-button {
+	margin-top: 0px;
+	height: 24px;
+	width: 32px;
 }
