@@ -1,3 +1,17 @@
+@charset "UTF-8";
+
+@font-face{
+ font-family: 'digital-clock-font';
+ src: url('digital-7.ttf');
+}
+
+:root {
+  --console-background-color: #EAEDED;
+  --osc-color: #F9E79F;
+  --osc-shadow-color: #D4AC0D;
+  --freq-color: #229954;
+}
+
 body {
   background: #20262E;
   font-family: Helvetica;
@@ -72,3 +86,116 @@ button {
 .text-muted {
 	background-color: lightgray;
 }
+
+.freq {
+	font-family: 'digital-clock-font', Arial;
+	font-size: 68px;
+	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	color: var(--freq-color);
+	cursor: default;
+}
+
+.freq-hz-text {
+	font-size: 18px;
+	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	cursor: default;
+}
+
+.duty {
+	font-family: 'digital-clock-font', Arial;
+	font-size: 34px;
+	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	color: var(--freq-color);
+	cursor: default;
+}
+
+.mini-text {
+	font-size: 12px;
+	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
+	margin: 2px 2px 2px 2px;
+	cursor: default;
+}
+
+.step {
+	width: 16px;
+	text-align: center;
+	color: #566573;
+}
+.step-button {
+	width: 24px;
+}
+
+.separator {
+	margin-top: 8px;
+}
+
+.osc-number {
+	font-size: 32px;
+}
+
+.no-select {
+	user-select: none;
+}
+
+.command-output {
+	width: calc(100% - 7px); 
+	height: 200px;  
+	white-space: pre-wrap;
+	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
+	background-color: var(--console-background-color);
+}
+
+.command-input {
+	background-color: var(--console-background-color);
+}
+
+.console {
+	background-color: var(--console-background-color);
+}
+
+.oscillator {
+	background-color: var(--osc-color);
+}
+
+.slider-duty {
+  -webkit-appearance: none;
+  width: 200px;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+.slider-duty::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 5px;
+  height: 33px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+.slider-duty::-moz-range-thumb {
+  width: 5px;
+  height: 33px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.id-div {
+	border: 1px solid #7F8C8D;
+	padding-bottom: 0px;
+	border-bottom: none;
+}
+
+.freq-div {
+	border: 1px solid #7F8C8D;
+	padding-bottom: 5px;
+	border-bottom: none;
+}
+
+.duty-div {
+	border: 1px solid #7F8C8D;
+	padding-bottom: 5px;
+}
+

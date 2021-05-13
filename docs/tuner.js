@@ -14,6 +14,7 @@ $(document).ready(function () {
 		sendCommand();
 	});
 	
+	$("#command").focus();
 
 });
 
