@@ -140,7 +140,7 @@ button {
 
 .command-output {
 	width: calc(100% - 6px); 
-	height: 200px;  
+	height: 120px;  
 	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
 	background-color: var(--console-background-color);
 	border: 0;
