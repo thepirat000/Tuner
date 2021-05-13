@@ -103,7 +103,7 @@ button {
 
 .duty {
 	font-family: 'digital-clock-font', Arial;
-	font-size: 34px;
+	font-size: 42px;
 	text-shadow: 2px 2px 2px var(--osc-shadow-color);	
 	color: var(--freq-color);
 	cursor: default;
@@ -159,8 +159,8 @@ button {
 
 .slider-duty {
   -webkit-appearance: none;
-  width: 200px;
-  height: 25px;
+  width: 160px;
+  height: 20px;
   background: #d3d3d3;
   outline: none;
   opacity: 0.7;
@@ -170,14 +170,14 @@ button {
 .slider-duty::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 5px;
-  height: 33px;
+  width: 3px;
+  height: 25px;
   background: #04AA6D;
   cursor: pointer;
 }
 .slider-duty::-moz-range-thumb {
-  width: 5px;
-  height: 33px;
+  width: 3px;
+  height: 25px;
   background: #04AA6D;
   cursor: pointer;
 }
@@ -190,12 +190,19 @@ button {
 
 .freq-div {
 	border: 1px solid #7F8C8D;
-	padding-bottom: 5px;
-	border-bottom: none;
+	
+	width: 50%;
+	float: left;
+	height: 180px;
 }
 
 .duty-div {
 	border: 1px solid #7F8C8D;
-	padding-bottom: 5px;
+	margin-left: 50%;
+	height: 180px;
 }
 
+.config-container {
+  margin: auto;
+  height: 180px;
+}
