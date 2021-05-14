@@ -162,7 +162,6 @@ button {
 
 .oscillator {
 	background-color: var(--osc-color);
-	
 	border: 1px solid var(--border-color);
 	margin: auto;
 	margin-bottom: 8px;

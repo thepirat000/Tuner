@@ -80,11 +80,19 @@ async function connectDeviceAndCacheCharacteristics() {
 function handleFreqValueChange(event) {
 	let freqs = new TextDecoder().decode(event.target.value);
 	console.log(freqs);
+	let freqsArray = freqs.split(',');
+	for (let i = 0; i < freqsArray.length; ++i) {
+		ShowFreqValue(i+1, freqsArray[i]);
+	}
 }
 
 function handleDutyValueChange(event) {
 	let duties  = new TextDecoder().decode(event.target.value);
 	console.log(duties);
+	let dutiesArray = duties.split(',');
+	for (let i = 0; i < dutiesArray.length; ++i) {
+		ShowDutyValue(i+1, dutiesArray[i]);
+	}
 }
 
 function handleCmdValueChange(event) {
@@ -120,3 +128,15 @@ function GenerateOscillatorsUI() {
 		$("#oscillators").append(clone);
 	}
 }
+
+function ShowFreqValue(osc, value) {
+	$("#freq-" + osc).text(value.toFixed(2));
+	$("#slider-freq-" + osc).val(value);
+}
+// value: 0-100
+function ShowDutyValue(osc, value) {
+	$("#duty-text-" + osc).text(value.toFixed(0));
+	$("#slider-duty-" + osc).val(value);
+}
+
+
