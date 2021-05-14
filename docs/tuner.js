@@ -63,17 +63,22 @@ async function connectDeviceAndCacheCharacteristics() {
 	if (device.gatt.connected && characteristicCmd) {
 		return;
 	}
-	const server = await device.gatt.connect();
-	const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
-	characteristicFreqs = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
-	characteristicFreqs.addEventListener('characteristicvaluechanged', handleFreqValueChange);
-	await characteristicFreqs.startNotifications();
-	characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
-	characteristicDuties.addEventListener('characteristicvaluechanged', handleDutyValueChange);
-	await characteristicDuties.startNotifications();
-	characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
-	characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
-	await characteristicCmd.startNotifications();
+	try {
+		const server = await device.gatt.connect();
+		const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
+		characteristicFreqs = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
+		characteristicFreqs.addEventListener('characteristicvaluechanged', handleFreqValueChange);
+		await characteristicFreqs.startNotifications();
+		characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
+		characteristicDuties.addEventListener('characteristicvaluechanged', handleDutyValueChange);
+		await characteristicDuties.startNotifications();
+		characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
+		characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
+		await characteristicCmd.startNotifications();
+	}
+	catch (err) {
+		alert(err);
+	}
 	$("#oscillators").show();
 }
 
