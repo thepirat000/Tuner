@@ -145,6 +145,7 @@ button {
 
 .command-input {
 	background-color: var(--console-background-color);
+	float:left;
 }
 
 .console {
@@ -255,3 +256,4 @@ button {
 .mult-config {
 	margin-left: 50%;
 }
+

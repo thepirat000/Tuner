@@ -13,9 +13,9 @@ DUTY UUID: ca000000-fede-fede-0000-000000000002
 Format: d[,d[,d[,d]]]
 
 Being: d=decimal number 
-	   > 0: frequency in Hertz
-	   = 0: turn off the oscillator
-	   < 0: no change in frequency
+	   - > 0: frequency in Hertz
+	   - = 0: turn off the oscillator
+	   - < 0: no change in frequency
 
 Examples:
 
@@ -36,9 +36,9 @@ same as:
 Format: *d[,d[,d[,d]]]
 
 Being: d=decimal number 
-	   > 0: number to multiply the current frequency
-	   = 0: turn off the oscillator
-	   < 0: multiply the base frequency from config by ABS(d)
+	   - > 0: number to multiply the current frequency
+	   - = 0: turn off the oscillator
+	   - < 0: multiply the base frequency from config by ABS(d)
 
 > The multiplication does not trigger the frequency values saving to the config file.
 
@@ -58,9 +58,9 @@ Examples:
 Format: +d[,d[,d[,d]]]
 
 Being: d=decimal number 
-	   > 0: increment the frequency in d hertz
-	   = 0: no imcrement
-	   < 0: decrement the frequency in -d hertz
+	   - > 0: increment the frequency in d hertz
+	   - = 0: no imcrement
+	   - < 0: decrement the frequency in -d hertz
 	   
 > The incrementation does not trigger the frequency values saving to the config file.
 
@@ -77,9 +77,9 @@ Examples:
 Format: /d[,d[,d[,d]]]
 
 Being: d=decimal number 
-	   > 0: duty for the oscillator (1-1023)
-	   = 0: turn off the oscillator (0% duty)
-	   < 0: no change in duty
+	   - > 0: duty for the oscillator (1-1023)
+	   - = 0: turn off the oscillator (0% duty)
+	   - < 0: no change in duty
 
 Examples:
 
@@ -95,7 +95,7 @@ Examples:
 
 ## Generic commands
 
-#### Reset
+### Reset
 Will reset the frequency and duty values to their config file value
 
 Example:
@@ -110,9 +110,9 @@ Being: SongIndex=The song index to play
 	   Iterations=Times to repeat the song (default is 1)
 	   Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
 	   Variation=(optional) number 
-			> 0: randomize the steps order with the given number as seed. 
-			= 0: pseudo randomize steps
-			< 0: no randomizing (default)
+			- > 0: randomize the steps order with the given number as seed. 
+			- = 0: pseudo randomize steps
+			- < 0: no randomizing (default)
 
 Examples:
 
@@ -136,9 +136,19 @@ Example:
 
 ### Debug
 
+#### Enable debug mode via BLE 
+`debug 1`
+
+#### Disable debug mode via BLE 
+`debug 0`
+
 #### Switch debug mode
-Enable/Disable debug via BLE (default is false)
+`debug`
+
+### Refesh/Query status
+Notify the BLE clients for the current frequencies and duties and prints the current frequencies and duties
 
 Example:
-`debug`
+`?` 
+
 

@@ -152,6 +152,7 @@ void loop() {
   }
 }
 
+// ************ PROCESS COMMAND ***************
 void ProcessInput(String recv) {
   recv.toLowerCase();
   if (recv.startsWith("/")) {
@@ -180,8 +181,20 @@ void ProcessInput(String recv) {
     ProcessPlayCommand(recv);
   }
   else if (recv.startsWith("debug")) {
-    Log("Will " + String(debug_ble ? "disable" : "enable") + " BLE debug");
-    debug_ble = !debug_ble;
+    if (recv.length() == 5) {
+      Log("Will " + String(debug_ble ? "disable" : "enable") + " BLE debug");
+      debug_ble = !debug_ble;
+    } else if (recv.length() > 6) {
+      if (recv.substring(6).startsWith("1")) {
+        debug_ble = true;
+      } else {
+        debug_ble = false;
+      }
+    }
+  }
+  else if (recv.startsWith("?")) {
+    SetBLEFreqValue();
+    SetBLEDutyValue();
   }
   else if (isDigit(recv.charAt(0)) || recv.charAt(0) == '-') {
     // Frequencies (in hz)
@@ -208,6 +221,8 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* server) {
       Log("Client connected...");
       deviceConnected = true;
+      SetBLEFreqValue();
+      SetBLEDutyValue();
     };
     void onDisconnect(BLEServer* server) {
       Log("Client disconnected...");
@@ -250,10 +265,6 @@ void StartBLEServer() {
   //pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
   //BLEDevice::startAdvertising();
   pAdvertising->start();
-
-/*
-  SetBLEFreqValue();
-  SetBLEDutyValue();*/
 }
 
 // Helper methods
@@ -295,7 +306,9 @@ void UpdateDutyValues(String newValue, bool isIncrement) {
     _duties = splitParseVector(newValue, &_duties);
   }
   SetDutiesPWM();
-  StoreConfigDuties();
+  if (!isIncrement) {
+    StoreConfigDuties();
+  }
   SetBLEDutyValue();
 }
 
@@ -334,8 +347,6 @@ void SetDutiesPWM() {
       ledcWrite(i*2, duty);
     }
   }
-  SetBLEDutyValue();
-  StoreConfigDuties();
 }  
 
 void PrintValues(std::vector<double> &f, std::vector<double> &d) {

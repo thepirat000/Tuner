@@ -1,23 +1,19 @@
 $(document).ready(function () {
 	GenerateOscillatorsUI();
-	$("#btn-scan").click(e => {
-		e.preventDefault();
-		Scan();
+	$("#btn-scan").click(async function(e) {
+		await Scan();
 	});
 	
-	$('#command').bind('keypress', function (e) {
+	$("#debug").change(async function(e) {
+		let cmd = "debug " + (this.checked ? "1" : "0");
+		await SendCommand(cmd);
+	});
+	
+	$('#command').bind('keypress', async function (e) {
 		if(e.which == 13) {
-			sendCommand();
+			await SendConsoleCommand();
 		}
 	});
-	$("#send-command").click(e => {
-		e.preventDefault();
-		sendCommand();
-	});
-	
-	//$("#command").focus();
-	//$(window).scrollTop(0);
-
 });
 
 var characteristicCmd;
@@ -27,9 +23,7 @@ var device;
 const encoder = new TextEncoder('utf-8');
 
 async function Scan() {
-	if (device && device.gatt.connected) {
-		device.gatt.disconnect();
-	}
+	AppendLog("Scanning...\n");
 	try {
 		device = await navigator.bluetooth.requestDevice({
 			filters: [{
@@ -37,11 +31,24 @@ async function Scan() {
 			}],
 			optionalServices: ['fe000000-fede-fede-0000-000000000000']});
 	} catch(err) {
-		alert(err);
+		AppendLog("Error: " + err + "\n");
+		return;
 	}
 	$("#title").text(device.name);
+	AppendLog("Connecting to " + device.name + "...\n");
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
+	AppendLog("Connected!\n");
+	$("#div-scan").hide();
+	$("#btn-reconnect").show();
+	SendCommand("?");
+	$("#oscillators").show();
+}
+
+async function Disconnect() {
+	if (device && device.gatt.connected) {
+		await device.gatt.disconnect();
+	}
 }
 
 async function GetFreqs() {
@@ -102,22 +109,16 @@ function handleDutyValueChange(event) {
 
 function handleCmdValueChange(event) {
 	let value  = new TextDecoder().decode(event.target.value);
-	
-	let cmdOut = $('#command-output');
 	if (value[value.length-1] == "\n") {
 		value = value.replace("\n", "&#13;&#10;");
 	}
-	cmdOut.append(value); 
-	cmdOut.scrollTop(cmdOut[0].scrollHeight - cmdOut.height());
+	AppendLog(value);
 }
 
-async function sendCommand() {
-	let cmd = $("#command").val();
-	if (cmd) {
-		let value = encoder.encode(cmd);
-		characteristicCmd.writeValue(value);
-	}
-	$("#command").val("");
+function AppendLog(value) {
+	let cmdOut = $('#command-output');
+	cmdOut.append(value); 
+	cmdOut.scrollTop(cmdOut[0].scrollHeight - cmdOut.height());
 }
 
 function GenerateOscillatorsUI() {
@@ -134,14 +135,34 @@ function GenerateOscillatorsUI() {
 	}
 }
 
+async function SendConsoleCommand() {
+	let cmd = $("#command").val();
+	await SendCommand(cmd);
+	$("#command").val("");
+}
+
 function ShowFreqValue(osc, value) {
-	$("#freq-" + osc).text(parseFloat(value).toFixed(2));
-	$("#slider-freq-" + osc).val(value);
+	let prevValue = $("#slider-freq-" + osc).val();
+	if (prevValue != value) {
+		$("#freq-" + osc).text(parseFloat(value).toFixed(2));
+		$("#slider-freq-" + osc).val(value);
+		$("#freq-div-" + osc).effect('highlight',{},500); 
+	}
 }
-// value: 0-100
+// value: 0-1023
 function ShowDutyValue(osc, value) {
-	$("#duty-text-" + osc).text(parseFloat(value).toFixed(0));
-	$("#slider-duty-" + osc).val(value);
+	let prevValue = $("#slider-duty-" + osc).val();
+	let percentage = value * 100 / 1023;
+	if (prevValue != percentage) {
+		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0));
+		$("#slider-duty-" + osc).val(percentage);
+		$("#duty-div-" + osc).effect('highlight',{},500); 
+	}
 }
 
-
+async function SendCommand(cmd) {
+	if (cmd) {
+		let value = encoder.encode(cmd);
+		await characteristicCmd.writeValue(value);
+	}
+}
