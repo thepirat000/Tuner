@@ -162,10 +162,13 @@ button {
 
 .oscillator {
 	background-color: var(--osc-color);
-	min-width: 450px;
+	
 	border: 1px solid var(--border-color);
 	margin: auto;
 	margin-bottom: 8px;
+	min-width: 350px;
+	max-width: 450px;
+	width: 100%;
 }
 
 .slider {
@@ -203,14 +206,14 @@ button {
 
 .freq-div {
 	border: 1px solid var(--border-color);
-	width: 70%;
+	width: 65%;
 	float: left;
 	height: var(--config-height);
 }
 
 .duty-div {
 	border: 1px solid var(--border-color);
-	margin-left: 70%;
+	margin-left: 65%;
 	height: var(--config-height);
 }
 
