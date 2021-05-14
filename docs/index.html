@@ -23,7 +23,7 @@
 	
 </head>
 <body>
-    <div id="big-one" style="max-width: 800px; min-width: 320px; margin: 0 auto;">
+    <div id="big-one" style="max-width: 930px; min-width: 368px; margin: 0 auto;">
         <div class="banner-message">
             <div class="app-title">
                 <span id="title" style="margin: 0 auto;">
@@ -35,50 +35,55 @@
 				<div><button id="btn-scan" class="scan-button">Connect</button></div>
 			</div>
 
-			<div id="oscillators" style="display:block;">
-				<div>
-					<div id="osc-1" class="oscillator">
-						<div class="id-div">
-							<span class="no-select">#<span class="osc-number no-select">1</span></span>
-						</div>
-						<div class="config-container">
-							<div class="freq-div">
-								<p class="mini-text no-select">Frequency</p>
-								<span id="freq-1" class="freq no-select">9999.99</span><span class="freq-hz-text no-select"> Hz</span>
-								<input id="slider-freq-1" class="slider" type="range" min="0" max="1023" value="512" />
-								<div class="separator"></div>
-								<input id="set-freq-1" type="button" class="set-button" value="Set" title="Saves the current frequency" />
-								<input id="reset-freq-1" type="button" class="reset-button" value="Rst" title="Resets the current frequency to the last saved value" />
-								<div class="separator"></div>
-								<input id="decr-freq-1" type="button" class="step-button" value="-" />
-								<input id="incr-freq-step-1" type="text" class="step" value="1" />
-								<input id="incr-freq-1" type="button" class="step-button" value="+" />
-								<div class="separator"></div>
-								<input id="divi-1" type="button" class="step-button" value="/" />
-								<input id="mult-step-1" type="text" class="step" value="2" />
-								<input id="mult-1" type="button" class="step-button" value="∗" />
-							</div>
-							<div class="duty-div">
-								<div>
-									<p class="mini-text no-select">Duty cycle</p>
-									<span id="duty-1-text" class="duty no-select" >50</span><span class="freq-hz-text no-select"> %</span>
+			<div id="oscillators">
+				<div id="osc-1" class="oscillator">
+					<div class="id-div">
+						<span class="no-select">#<span id="osc-id-1" class="osc-number no-select">1</span></span>
+					</div>
+					<div class="config-container">
+						<div class="freq-div">
+							<p class="mini-text no-select">Frequency</p>
+							<span id="freq-1" class="freq no-select">9999.99</span><span class="freq-hz-text no-select"> Hz</span>
+							<input id="slider-freq-1" class="slider" type="range" min="0" max="1023" value="512" />
+							<div class="separator"></div>
+							<input id="set-freq-1" type="button" class="set-button" value="Set" title="Saves the current frequency" />
+							<input id="reset-freq-1" type="button" class="reset-button" value="Reset" title="Resets the current frequency to the last saved value" />
+							
+							<div class="op-container">
+								<div class="incr-config">
+									<p class="mini-text">Increment</p>
+									<input id="decr-freq-1" type="button" class="step-button" value="-" />
+									<input id="incr-freq-step-1" type="text" class="step" value="1" />
+									<input id="incr-freq-1" type="button" class="step-button" value="+" />
 								</div>
-								<input id="slider-duty-1" class="slider" type="range" min="0" max="1023" value="512" />
-								<div class="separator"></div>
-								<input id="set-duty-1" type="button" class="set-button" value="Set" title="Saves the current duty" />
-								<input id="reset-duty-1" type="button" class="reset-button" value="Rst" title="Resets the current duty to the last saved value" />
-								<div class="separator"></div>
-								<input id="decr-duty-1" type="button" class="step-button" value="-" />
-								<input id="incr-duty-step-1" type="text" class="step" value="1" />
-								<input id="incr-duty-1" type="button" class="step-button" value="+" />
-								
+								<div class="mult-config">
+									<p class="mini-text">Multiply</p>
+									<input id="divi-1" type="button" class="step-button" value="/" />
+									<input id="mult-step-1" type="text" class="step" value="2" />
+									<input id="mult-1" type="button" class="step-button" value="x" />
+								</div>
 							</div>
 						</div>
-						
-						
+						<div class="duty-div">
+							<div>
+								<p class="mini-text no-select">Duty cycle</p>
+								<span id="duty-text-1" class="duty no-select" >50</span><span class="freq-hz-text no-select"> %</span>
+							</div>
+							<input id="slider-duty-1" class="slider" type="range" min="0" max="1023" value="512" />
+							<div class="separator"></div>
+							<input id="set-duty-1" type="button" class="set-button" value="Set" title="Saves the current duty" />
+							<input id="reset-duty-1" type="button" class="reset-button" value="Reset" title="Resets the current duty to the last saved value" />
+							<p class="mini-text">Increment</p>
+							<input id="decr-duty-1" type="button" class="step-button" value="-" />
+							<input id="incr-duty-step-1" type="text" class="step" value="1" />
+							<input id="incr-duty-1" type="button" class="step-button" value="+" />
+						</div>
 					</div>
 				</div>
-				
+					
+			</div>
+			
+			<div>
 				<div class="separator"></div>
 				
 				<div id="console" class="console mini-text">

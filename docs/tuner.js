@@ -1,4 +1,5 @@
 $(document).ready(function () {
+	GenerateOscillatorsUI();
 	$("#btn-scan").click(e => {
 		e.preventDefault();
 		Scan();
@@ -14,7 +15,8 @@ $(document).ready(function () {
 		sendCommand();
 	});
 	
-	$("#command").focus();
+	//$("#command").focus();
+	//$(window).scrollTop(0);
 
 });
 
@@ -103,4 +105,18 @@ async function sendCommand() {
 		characteristicCmd.writeValue(value);
 	}
 	$("#command").val("");
+}
+
+function GenerateOscillatorsUI() {
+	for (let i = 2; i <= 4; ++i) {
+		let clone = $("#osc-1").clone();
+		clone.attr("id", clone.attr("id").substring(0, clone.attr("id").length - 1) + i);
+		clone.find('[id]').each(function () { 
+			if (this.id.endsWith("-1")) {
+				this.id = this.id.substring(0, this.id.length - 1) + i;
+			}
+		});
+		$(clone).find("#osc-id-" + i).text(i);
+		$("#oscillators").append(clone);
+	}
 }

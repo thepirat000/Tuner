@@ -11,7 +11,7 @@
   --osc-shadow-color: #D4AC0D;
   --freq-color: #229954;
   --border-color: #7F8C8D;
-  --config-height: 190px;
+  --config-height: 180px;
 }
 
 * {
@@ -123,21 +123,12 @@ button {
 	cursor: default;
 }
 
-.step {
-	width: 16px;
-	text-align: center;
-	color: #566573;
-}
-.step-button {
-	width: 24px;
-}
-
 .separator {
 	margin-top: 8px;
 }
 
 .osc-number {
-	font-size: 32px;
+	font-size: 25px;
 }
 
 .no-select {
@@ -161,8 +152,20 @@ button {
 	border: 1px solid var(--border-color);
 }
 
+#oscillators {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	width: 100%;
+	justify-content: space-between;
+}
+
 .oscillator {
 	background-color: var(--osc-color);
+	min-width: 450px;
+	border: 1px solid var(--border-color);
+	margin: auto;
+	margin-bottom: 8px;
 }
 
 .slider {
@@ -218,13 +221,35 @@ button {
 
 .set-button {
 	height: 24px;
-	width: 32px;
-	margin-top: 0px;
-	padding-top: 0px;
+	width: 48px;
 }
 
 .reset-button {
-	margin-top: 0px;
+	height: 24px;
+	width: 48px;
+}
+
+.step-button {
 	height: 24px;
 	width: 32px;
+}
+
+.step {
+	width: 22px;
+	height: 20px;
+	text-align: center;
+	color: #566573;
+}
+
+.op-container {
+	margin: auto;
+}
+
+.incr-config {
+	width: 50%;
+	float: left
+}
+
+.mult-config {
+	margin-left: 50%;
 }
