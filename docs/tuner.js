@@ -135,12 +135,12 @@ function GenerateOscillatorsUI() {
 }
 
 function ShowFreqValue(osc, value) {
-	$("#freq-" + osc).text(value.toFixed(2));
+	$("#freq-" + osc).text(parseFloat(value).toFixed(2));
 	$("#slider-freq-" + osc).val(value);
 }
 // value: 0-100
 function ShowDutyValue(osc, value) {
-	$("#duty-text-" + osc).text(value.toFixed(0));
+	$("#duty-text-" + osc).text(parseFloat(value).toFixed(0));
 	$("#slider-duty-" + osc).val(value);
 }
 

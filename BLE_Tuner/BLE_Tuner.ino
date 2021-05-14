@@ -142,7 +142,7 @@ void loop() {
 
   // Handle bluetooth reconnect
   if (!deviceConnected && oldDeviceConnected) {
-      Log("Will try to reconnect");
+      Log("Will restart advertising");
       delay(500); // give time to bluetooth stack 
       bleServer->startAdvertising(); // restart advertising
       oldDeviceConnected = deviceConnected;
@@ -246,13 +246,14 @@ void StartBLEServer() {
   pService->start();
   BLEAdvertising *pAdvertising = bleServer->getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->setScanResponse(false);
-  pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
-  BLEDevice::startAdvertising();
-  //pAdvertising->start();
+  //pAdvertising->setScanResponse(false);
+  //pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
+  //BLEDevice::startAdvertising();
+  pAdvertising->start();
 
+/*
   SetBLEFreqValue();
-  SetBLEDutyValue();
+  SetBLEDutyValue();*/
 }
 
 // Helper methods
