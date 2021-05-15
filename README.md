@@ -8,7 +8,7 @@ DUTY UUID: ca000000-fede-fede-0000-000000000002
 
 ## Frequencies
 
-### Set the base frequency for oscillators in Hertz
+### Set the frequency for oscillators in Hertz
 
 Format: d[,d[,d[,d]]]
 
@@ -30,6 +30,8 @@ Examples:
 
 same as:
 `-1,100,-1,-1`
+
+> The frequency set does not trigger the frequency values saving to the config file.
 
 ### Multipliers
 
@@ -95,8 +97,16 @@ Examples:
 
 ## Generic commands
 
-### Reset
-Will reset the frequency and duty values to their config file value
+### Persistence
+
+#### Set
+Will save the frequency and duty values to their config file 
+
+Example:
+`set`
+
+#### Reset
+Will load and set the frequency and duty values from the config file 
 
 Example:
 `reset`

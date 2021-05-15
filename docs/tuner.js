@@ -3,7 +3,12 @@ $(document).ready(function () {
 	$("#btn-scan").click(async function(e) {
 		await Scan();
 	});
-	
+	$("#btn-load").click(async function(e) {
+		await Load();
+	});
+	$("#btn-save").click(async function(e) {
+		await Save();
+	});
 	$("#debug").change(async function(e) {
 		let cmd = "debug " + (this.checked ? "1" : "0");
 		await SendCommand(cmd);
@@ -14,6 +19,21 @@ $(document).ready(function () {
 			await SendConsoleCommand();
 		}
 	});
+	
+	$('.freq-div').on("change", ".slider", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		await FreqSliderInput(osc, parseFloat(this.value));
+	});
+	
+	$('.freq-div').on("input", ".slider", function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		SlidingFreq(osc, parseFloat(this.value));
+	});
+
+	$('.duty-div').on("change", ".slider", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		await DutySliderInput(osc, parseFloat(this.value));
+	});	
 });
 
 var characteristicCmd;
@@ -23,7 +43,7 @@ var device;
 const encoder = new TextEncoder('utf-8');
 
 async function Scan() {
-	AppendLog("Scanning...\n");
+	AppendLogLine("Scanning...");
 	try {
 		device = await navigator.bluetooth.requestDevice({
 			filters: [{
@@ -31,18 +51,21 @@ async function Scan() {
 			}],
 			optionalServices: ['fe000000-fede-fede-0000-000000000000']});
 	} catch(err) {
-		AppendLog("Error: " + err + "\n");
+		AppendLogLine("Error: " + err);
 		return;
 	}
 	$("#title").text(device.name);
-	AppendLog("Connecting to " + device.name + "...\n");
+	AppendLogLine("Connecting to '" + device.name + "'. Please wait...");
+	$("body").css("cursor", "progress");
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
-	AppendLog("Connected!\n");
+	AppendLogLine("Connected!");
 	$("#div-scan").hide();
 	$("#btn-reconnect").show();
+	$(".top-buttons").show();
 	SendCommand("?");
-	$("#oscillators").show();
+	$("#command-div").show();
+	$("body").css("cursor", "default");
 }
 
 async function Disconnect() {
@@ -84,6 +107,7 @@ async function connectDeviceAndCacheCharacteristics() {
 		await characteristicCmd.startNotifications();
 	}
 	catch (err) {
+		$("body").css("cursor", "default");
 		alert(err);
 	}
 	$("#oscillators").show();
@@ -121,6 +145,10 @@ function AppendLog(value) {
 	cmdOut.scrollTop(cmdOut[0].scrollHeight - cmdOut.height());
 }
 
+function AppendLogLine(value) {
+	AppendLog(value + "\n");
+}
+
 function GenerateOscillatorsUI() {
 	for (let i = 2; i <= 4; ++i) {
 		let clone = $("#osc-1").clone();
@@ -137,25 +165,30 @@ function GenerateOscillatorsUI() {
 
 async function SendConsoleCommand() {
 	let cmd = $("#command").val();
+	AppendLogLine("> " + cmd);
 	await SendCommand(cmd);
 	$("#command").val("");
 }
 
 function ShowFreqValue(osc, value) {
-	let prevValue = $("#slider-freq-" + osc).val();
+	let prevValue = $("#slider-freq-" + osc).attr("data-prev-value");
 	if (prevValue != value) {
-		$("#freq-" + osc).text(parseFloat(value).toFixed(2));
+		$("#freq-" + osc).text(parseFloat(value).toFixed(2)).css('color', 'var(--freq-color)');;
 		$("#slider-freq-" + osc).val(value);
+		$("#slider-freq-" + osc).attr("data-prev-value", value);
+		$("#freq-div-" + osc).stop(true,true);
 		$("#freq-div-" + osc).effect('highlight',{},500); 
 	}
 }
 // value: 0-1023
 function ShowDutyValue(osc, value) {
-	let prevValue = $("#slider-duty-" + osc).val();
-	let percentage = value * 100 / 1023;
-	if (prevValue != percentage) {
+	let prevValue = $("#slider-duty-" + osc).attr("data-prev-value");
+	if (prevValue != value) {
+		let percentage = value * 100 / 1023;
 		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0));
 		$("#slider-duty-" + osc).val(percentage);
+		$("#slider-duty-" + osc).attr("data-prev-value", value);
+		$("#duty-div-" + osc).stop(true,true);
 		$("#duty-div-" + osc).effect('highlight',{},500); 
 	}
 }
@@ -165,4 +198,35 @@ async function SendCommand(cmd) {
 		let value = encoder.encode(cmd);
 		await characteristicCmd.writeValue(value);
 	}
+}
+
+async function FreqSliderInput(osc, value) {
+	let msg = "";
+	for(let i = 1; i < osc; ++i) {
+		msg += "-1,";
+	}
+	msg += value;
+	await SendCommand(msg);
+}
+
+function SlidingFreq(osc, value) {
+	// User is sliding the freq slider, show a visual feedback
+	$("#freq-" + osc).text(parseFloat(value).toFixed(2)).css('color', 'var(--running-freq-color)');
+}
+
+async function DutySliderInput(osc, value) {
+	let duty = value * 1023 / 100;
+	let msg = "/";
+	for(let i = 1; i < osc; ++i) {
+		msg += "-1,";
+	}
+	msg += duty;
+	await SendCommand(msg);
+}
+
+async function Save() {
+	await SendCommand("set");
+}
+async function Load() {
+	await SendCommand("reset");
 }

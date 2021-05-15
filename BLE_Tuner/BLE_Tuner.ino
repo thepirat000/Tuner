@@ -59,8 +59,8 @@ bool debug_ble = false; // Debug via BLE
 
 // Songs format: OriginalFrequencyMultipliersCSV:DurationInSeconds[:DutiesCSV]|...
 std::vector<String> _songs = {
-  ".5,.33:4|.33,.5:4|.25,2:2.5|2,.25:4|1.5,3:2|3,1.5:4|1,2:4|.125,.125:2|4,2:2|.5,4:2|1.5,3:2",
-  "1.5,1.33:4|1.33,1.5:4|.25,1.25:3|2,.25:4|.5,3:2|3,.5:2|1,2:6|1.125,1.125:2|4,2:2|.5,2.5:2|2.5,.5:2",
+  ".5,.33,.5,.33:4|.33,.5,.33,.5:4|.25,2,.25,2:2.5|2,.25,2,.25:4|1.5,3,1.5,3:2|3,1.5,3,1.5:4|1,2,1,2:4|.125,.125,.125,.125:2|4,2,4,2:2|.5,4,.5,4:2|1.5,3,1.5,3:2",
+  "1.5,1.33,.25,1.25:4|1.33,1.5,1.5,1.33:4|.25,1.25,2,.25:3|2,.25,.5,3:4|.5,3,2,.25:2|3,.5,1,2:2|1,2,3,.5:6|1.125,1.125,4,2:2|4,2,1.125,1.125:2|.5,2.5,2.5,5:2|2.5,.5,.5,2.5:2",
   ".25,.25:1|.33,.33:1|.5,.5:1|.66,.66:1|1,1:1|2,2:1|3,3:1|4.02,4.02:1|5.02,5.02:1|6.03,6.03:1|7.05,7.05:1|10.14,10.14:1",
   ".25,.2:1|.4,.33:1|.5,1.5:1|1.66,.66:1|1,2:1|2,3:1|2,3:1|4,5:1|4,.25:1|7,6:1|6,7:1"
 };
@@ -109,7 +109,7 @@ void setup() {
   }
   else {
     //Initialize PWM on 0hz
-    Log("No valid freqs config file " + configValue);
+    Log("Invalid freqs file " + configValue);
     SetFreqsPWM();
   }
 
@@ -119,7 +119,7 @@ void setup() {
     UpdateDutyValues(configValue, false);
  } 
   else {
-    Log("No valid duties config file " + configValue);
+    Log("Invalid duties file " + configValue);
   }
   PrintValues(_freqs, _duties);
 }
@@ -142,7 +142,7 @@ void loop() {
 
   // Handle bluetooth reconnect
   if (!deviceConnected && oldDeviceConnected) {
-      Log("Will restart advertising");
+      Log("Restart advertising");
       delay(500); // give time to bluetooth stack 
       bleServer->startAdvertising(); // restart advertising
       oldDeviceConnected = deviceConnected;
@@ -176,13 +176,17 @@ void ProcessInput(String recv) {
     // RESET
     ResetFreqDuty();
   }
+  else if (recv.startsWith("set")) {
+    // SET
+    SetFreqDuty();
+  }
   else if (recv.startsWith("play")) {
     // PLAY
     ProcessPlayCommand(recv);
   }
   else if (recv.startsWith("debug")) {
     if (recv.length() == 5) {
-      Log("Will " + String(debug_ble ? "disable" : "enable") + " BLE debug");
+      Log(String(debug_ble ? "Disable" : "Enable") + " debug");
       debug_ble = !debug_ble;
     } else if (recv.length() > 6) {
       if (recv.substring(6).startsWith("1")) {
@@ -219,19 +223,20 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 // BLE Server callbacks
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* server) {
-      Log("Client connected...");
+      Log("Client connected");
       deviceConnected = true;
       SetBLEFreqValue();
       SetBLEDutyValue();
     };
     void onDisconnect(BLEServer* server) {
-      Log("Client disconnected...");
+      Log("Client disconnected");
       deviceConnected = false;
     }
 };
 
+// Load from config
 void ResetFreqDuty() {
-  Log("Will reset values");
+  Log("Load values");
   String configValue = GetConfigFreqs();
   if (configValue.length() > 0 && isDigit(configValue.charAt(0))) {
     UpdateFrequencyValues(configValue, false);
@@ -241,6 +246,13 @@ void ResetFreqDuty() {
     //Set the duties
     UpdateDutyValues(configValue, false);
   } 
+}
+
+// Save to config
+void SetFreqDuty() {
+  Log("Save values");
+  StoreConfigFreqs();
+  StoreConfigDuties();
 }
 
 void StartBLEServer() {
@@ -278,7 +290,7 @@ void AttachOutputPins() {
 
 // Freq newValue valid formats: d[,d,d,d]   d is a double
 void UpdateFrequencyValues(String newValue, bool isIncrement) {
-  Log("New freq value received: " + newValue);
+  Log("New freqs: " + newValue);
   if (isIncrement) {
     std::vector<double> increments = splitParseVector(newValue);
     for (size_t i = 0; i < increments.size(); ++i) {
@@ -288,15 +300,12 @@ void UpdateFrequencyValues(String newValue, bool isIncrement) {
     _freqs = splitParseVector(newValue, &_freqs);
   }
   SetFreqsPWM();
-  if (!isIncrement) {
-    StoreConfigFreqs();
-  }
   SetBLEFreqValue();
 }
 
 // Duty newValue valid formats: d[,d,d,d]   d is a double
 void UpdateDutyValues(String newValue, bool isIncrement) {
-  Log("New duty value received: " + newValue);
+  Log("New duties: " + newValue);
   if (isIncrement) {
     std::vector<double> increments = splitParseVector(newValue);
     for (size_t i = 0; i < increments.size(); ++i) {
@@ -306,20 +315,17 @@ void UpdateDutyValues(String newValue, bool isIncrement) {
     _duties = splitParseVector(newValue, &_duties);
   }
   SetDutiesPWM();
-  if (!isIncrement) {
-    StoreConfigDuties();
-  }
   SetBLEDutyValue();
 }
 
 void MultiplyFreqsPWM(std::vector<double> &mult) {
   for (size_t i = 0; i < mult.size(); ++i) {
     if (mult[i] < 0) {
-      Log("Will mutiply " + String(i) + ": " + String(_cacheFreqs[i]) + " by " + String(-mult[i]) + " = " + String(_cacheFreqs[i] * -mult[i]));
+      Log("Mutiply " + String(i) + ": " + String(_cacheFreqs[i]) + " by " + String(-mult[i]) + " = " + String(_cacheFreqs[i] * -mult[i]));
       _freqs[i] = _cacheFreqs[i] * -mult[i];
     }
     else {    
-      Log("Will mutiply " + String(i) + ": " + String(_freqs[i]) + " by " + String(mult[i]) + " = " + String(_freqs[i] * mult[i]));
+      Log("Mutiply " + String(i) + ": " + String(_freqs[i]) + " by " + String(mult[i]) + " = " + String(_freqs[i] * mult[i]));
       _freqs[i] = _freqs[i] * mult[i];
     }
     ledcWriteTone(i*2, _freqs[i]);
@@ -350,9 +356,9 @@ void SetDutiesPWM() {
 }  
 
 void PrintValues(std::vector<double> &f, std::vector<double> &d) {
-  Log("Freq values:");
+  Log("Status");
   for (size_t i = 0; i < f.size(); i++) {
-    Log("  " + String(i) + ": " + String(f[i]) + " (Hz) Duty: " + String(d[i]));
+    Log(String(i) + ": " + String(f[i]) + " Hz. D: " + String(d[i]));
   }
 }
 
@@ -518,7 +524,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
   String song = _songs[songIndex];
   std::default_random_engine rndSeeded(variation);
   String variationString = variation < 0 ? "original variation" : variation > 0 ? ("variation #" + String(variation)) : "random variation";
-  Log("Will play song '" + song + "' " + variationString + " on " + String(repeat) + " iterations at speed " + String(speed) + "x");
+  Log("Play song '" + song + "' " + variationString + " on " + String(repeat) + " it. @ " + String(speed) + "x");
   if (song.length() > 0) {
     Log("Begin song");
     stop = false;
@@ -535,7 +541,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
       // Read and play
       for(size_t i = 0; i < steps.size(); ++i) {
         if (stop) {
-          Log("Stopping...");
+          Log("Stopping");
           ResetFreqDuty();
           return;
         }
