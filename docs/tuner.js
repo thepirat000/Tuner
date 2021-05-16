@@ -74,6 +74,7 @@ async function Scan() {
 			optionalServices: ['fe000000-fede-fede-0000-000000000000']});
 	} catch(err) {
 		AppendLogLine("Error: " + err);
+		HideOscillators();
 		return;
 	}
 	$("#title").text(device.name);
@@ -81,12 +82,23 @@ async function Scan() {
 	ShowWaitCursor();
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
+	SendCommand("?");
+	ShowOscillators();
+	HideWaitCursor();
+}
+
+function ShowOscillators() {
 	$("#div-scan").hide();
 	$("#btn-reconnect").show();
 	$(".top-buttons").show();
-	SendCommand("?");
 	$("#command-div").show();
-	HideWaitCursor();
+}
+
+function HideOscillators() {
+$("#div-scan").hide();
+	$("#btn-reconnect").hide();
+	$(".top-buttons").hide();
+	$("#command-div").hide();
 }
 
 async function Disconnect() {
