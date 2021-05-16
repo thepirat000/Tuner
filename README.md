@@ -116,13 +116,14 @@ Example:
 #### Play a song
 
 Format: play SongIndex[,Iterations[,Speed[,Variation]]]
-Being: SongIndex=The song index to play
-	   Iterations=Times to repeat the song (default is 1)
-	   Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
-	   Variation=(optional) number 
-			- > 0: randomize the steps order with the given number as seed. 
-			- = 0: pseudo randomize steps
-			- < 0: no randomizing (default)
+Being: 
+	- SongIndex=The song index to play
+	- Iterations=Times to repeat the song (default is 1)
+	- Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
+	- Variation=(optional) number:
+		- > 0: randomize the steps order with the given number as seed. 
+		- = 0: pseudo randomize steps
+		- < 0: no randomizing (default)
 
 Examples:
 
@@ -137,6 +138,43 @@ Examples:
 
 - Play the song at index 0, Repeat 2 times, at 1.5x speed, using a randomization for the steps with seed = 5
 `play 0,2,1.5,5`
+
+### Song format
+Format: DefaultStepType,StepsPSV
+
+Being
+	- DefaultStepType:
+		- F: Set the base and current frequency
+		- f: Set the current frequency
+		- M: Multiply the base frequency
+		- m: Multiply the current frequency
+		- A: Increment the base frequency
+		- a: Increment the current frequency 
+
+	- StepsPSV: Pipe (|) separated list of steps
+		Step format: [StepType]OperandValuesCSV:DurationInSeconds[:DutiesCSV]
+		Being
+			- StepType: One of 
+				- F: Set the base and current frequency
+				- f: Set the current frequency
+				- M: Multiply the base frequency and set current as base * operand
+				- m: Multiply the current frequency
+				- A: Increment the base frequency and set current as base + operand
+				- a: Increment the current frequency 
+				- =: Repeat the step #operand (first step is 1, etc)
+
+### Sample Song:
+`mF440,520:1:512,512|2,1.5:1|f460,540:2|a1,1:1|=4|A10:1`
+
+- Description
+
+Default step type is "m"
+1st step: Set the first two oscillators base frequencies to 440 and 520 hz respectively, set the first two oscillator duties to 512, and wait 1 second
+2nd step: Multiply the first two oscillators current frequencies by 2 and 1.5 respectively, and wait 1 second
+3rd step: Set the first two oscillators current frequencies to 460 and 540 hz respectively, and wait 2 seconds
+4th step: Increment the first two oscillators current frequencies by 1, and wait 1 second
+5th step: Repeat the last step: increment the first two oscillators current frequencies by 1, and wait 1 second
+6th step: Set the first oscillator value as the base frequency + 10 hz, and wait 1 second
 
 #### Stop playing a song
 Will stop playing the current song (only available via BLE)
@@ -160,5 +198,6 @@ Notify the BLE clients for the current frequencies and duties and prints the cur
 
 Example:
 `?` 
+
 
 

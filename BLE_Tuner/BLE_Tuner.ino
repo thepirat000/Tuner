@@ -57,12 +57,11 @@ bool oldDeviceConnected = false;
 bool stop = false;  // Stop playing flag
 bool debug_ble = false; // Debug via BLE
 
-// Songs format: OriginalFrequencyMultipliersCSV:DurationInSeconds[:DutiesCSV]|...
+// Songs format: Check README.md
 std::vector<String> _songs = {
-  ".5,.33,.5,.33:4|.33,.5,.33,.5:4|.25,2,.25,2:2.5|2,.25,2,.25:4|1.5,3,1.5,3:2|3,1.5,3,1.5:4|1,2,1,2:4|.125,.125,.125,.125:2|4,2,4,2:2|.5,4,.5,4:2|1.5,3,1.5,3:2",
-  "1.5,1.33,.25,1.25:4|1.33,1.5,1.5,1.33:4|.25,1.25,2,.25:3|2,.25,.5,3:4|.5,3,2,.25:2|3,.5,1,2:2|1,2,3,.5:6|1.125,1.125,4,2:2|4,2,1.125,1.125:2|.5,2.5,2.5,5:2|2.5,.5,.5,2.5:2",
-  ".25,.25:1|.33,.33:1|.5,.5:1|.66,.66:1|1,1:1|2,2:1|3,3:1|4.02,4.02:1|5.02,5.02:1|6.03,6.03:1|7.05,7.05:1|10.14,10.14:1",
-  ".25,.2:1|.4,.33:1|.5,1.5:1|1.66,.66:1|1,2:1|2,3:1|2,3:1|4,5:1|4,.25:1|7,6:1|6,7:1"
+  "M.5,.33,.5,.33:4|.33,.5,.33,.5:4|.25,2,.25,2:2.5|2,.25,2,.25:4|1.5,3,1.5,3:2|3,1.5,3,1.5:4|1,2,1,2:4|.125,.125,.125,.125:2|4,2,4,2:2|.5,4,.5,4:2|1.5,3,1.5,3:2",
+  "M1.5,1.33,.25,1.25:4|1.33,1.5,1.5,1.33:4|.25,1.25,2,.25:3|2,.25,.5,3:4|.5,3,2,.25:2|3,.5,1,2:2|1,2,3,.5:6|1.125,1.125,4,2:2|4,2,1.125,1.125:2|.5,2.5,2.5,5:2|2.5,.5,.5,2.5:2",
+  "A-5,-5,-5,-5:1|a1,1,1,1:1|=2|=2|=2|=2|=2|=2|=2|=2|=2|A0,0,0,0:0"
 };
 
 // Prototypes
@@ -121,6 +120,7 @@ void setup() {
   else {
     Log("Invalid duties file " + configValue);
   }
+  _cacheFreqs = _freqs;
   PrintValues(_freqs, _duties);
 }
 
@@ -200,11 +200,15 @@ void ProcessInput(String recv) {
     SetBLEFreqValue();
     SetBLEDutyValue();
   }
-  else if (isDigit(recv.charAt(0)) || recv.charAt(0) == '-') {
+  else if (isOperand(recv)) {
     // Frequencies (in hz)
     UpdateFrequencyValues(recv, false);
   }
   PrintValues(_freqs, _duties);  
+}
+
+bool isOperand(String str) {
+  return isDigit(str.charAt(0)) || str.charAt(0) == '-' || str.charAt(0) == '.';
 }
 
 // BLE characteristics Callbacks
@@ -530,10 +534,13 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
   String song = _songs[songIndex];
   std::default_random_engine rndSeeded(variation);
   String variationString = variation < 0 ? "original variation" : variation > 0 ? ("variation #" + String(variation)) : "random variation";
-  Log("Play song '" + song + "' " + variationString + " on " + String(repeat) + " it. @ " + String(speed) + "x");
+  Log("Play song " + String(songIndex) + " " + variationString + " on " + String(repeat) + " it. @ " + String(speed) + "x");
   if (song.length() > 0) {
     Log("Begin song");
     stop = false;
+    char defaultType = song.charAt(0);
+    song = song.substring(1);
+    
     std::vector<String> steps = splitString(song, '|');
     for(int times = 0; times < repeat; ++times) {
       Log("Repeat " + String(times+1) + "/" + String(repeat));
@@ -551,20 +558,58 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
           ResetFreqDuty();
           return;
         }
-        Log("  Step " + String(i+1) + "/" + String(steps.size()));
-        std::vector<String> values = splitString(steps[i], ':');
-        std::vector<double> freqMults;
-        std::vector<double> duties;
-        if (values.size() > 0) {
-          // set frequencies 
-          freqMults = splitParseVector(values[0]);
-          for(size_t oscIndex = 0; oscIndex < freqMults.size(); ++oscIndex) {
-            _freqs[oscIndex] = _cacheFreqs[oscIndex] * freqMults[oscIndex];
-            Log("    Set " + String(oscIndex) + " freq to " + String(_cacheFreqs[oscIndex]) + " * " + String(freqMults[oscIndex]) + " = " + String(_freqs[oscIndex]) + " Hz");
-            ledcWriteTone(oscIndex*2, _freqs[oscIndex]);
-          }
-          SetBLEFreqValue();
+        
+        std::vector<String> values;
+        if (steps[i].charAt(0) == '=') {
+          // Copy step
+          int copyStep = steps[i].substring(1).toInt();
+          Log(" Copy step at index " + String(copyStep-1));
+          values = splitString(steps[copyStep-1], ':');
+        } 
+        else {
+          values = splitString(steps[i], ':');
         }
+
+        char stepType = defaultType;
+        if (!isOperand(values[0])) {
+          stepType = values[0].charAt(0);
+          values[0] = values[0].substring(1);
+        }    
+        
+        Log(" Step " + String(i+1) + "/" + String(steps.size()) + " " + stepType);
+        
+        std::vector<double> operands = splitParseVector(values[0]);
+        // set frequencies 
+        for(size_t oscIndex = 0; oscIndex < operands.size(); ++oscIndex) {
+          switch (stepType) {
+            case 'F': // Set base and current freq
+              _cacheFreqs[oscIndex] = operands[oscIndex];
+              _freqs[oscIndex] = operands[oscIndex];
+              break;
+            case 'f': // Set current freq
+              _freqs[oscIndex] = operands[oscIndex];
+              break;
+            case 'M': // Multiply base
+              _freqs[oscIndex] = _cacheFreqs[oscIndex] * operands[oscIndex];
+              break;
+            case 'm': // Multiply current
+              _freqs[oscIndex] = _freqs[oscIndex] * operands[oscIndex];
+              break;
+            case 'A': // Add base
+              _freqs[oscIndex] = _cacheFreqs[oscIndex] + operands[oscIndex];
+              break;
+            case 'a': // Add current
+              _freqs[oscIndex] = _freqs[oscIndex] + operands[oscIndex];
+              break;
+            default:
+              break;
+          }
+          Log("  Set " + String(oscIndex) + " freq to " + String(_freqs[oscIndex]) + " Hz");
+          ledcWriteTone(oscIndex*2, _freqs[oscIndex]);
+        }
+        SetBLEFreqValue();
+
+        std::vector<double> duties;
         if (values.size() > 2) {
           // Set duties
           duties = splitParseVector(values[2]);
