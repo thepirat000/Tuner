@@ -10,7 +10,7 @@
   --osc-color: #F9E79F;
   --osc-shadow-color: #D4AC0D;
   --freq-color: #229954;
-  --running-freq-color: #28B463;
+  --running-freq-color: #909497;
   --border-color: #7F8C8D;
   --config-height: 150px;
 }
@@ -143,12 +143,17 @@ button {
 	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
 	font-size: small;
 	background-color: var(--console-background-color);
-	border: 0;
+	border: 1px solid #BDC3C7;
+	resize: vertical;
 }
 
 .command-input {
 	background-color: var(--console-background-color);
 	float:left;
+	border: 1px solid #BDC3C7;
+	margin-left: 2px;
+	height: 24px;
+	padding-left: 4px;
 }
 
 .console {
@@ -264,4 +269,8 @@ button {
 	margin: auto; 
 	width: 142px;
 	background-color: #FCF3CF;
+}
+
+.clear-button {
+	float:right;
 }

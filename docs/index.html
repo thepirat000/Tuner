@@ -40,7 +40,7 @@
 				<div style="float:right;"><button id="btn-save" class="save-button">Save</button></div>
 			</div>
 			
-			<div id="oscillators" style="display:none;">
+			<div id="oscillators" style="">
 				<div id="osc-1" class="oscillator">
 					<div class="id-div">
 						<span class="no-select">#<span id="osc-id-1" class="osc-number no-select">1</span></span>
@@ -48,8 +48,8 @@
 					<div class="config-container">
 						<div class="freq-div" id="freq-div-1">
 							<p class="mini-text no-select">Frequency</p>
-							<span id="freq-1" class="freq no-select">9876.54</span><span class="freq-hz-text no-select"> Hz</span>
-							<div class="separator"></div>
+							<span id="freq-1" class="freq no-select">440</span><span class="freq-hz-text no-select"> Hz</span>
+							
 							<input id="slider-freq-1" class="slider" type="range" min="0" max="4000" value="440" data-prev-value="440" />
 							
 							<div class="op-container">
@@ -73,7 +73,7 @@
 								<p class="mini-text no-select">Duty cycle</p>
 								<span id="duty-text-1" class="duty no-select" >50</span><span class="freq-hz-text no-select"> %</span>
 							</div>
-							<div class="separator"></div>
+							
 							<input id="slider-duty-1" class="slider" type="range" min="0" max="100" value="50" data-prev-value="512" />
 							<p class="mini-text">Increment</p>
 							<input id="decr-duty-1" type="button" class="step-button" value="-" />
@@ -97,9 +97,11 @@
 						<input type="checkbox" id="debug" name="debug" />
 						<label for="debug" class="no-select">debug</label>
 					</div>
-					<div class="separator"></div>
 					<div style="position: relative;">
 						<textarea id="command-output" class="command-output" readonly></textarea>
+					</div>
+					<div style="width:100%; height: 20px;">
+						<input id="btn-clear" type="button" class="clear-button" value="Clear output" />
 					</div>
 				</div>
 			</div>

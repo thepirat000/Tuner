@@ -9,6 +9,9 @@ $(document).ready(function () {
 	$("#btn-save").click(async function(e) {
 		await Save();
 	});
+	$("#btn-clear").click(function(e) {
+		Clear();
+	});
 	$("#debug").change(async function(e) {
 		let cmd = "debug " + (this.checked ? "1" : "0");
 		await SendCommand(cmd);
@@ -185,7 +188,7 @@ async function SendConsoleCommand() {
 function ShowFreqValue(osc, value) {
 	let prevValue = $("#slider-freq-" + osc).attr("data-prev-value");
 	if (prevValue != value) {
-		$("#freq-" + osc).text(parseFloat(value).toFixed(2)).css('color', 'var(--freq-color)');
+		$("#freq-" + osc).text(parseInt(value)).css('color', 'var(--freq-color)');
 		$("#slider-freq-" + osc).val(value);
 		$("#slider-freq-" + osc).attr("data-prev-value", value);
 		$("#freq-div-" + osc).stop(true,true);
@@ -223,7 +226,7 @@ async function FreqSliderInput(osc, value) {
 
 function SlidingFreq(osc, value) {
 	// User is sliding the freq slider, show a visual feedback
-	$("#freq-" + osc).text(parseFloat(value).toFixed(2)).css('color', 'var(--running-freq-color)');
+	$("#freq-" + osc).text(parseInt(value)).css('color', 'var(--running-freq-color)');
 }
 
 function SlidingDuty(osc, value) {
@@ -233,7 +236,7 @@ function SlidingDuty(osc, value) {
 
 
 async function DutySliderInput(osc, value) {
-	let duty = value * 1023 / 100;
+	let duty = parseInt(value * 1023 / 100);
 	let msg = "/";
 	for(let i = 1; i < osc; ++i) {
 		msg += "-1,";
@@ -244,9 +247,11 @@ async function DutySliderInput(osc, value) {
 
 async function Save() {
 	await SendCommand("set");
+	AppendLogLine("Saved");
 }
 async function Load() {
 	await SendCommand("reset");
+	AppendLogLine("Loaded");
 }
 
 function AllDigitsOrComma(str) {
@@ -260,4 +265,8 @@ function ShowWaitCursor() {
 function HideWaitCursor() {
 	document.documentElement.style.cursor = 'default';
 	$("input").css("cursor", "default");
+}
+
+function Clear() {
+	$("#command-output").val("");
 }
