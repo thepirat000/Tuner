@@ -43,11 +43,11 @@
 				<div style="float:right;"><button id="btn-save" class="save-button">Save</button></div>
 			</div>
 			
-			<div id="oscillators" style="">
+			<div id="oscillators" style="display:none;">
 				<div id="osc-1" class="oscillator">
 					<div class="id-div">
 						<span class="no-select">#<span id="osc-id-1" class="osc-number no-select">1</span></span>
-						<input type="checkbox" id="switch-osc-1" value="1" class="lcs_check switch" autocomplete="off" checked="checked" />
+						
 					</div>
 					<div class="config-container">
 						<div class="freq-div" id="freq-div-1">
@@ -73,14 +73,17 @@
 							<div class="separator"></div>
 						</div>
 						<div class="duty-div" id="duty-div-1">
-							<div>
-								<p class="mini-text no-select">Duty cycle</p>
+							
+							<p class="mini-text no-select">Duty</p>
+							<div style="text-align: left; margin-left: 16px;">
 								<span id="duty-text-1" class="duty no-select" >50</span><span class="freq-hz-text no-select"> %</span>
 							</div>
-							
-							<input id="slider-duty-1" class="slider" type="range" min="0" max="100" value="50" data-prev-value="512" />
 
-							<div class="separator"></div>
+							<input type="checkbox" id="switch-osc-1" value="1" class="lcs_check switch" autocomplete="off" checked="checked" />
+
+							<input id="slider-duty-1" class="slider" type="range" min="0" max="100" value="50" data-prev-value="512" />
+							
+
 						</div>
 					</div>
 				</div>

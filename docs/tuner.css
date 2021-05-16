@@ -216,15 +216,37 @@ button {
 
 .freq-div {
 	border: 1px solid var(--border-color);
-	width: 65%;
+	width: 75%;
 	float: left;
 	height: var(--config-height);
 }
 
 .duty-div {
 	border: 1px solid var(--border-color);
-	margin-left: 65%;
+	margin-left: 75%;
 	height: var(--config-height);
+}
+
+.duty-div .mini-text {
+	text-align: left;
+	margin-left: 26px;
+}
+
+.duty-div .slider {
+    -webkit-transform-origin: 0 100%;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform-origin: 0 100%;
+    -moz-transform: rotate(-90deg);
+    -ms-transform-origin: 0 100%;
+    -ms-transform: rotate(-90deg);
+    transform-origin: 0 100%;
+    transform: rotate(-90deg);    
+	
+	vertical-align:top;
+	display: inline-block;
+	margin-left: calc(100% - 4px);
+	margin-top: -25%;
+	width: 137px;
 }
 
 .config-container {
@@ -276,4 +298,5 @@ button {
 .clear-button {
 	float:right;
 }
+
 
