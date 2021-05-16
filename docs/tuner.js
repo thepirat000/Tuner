@@ -1,13 +1,9 @@
 $(document).ready(function () {
 	
-	$(".oscillator").accordion({
-      collapsible: true,
-	  active: true,
-	  heightStyle: "content",
-	  
-    });
+	$('.lcs_check').lc_switch();
 	
 	GenerateOscillatorsUI();
+	
 	$("#btn-scan").click(async function(e) {
 		await Scan();
 	});
@@ -63,6 +59,13 @@ $(document).ready(function () {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await HandleFreqStepButton(osc, $(this).attr('data-op'));
 	});	
+	
+	$('.oscillator').on("lcs-statuschange", ".lcs_check", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		let status = ($(this).is(':checked')) ? 'on' : 'off';
+		await HandleTurnOffOn(osc, status);
+	});	
+
 	
 });
 
@@ -342,3 +345,10 @@ async function HandleFreqStepButton(osc, op) {
 		await SendCommand(msg);
 	}
 }
+
+async function HandleTurnOffOn(osc, status) {
+	await SendCommand(status + " " + osc);
+}
+
+
+

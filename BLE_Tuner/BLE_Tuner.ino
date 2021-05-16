@@ -48,6 +48,7 @@ const int PINOUT[] = {2, 4, 5, 18};
 std::vector<double> _freqs = {0, 0, 0, 0};
 std::vector<double> _cacheFreqs = {0, 0, 0, 0};
 std::vector<double> _duties = {DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT};
+std::vector<int> _switches = {1, 1, 1, 1};
 std::random_device _rnd;
 BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicCmd;
 std::queue<String> _bleCommandBuffer;
@@ -74,6 +75,7 @@ void SetBLEFreqValue();
 void SetBLEDutyValue();
 void PrintValues(std::vector<double> &f, std::vector<double> &d);
 void AttachOutputPins();
+void DetachOutputPins();
 String GetConfigFreqs();
 String GetConfigDuties();
 void UpdateFrequencyValues(String newValue, bool isIncrement);
@@ -88,6 +90,7 @@ void ProcessPlayCommand(String command);
 void PlaySong(int songIndex, int repeat, double tempoDivider, int variation);
 void Log(String msg);
 std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
+void SetFreqPWM(int oscIndex, double freq, bool setup=false);
 
 // MAIN
 void setup() {
@@ -183,6 +186,9 @@ void ProcessInput(String recv) {
   else if (recv.startsWith("play")) {
     // PLAY
     ProcessPlayCommand(recv);
+  }
+  else if (recv.startsWith("on") || recv.startsWith("off")) {
+    ProcessOnOffCommand(recv);
   }
   else if (recv.startsWith("debug")) {
     if (recv.length() == 5) {
@@ -288,7 +294,12 @@ void AttachOutputPins() {
   for (int i = 0; i < MAX_OUTPUT; i++) { 
     // assign pin[0] to channel 0, pin[1] to channel 2
     // only using even channels since 0-1, 2-3, 4-5 share the same timer
-    ledcAttachPin(PINOUT[i], i*2);   
+    TurnOn(i);
+  }
+}
+void DetachOutputPins() {
+  for (int i = 0; i < MAX_OUTPUT; i++) { 
+    TurnOff(i);
   }
 }
 
@@ -332,7 +343,7 @@ void MultiplyFreqsPWM(std::vector<double> &mult) {
       Log("Mutiply " + String(i) + ": " + String(_freqs[i]) + " by " + String(mult[i]) + " = " + String(_freqs[i] * mult[i]));
       _freqs[i] = _freqs[i] * mult[i];
     }
-    ledcWriteTone(i*2, _freqs[i]);
+    SetFreqPWM(i, _freqs[i]);
   }
 }
 
@@ -344,8 +355,7 @@ void SetFreqsPWM() {
       freq = (double)_freqs[i];
       duty = (uint32_t)_duties[i];
     }
-    ledcSetup(i*2, freq, DUTY_RESOLUTION_BITS);
-    ledcWriteTone(i*2, freq);
+    SetFreqPWM(i, freq, true);
     // When changing freq, we have to re-set the duty
     if (duty != DUTY_CYCLE_DEFAULT) {
       ledcWrite(i*2, duty);
@@ -353,17 +363,28 @@ void SetFreqsPWM() {
   }
 }  
 
+void SetFreqPWM(int oscIndex, double freq, bool setup) {
+  if (setup) {
+    ledcSetup(oscIndex*2, freq, DUTY_RESOLUTION_BITS);
+  }
+  ledcWriteTone(oscIndex*2, freq);  
+}
+
 void SetDutiesPWM() {
   for (int i = 0; i < MAX_OUTPUT; i++) { 
     uint32_t duty = DUTY_CYCLE_DEFAULT;
     if (i <= _duties.size() - 1) {
       duty = (uint32_t)_duties[i];
     }
-    if (ledcRead(i*2) != duty) {
-      ledcWrite(i*2, duty);
-    }
+    SetDutyPWM(i, duty);
   }
 }  
+
+void SetDutyPWM(int oscIndex, uint32_t duty) {
+  if (ledcRead(oscIndex*2) != duty) {
+    ledcWrite(oscIndex*2, duty);
+  }
+}
 
 void PrintValues(std::vector<double> &f, std::vector<double> &d) {
   Log("Status");
@@ -503,6 +524,46 @@ String GetConfigDuties() {
   return value;
 }
 
+void ProcessOnOffCommand(String cmd) {
+  if (cmd.startsWith("on")) {
+    if (cmd.length() <= 3) {
+      Log("Turn on All");
+      AttachOutputPins();
+    }
+    else if (cmd.length() > 3) {
+      int oscIndex = cmd.substring(3).toInt() - 1;
+      if (oscIndex >= 0 && oscIndex <= MAX_OUTPUT) {
+        Log("Turn on " + String(oscIndex));
+        TurnOn(oscIndex);
+      }
+    }
+  }
+  else if (cmd.startsWith("off")) {
+    if (cmd.length() <= 4) {
+      Log("Turn off All");
+      DetachOutputPins();
+    }
+    else if (cmd.length() > 4) {
+      int oscIndex = cmd.substring(4).toInt() - 1;
+      if (oscIndex >= 0 && oscIndex <= MAX_OUTPUT) {
+        Log("Turn off " + String(oscIndex));
+        TurnOff(oscIndex);
+      }
+    }
+  }
+
+}
+
+void TurnOn(int oscIndex) {
+  ledcAttachPin(PINOUT[oscIndex], oscIndex*2);
+  _switches[oscIndex] = 1;
+}
+
+void TurnOff(int oscIndex) {
+  _switches[oscIndex] = 0;
+  ledcDetachPin(PINOUT[oscIndex]);
+}
+
 void ProcessPlayCommand(String command) {
   if (command.length() <= 5) {
     // Default params
@@ -605,7 +666,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
               break;
           }
           Log("  Set " + String(oscIndex) + " freq to " + String(_freqs[oscIndex]) + " Hz");
-          ledcWriteTone(oscIndex*2, _freqs[oscIndex]);
+          SetFreqPWM(oscIndex, _freqs[oscIndex]);
         }
         SetBLEFreqValue();
 

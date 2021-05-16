@@ -97,6 +97,33 @@ Examples:
 
 ## Generic commands
 
+### Switch oscillators
+
+#### Turn off 
+Turn off an oscillator
+Format: off [n]
+Being 
+	- n > 0: the oscillator number to turn off
+	- n missing: turn off all the oscillators (default)
+
+Example:
+`off 1`
+
+Will turn off the first oscillator
+
+#### Turn on
+Turn on an oscillator
+Format: on n
+Being 
+	- n > 0: the oscillator number to turn on
+	- n missing: turn off all the oscillators (default)
+
+Example:
+`on 1`
+
+Will turn on the first oscillator
+
+
 ### Persistence
 
 #### Set
