@@ -1,4 +1,12 @@
 $(document).ready(function () {
+	
+	$(".oscillator").accordion({
+      collapsible: true,
+	  active: true,
+	  heightStyle: "content",
+	  
+    });
+	
 	GenerateOscillatorsUI();
 	$("#btn-scan").click(async function(e) {
 		await Scan();
@@ -92,13 +100,15 @@ function ShowOscillators() {
 	$("#btn-reconnect").show();
 	$(".top-buttons").show();
 	$("#command-div").show();
+	$("#oscillators").show();
 }
 
 function HideOscillators() {
-$("#div-scan").hide();
+	$("#div-scan").show();
 	$("#btn-reconnect").hide();
 	$(".top-buttons").hide();
 	$("#command-div").hide();
+	$("#oscillators").hide();
 }
 
 async function Disconnect() {
@@ -146,9 +156,9 @@ async function connectDeviceAndCacheCharacteristics() {
 	}
 	catch (err) {
 		HideWaitCursor();
+		HideOscillators();
 		alert(err);
 	}
-	$("#oscillators").show();
 }
 
 function handleFreqValueChange(event) {
@@ -218,8 +228,9 @@ async function SendConsoleCommand() {
 
 function ShowFreqValue(osc, value) {
 	let prevValue = $("#slider-freq-" + osc).attr("data-prev-value");
+	$("#freq-" + osc).css('color', 'var(--freq-color)');
 	if (prevValue != value) {
-		$("#freq-" + osc).text(parseInt(value)).css('color', 'var(--freq-color)');
+		$("#freq-" + osc).text(parseInt(value));
 		$("#slider-freq-" + osc).val(value);
 		$("#slider-freq-" + osc).attr("data-prev-value", value);
 		$("#freq-div-" + osc).stop(true,true);
@@ -229,9 +240,10 @@ function ShowFreqValue(osc, value) {
 // value: 0-1023
 function ShowDutyValue(osc, value) {
 	let prevValue = $("#slider-duty-" + osc).attr("data-prev-value");
+	$("#duty-text-" + osc).css('color', 'var(--freq-color)');
 	if (prevValue != value) {
 		let percentage = value * 100 / 1023;
-		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0)).css('color', 'var(--freq-color)');
+		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0));
 		$("#slider-duty-" + osc).val(percentage);
 		$("#slider-duty-" + osc).attr("data-prev-value", value);
 		$("#duty-div-" + osc).stop(true,true);
