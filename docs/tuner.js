@@ -40,7 +40,22 @@ $(document).ready(function () {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		SlidingDuty(osc, parseFloat(this.value));
 	});
+	
+	$('.freq-div').on("click", ".freq", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		await ChangeFreqManual(osc, $(this).text());
+	});	
+	
+	$('.duty-div').on("click", ".duty", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		await ChangeDutyManual(osc, $(this).text());
+	});
 
+	$('.freq-div').on("click", ".step-button", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		await HandleFreqStepButton(osc, $(this).attr('data-op'));
+	});	
+	
 });
 
 var characteristicCmd;
@@ -164,6 +179,10 @@ function AppendLogLine(value) {
 	AppendLog(value + "\n");
 }
 
+function Clear() {
+	$("#command-output").empty();
+}
+
 function GenerateOscillatorsUI() {
 	for (let i = 2; i <= 4; ++i) {
 		let clone = $("#osc-1").clone();
@@ -267,6 +286,35 @@ function HideWaitCursor() {
 	$("input").css("cursor", "default");
 }
 
-function Clear() {
-	$("#command-output").val("");
+async function ChangeFreqManual(osc, currValue) {
+	let input = prompt("Enter the new frequency (in Hertz) for OSC " + osc, currValue);
+	if (input) {
+		let freq = parseInt(input);
+		if (freq >= 0) {
+			await FreqSliderInput(osc, freq);
+		}
+	}
+}
+
+async function ChangeDutyManual(osc, currValue) {
+	let input = prompt("Enter the new duty cycle (0-100) for OSC " + osc, currValue);
+	if (input) {
+		let duty = parseInt(input);
+		if (duty >= 0) {
+			await DutySliderInput(osc, duty);
+		}
+	}
+}
+
+async function HandleFreqStepButton(osc, op) {
+	let operand = parseFloat((op == '+' || op == '-') ? $("#incr-freq-step-" + osc).val() : $("#mult-freq-step-" + osc).val());
+	if (operand > 0) {
+		operand = op == '-' ? (operand * -1) : op == '/' ? (1 / operand) : operand;
+		let msg = (op == '+' || op == '-') ? "+" : "*";
+		for(let i = 1; i < osc; ++i) {
+			msg += (op == '+' || op == '-') ? "0," : "1,";
+		}
+		msg += operand;
+		await SendCommand(msg);
+	}
 }

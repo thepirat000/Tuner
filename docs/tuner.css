@@ -145,6 +145,8 @@ button {
 	background-color: var(--console-background-color);
 	border: 1px solid #BDC3C7;
 	resize: vertical;
+	padding-left: 4px;
+	line-height: 1.25;
 }
 
 .command-input {
