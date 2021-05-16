@@ -335,11 +335,17 @@ void MultiplyFreqsPWM(std::vector<double> &mult) {
 void SetFreqsPWM() {
   for (int i = 0; i < MAX_OUTPUT; i++) { 
     double freq = 0;
+    uint32_t duty = DUTY_CYCLE_DEFAULT;
     if (i <= _freqs.size() - 1) {
       freq = (double)_freqs[i];
+      duty = (uint32_t)_duties[i];
     }
     ledcSetup(i*2, freq, DUTY_RESOLUTION_BITS);
     ledcWriteTone(i*2, freq);
+    // When changing freq, we have to re-set the duty
+    if (duty != DUTY_CYCLE_DEFAULT) {
+      ledcWrite(i*2, duty);
+    }
   }
 }  
 
