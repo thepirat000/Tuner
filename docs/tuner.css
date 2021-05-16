@@ -141,6 +141,7 @@ button {
 	width: calc(100% - 6px); 
 	height: 120px;  
 	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
+	font-size: small;
 	background-color: var(--console-background-color);
 	border: 0;
 }

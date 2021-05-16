@@ -24,7 +24,6 @@ $(document).ready(function () {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await FreqSliderInput(osc, parseFloat(this.value));
 	});
-	
 	$('.freq-div').on("input", ".slider", function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		SlidingFreq(osc, parseFloat(this.value));
@@ -34,6 +33,11 @@ $(document).ready(function () {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await DutySliderInput(osc, parseFloat(this.value));
 	});	
+	$('.duty-div').on("input", ".slider", function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		SlidingDuty(osc, parseFloat(this.value));
+	});
+
 });
 
 var characteristicCmd;
@@ -56,16 +60,15 @@ async function Scan() {
 	}
 	$("#title").text(device.name);
 	AppendLogLine("Connecting to '" + device.name + "'. Please wait...");
-	$("body").css("cursor", "progress");
+	ShowWaitCursor();
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
-	AppendLogLine("Connected!");
 	$("#div-scan").hide();
 	$("#btn-reconnect").show();
 	$(".top-buttons").show();
 	SendCommand("?");
 	$("#command-div").show();
-	$("body").css("cursor", "default");
+	HideWaitCursor();
 }
 
 async function Disconnect() {
@@ -85,8 +88,11 @@ async function GetDuties() {
 }
 
 async function onDisconnected() {
-	console.log("Reconnect");
+	ShowWaitCursor();
+	AppendLogLine("Disconnected");
 	await connectDeviceAndCacheCharacteristics();
+	HideWaitCursor();
+	SendCommand("?");
 }
 
 async function connectDeviceAndCacheCharacteristics() {
@@ -94,6 +100,7 @@ async function connectDeviceAndCacheCharacteristics() {
 		return;
 	}
 	try {
+		AppendLogLine("Connecting");
 		const server = await device.gatt.connect();
 		const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
 		characteristicFreqs = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
@@ -105,9 +112,10 @@ async function connectDeviceAndCacheCharacteristics() {
 		characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
 		characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
 		await characteristicCmd.startNotifications();
+		AppendLogLine("Connected");
 	}
 	catch (err) {
-		$("body").css("cursor", "default");
+		HideWaitCursor();
 		alert(err);
 	}
 	$("#oscillators").show();
@@ -115,20 +123,24 @@ async function connectDeviceAndCacheCharacteristics() {
 
 function handleFreqValueChange(event) {
 	let freqs = new TextDecoder().decode(event.target.value);
-	console.log(freqs);
-	let freqsArray = freqs.split(',');
-	for (let i = 0; i < freqsArray.length; ++i) {
-		ShowFreqValue(i+1, freqsArray[i]);
-	}
+	console.log("F: " + freqs);
+	if (AllDigitsOrComma(freqs)) {
+		let freqsArray = freqs.split(',');
+		for (let i = 0; i < freqsArray.length; ++i) {
+			ShowFreqValue(i+1, freqsArray[i]);
+		}
+	} else { console.log("discarding freqs"); }
 }
 
 function handleDutyValueChange(event) {
 	let duties  = new TextDecoder().decode(event.target.value);
-	console.log(duties);
-	let dutiesArray = duties.split(',');
-	for (let i = 0; i < dutiesArray.length; ++i) {
-		ShowDutyValue(i+1, dutiesArray[i]);
-	}
+	console.log("D: " + duties);
+	if (AllDigitsOrComma(duties)) {
+		let dutiesArray = duties.split(',');
+		for (let i = 0; i < dutiesArray.length; ++i) {
+			ShowDutyValue(i+1, dutiesArray[i]);
+		}
+	} else { console.log("discarding duties"); }
 }
 
 function handleCmdValueChange(event) {
@@ -173,7 +185,7 @@ async function SendConsoleCommand() {
 function ShowFreqValue(osc, value) {
 	let prevValue = $("#slider-freq-" + osc).attr("data-prev-value");
 	if (prevValue != value) {
-		$("#freq-" + osc).text(parseFloat(value).toFixed(2)).css('color', 'var(--freq-color)');;
+		$("#freq-" + osc).text(parseFloat(value).toFixed(2)).css('color', 'var(--freq-color)');
 		$("#slider-freq-" + osc).val(value);
 		$("#slider-freq-" + osc).attr("data-prev-value", value);
 		$("#freq-div-" + osc).stop(true,true);
@@ -185,7 +197,7 @@ function ShowDutyValue(osc, value) {
 	let prevValue = $("#slider-duty-" + osc).attr("data-prev-value");
 	if (prevValue != value) {
 		let percentage = value * 100 / 1023;
-		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0));
+		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0)).css('color', 'var(--freq-color)');
 		$("#slider-duty-" + osc).val(percentage);
 		$("#slider-duty-" + osc).attr("data-prev-value", value);
 		$("#duty-div-" + osc).stop(true,true);
@@ -214,6 +226,12 @@ function SlidingFreq(osc, value) {
 	$("#freq-" + osc).text(parseFloat(value).toFixed(2)).css('color', 'var(--running-freq-color)');
 }
 
+function SlidingDuty(osc, value) {
+	// User is sliding the duty slider, show a visual feedback
+	$("#duty-text-" + osc).text(parseFloat(value).toFixed(0)).css('color', 'var(--running-freq-color)');
+}
+
+
 async function DutySliderInput(osc, value) {
 	let duty = value * 1023 / 100;
 	let msg = "/";
@@ -229,4 +247,17 @@ async function Save() {
 }
 async function Load() {
 	await SendCommand("reset");
+}
+
+function AllDigitsOrComma(str) {
+  return str.split('').every(c => c == ',' || c == '.' || (c >= '0' && c <= '9'));
+}
+
+function ShowWaitCursor() {
+	document.documentElement.style.cursor = 'wait';
+	$("input").css("cursor", "progress");
+}
+function HideWaitCursor() {
+	document.documentElement.style.cursor = 'default';
+	$("input").css("cursor", "default");
 }
