@@ -12,7 +12,7 @@
   --freq-color: #229954;
   --running-freq-color: #909497;
   --border-color: #7F8C8D;
-  --config-height: 138px;
+  --config-height: 120px;
 }
 
 * {
@@ -103,7 +103,6 @@ button {
 	cursor: default;
 }
 
-
 .note {
 	color: #626567;
 	vertical-align: 1.37em;
@@ -112,22 +111,11 @@ button {
 
 .freq-hz-text {
 	font-size: 18px;
-	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	cursor: default;
-}
-
-.duty {
-	font-family: 'digital-clock-font', Arial;
-	font-size: 48px;
-	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
-	color: var(--freq-color);
-	cursor: default;
-	margin-bottom: 5px;
 }
 
 .mini-text {
 	font-size: 12px;
-	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	margin: 2px 2px 2px 2px;
 	cursor: default;
 }
@@ -234,14 +222,30 @@ button {
 	height: var(--config-height);
 }
 
+.duty {
+	font-family: 'digital-clock-font', Arial;
+	font-size: 48px;
+	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
+	color: var(--freq-color);
+	cursor: default;
+	height: 47px;
+	
+	position: relative;
+	left: 25px;
+}
+
 .duty-div .mini-text {
 	text-align: center;
 	margin-left: 30px;
-	width: 50px;
+	width: 40px;
 }
 
-.duty-text {
-	text-align: center;
+.duty-perc-text {
+	position: relative; 
+	left:4px;
+	font-size: 18px;
+	cursor: default;
+	color: black;
 }
 
 .config-container {
@@ -295,10 +299,9 @@ button {
 }
 
 .set-duty-buttons {
-	margin-top: 16px;
+	margin-top: 17px;
 }
 
 .set-duty-buttons .step-button {
 	font-size: x-small;
-	width: 24px;
 }
