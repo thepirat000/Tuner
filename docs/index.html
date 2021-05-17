@@ -24,9 +24,7 @@
 	<script src="./ext/lc_switch.js" type="text/javascript"></script>
 	<link rel="stylesheet" href="./ext/lc_switch.css">
 	
-	<script src="./ext/freqtonotelist.js" type="text/javascript"></script>
-	
-
+	<script src="./ext/nu.js" type="text/javascript"></script>
 </head>
 <body>
     <div id="big-one" style="max-width: 980px; min-width: 360px; margin: 0 auto;">
@@ -54,9 +52,9 @@
 					</div>
 					<div class="config-container">
 						<div class="freq-div" id="freq-div-1">
-							<p class="mini-text no-select">Frequency</p>
+							<p class="mini-text no-select">Tone</p>
 							<span id="freq-1" class="freq no-select">440</span><span class="freq-hz-text no-select"> Hz</span>
-							<span id="freq-note-1" class="note">A4</span>
+							<span id="freq-note-1" class="note no-select">A4</span>
 							<input id="slider-freq-1" class="slider" type="range" min="0" max="4000" value="440" data-prev-value="440" />
 							
 							<div class="op-container">
@@ -82,6 +80,12 @@
 								<span id="duty-text-1" class="duty no-select" >50</span><span class="freq-hz-text no-select"> %</span>
 							</div>
 							<input id="slider-duty-1" class="slider" type="range" min="0" max="100" value="50" data-prev-value="512" />
+							
+							<div class="set-duty-buttons">
+								<input id="set-25-duty-1" type="button" class="step-button" value="25%" data-value="25" />
+								<input id="set-50-duty-1" type="button" class="step-button" value="50%" data-value="50" />
+								<input id="set-75-duty-1" type="button" class="step-button" value="75%" data-value="75" />
+							</div>
 						</div>
 					</div>
 				</div>

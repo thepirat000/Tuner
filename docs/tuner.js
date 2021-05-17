@@ -29,7 +29,7 @@ $(document).ready(function () {
 	
 	$('.freq-div').on("change", ".slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
-		await FreqSliderInput(osc, parseFloat(this.value));
+		await FreqInput(osc, parseFloat(this.value));
 	});
 	$('.freq-div').on("input", ".slider", function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
@@ -38,14 +38,14 @@ $(document).ready(function () {
 
 	$('.duty-div').on("change", ".slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
-		await DutySliderInput(osc, parseFloat(this.value));
+		await DutyInput(osc, parseFloat(this.value));
 	});	
 	$('.duty-div').on("input", ".slider", function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		SlidingDuty(osc, parseFloat(this.value));
 	});
 	
-	$('.freq-div').on("click", ".freq", async function(e) {
+	$('.freq-div').on("click", ".freq,.note", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await ChangeFreqManual(osc, $(this).text());
 	});	
@@ -66,6 +66,10 @@ $(document).ready(function () {
 		await HandleTurnOffOn(osc, status);
 	});	
 
+	$('.set-duty-buttons').on("click", ".step-button", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		await DutyInput(osc, parseFloat(this.attributes["data-value"].value));
+	});
 	
 });
 
@@ -271,12 +275,22 @@ function SlidingFreq(osc, value) {
 }
 
 function GetNote(freq) {
-	let fqd = freqToData(freq).split('\t');
-	let note = "N/A";
-	if (fqd && fqd.length > 1 && fqd[0] !== 'undefined') {
-		note = fqd[0] + fqd[1];
+	if (freq > 0) {
+		let note = new Note();
+		note.setFrequency(freq);
+		if (note.name) {
+			let notes = note.name.split('/');
+			if (notes.length > 1) {
+				if (notes[1][0] == 'E' || notes[1][0] == 'B') {
+					// Use bemol
+					return notes[1];
+				}
+				return notes[0];
+			}
+			return notes[0];
+		}
 	}
-	return note;
+	return "N/A";
 }
 
 function SlidingDuty(osc, value) {
@@ -284,8 +298,14 @@ function SlidingDuty(osc, value) {
 	$("#duty-text-" + osc).text(parseInt(value)).css('color', 'var(--running-freq-color)');
 }
 
-async function FreqSliderInput(osc, value) {
+async function FreqInput(osc, value) {
 	// User finished sliding freq slider
+	if (value < 0) {
+		value = 0;
+	}
+	if (value > 40000) {
+		value = 40000;
+	}
 	let msg = "";
 	for(let i = 1; i < osc; ++i) {
 		msg += "-1,";
@@ -294,9 +314,9 @@ async function FreqSliderInput(osc, value) {
 	await SendCommand(msg);
 }
 
-async function DutySliderInput(osc, value) {
+async function DutyInput(osc, value) {
 	// User finished sliding duty slider
-	let duty = parseInt(value * 1023 / 100);
+	let duty = value >= 100 ? 1023 : parseInt(value * 1024 / 100);
 	let msg = "/";
 	for(let i = 1; i < osc; ++i) {
 		msg += "-1,";
@@ -332,11 +352,19 @@ function HideWaitCursor() {
 }
 
 async function ChangeFreqManual(osc, currValue) {
-	let input = prompt("Enter the new frequency (in Hertz) for OSC " + osc, currValue);
+	let input = prompt("Enter the new frequency (in Hertz or note name) for OSC " + osc, currValue);
 	if (input) {
 		let freq = parseInt(input);
-		if (freq >= 0) {
-			await FreqSliderInput(osc, freq);
+		if (!isNaN(freq)) {
+			// Freq is a number in hertz
+			if (freq >= 0) {
+				await FreqInput(osc, freq);
+			}
+		} else {
+			// Freq is not a number, assuming it is a note
+			let note = new Note();
+			note.setName(input);
+			await FreqInput(osc, note.frequency);
 		}
 	}
 }
@@ -346,7 +374,7 @@ async function ChangeDutyManual(osc, currValue) {
 	if (input) {
 		let duty = parseInt(input);
 		if (duty >= 0) {
-			await DutySliderInput(osc, duty);
+			await DutyInput(osc, duty);
 		}
 	}
 }

@@ -235,29 +235,13 @@ button {
 }
 
 .duty-div .mini-text {
-	margin-left: 17px;
+	text-align: center;
+	margin-left: 30px;
+	width: 50px;
 }
 
 .duty-text {
 	text-align: center;
-	margin-right: 22px;
-}
-
-.duty-div .slider {
-    -webkit-transform-origin: 0 100%;
-    -webkit-transform: rotate(-90deg);
-    -moz-transform-origin: 0 100%;
-    -moz-transform: rotate(-90deg);
-    -ms-transform-origin: 0 100%;
-    -ms-transform: rotate(-90deg);
-    transform-origin: 0 100%;
-    transform: rotate(-90deg);    
-	
-	vertical-align:top;
-	display: inline-block;
-	margin-left: calc(100% - 4px);
-	margin-top: -25%;
-	width: 110px;
 }
 
 .config-container {
@@ -310,3 +294,6 @@ button {
 	float:right;
 }
 
+.set-duty-buttons {
+	margin-top: 16px;
+}

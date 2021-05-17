@@ -37,6 +37,7 @@ Docs/Links:
 #define CONFIG_DUTIES_FILE       "/config_duties.txt"
 #define LED_PIN 2
 #define MAX_OUTPUT 4
+#define MAX_FREQUENCY 40000
 #define DUTY_RESOLUTION_BITS 10
 #define DUTY_CYCLE_DEFAULT 512
 
@@ -364,6 +365,12 @@ void SetFreqsPWM() {
 }  
 
 void SetFreqPWM(int oscIndex, double freq, bool setup) {
+  if (freq < 0) {
+    freq = 0;
+  }
+  if (freq > MAX_FREQUENCY) {
+    freq = MAX_FREQUENCY;
+  }
   if (setup) {
     ledcSetup(oscIndex*2, freq, DUTY_RESOLUTION_BITS);
   }
@@ -619,7 +626,6 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
           ResetFreqDuty();
           return;
         }
-        
         std::vector<String> values;
         if (steps[i].charAt(0) == '=') {
           // Copy step
@@ -630,15 +636,12 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
         else {
           values = splitString(steps[i], ':');
         }
-
         char stepType = defaultType;
         if (!isOperand(values[0])) {
           stepType = values[0].charAt(0);
           values[0] = values[0].substring(1);
         }    
-        
         Log(" Step " + String(i+1) + "/" + String(steps.size()) + " " + stepType);
-        
         std::vector<double> operands = splitParseVector(values[0]);
         // set frequencies 
         for(size_t oscIndex = 0; oscIndex < operands.size(); ++oscIndex) {
