@@ -233,7 +233,9 @@ function ShowFreqValue(osc, value) {
 	let prevValue = $("#slider-freq-" + osc).attr("data-prev-value");
 	$("#freq-" + osc).css('color', 'var(--freq-color)');
 	if (prevValue != value) {
-		$("#freq-" + osc).text(parseInt(value));
+		let freq = parseInt(value);
+		$("#freq-" + osc).text(freq);
+		$("#freq-note-" + osc).text(GetNote(freq));
 		$("#slider-freq-" + osc).val(value);
 		$("#slider-freq-" + osc).attr("data-prev-value", value);
 		$("#freq-div-" + osc).stop(true,true);
@@ -261,7 +263,29 @@ async function SendCommand(cmd) {
 	}
 }
 
+function SlidingFreq(osc, value) {
+	// User is sliding the freq slider, show a visual feedback
+	let freq = parseInt(value);
+	$("#freq-" + osc).text(freq).css('color', 'var(--running-freq-color)');
+	$("#freq-note-" + osc).text(GetNote(freq));
+}
+
+function GetNote(freq) {
+	let fqd = freqToData(freq).split('\t');
+	let note = "N/A";
+	if (fqd && fqd.length > 1 && fqd[0] !== 'undefined') {
+		note = fqd[0] + fqd[1];
+	}
+	return note;
+}
+
+function SlidingDuty(osc, value) {
+	// User is sliding the duty slider, show a visual feedback
+	$("#duty-text-" + osc).text(parseInt(value)).css('color', 'var(--running-freq-color)');
+}
+
 async function FreqSliderInput(osc, value) {
+	// User finished sliding freq slider
 	let msg = "";
 	for(let i = 1; i < osc; ++i) {
 		msg += "-1,";
@@ -270,18 +294,8 @@ async function FreqSliderInput(osc, value) {
 	await SendCommand(msg);
 }
 
-function SlidingFreq(osc, value) {
-	// User is sliding the freq slider, show a visual feedback
-	$("#freq-" + osc).text(parseInt(value)).css('color', 'var(--running-freq-color)');
-}
-
-function SlidingDuty(osc, value) {
-	// User is sliding the duty slider, show a visual feedback
-	$("#duty-text-" + osc).text(parseFloat(value).toFixed(0)).css('color', 'var(--running-freq-color)');
-}
-
-
 async function DutySliderInput(osc, value) {
+	// User finished sliding duty slider
 	let duty = parseInt(value * 1023 / 100);
 	let msg = "/";
 	for(let i = 1; i < osc; ++i) {

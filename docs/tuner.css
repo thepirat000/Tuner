@@ -103,6 +103,13 @@ button {
 	cursor: default;
 }
 
+
+.note {
+	color: #626567;
+	vertical-align: 1.37em;
+	margin-left: -25px;
+}
+
 .freq-hz-text {
 	font-size: 18px;
 	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
@@ -302,5 +309,4 @@ button {
 .clear-button {
 	float:right;
 }
-
 
