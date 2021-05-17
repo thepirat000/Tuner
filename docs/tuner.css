@@ -229,7 +229,7 @@ button {
 	color: var(--freq-color);
 	cursor: default;
 	height: 40px;
-	margin-top: 7px;
+	margin-top: 2px;
 }
 
 .duty-text {

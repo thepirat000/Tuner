@@ -126,17 +126,17 @@ Will turn on the first oscillator
 
 ### Persistence
 
-#### Set
+#### Save
 Will save the frequency and duty values to their config file 
 
 Example:
-`set`
+`save`
 
-#### Reset
+#### Load
 Will load and set the frequency and duty values from the config file 
 
 Example:
-`reset`
+`load`
 
 ### Songs
 

@@ -326,13 +326,13 @@ async function DutyInput(osc, value) {
 }
 
 async function Save() {
-	await SendCommand("set");
+	await SendCommand("save");
 	$("#btn-save").stop(true,true);
 	$("#btn-save").effect('highlight',{},500); 
 	AppendLogLine("Saved");
 }
 async function Load() {
-	await SendCommand("reset");
+	await SendCommand("load");
 	$("#btn-load").stop(true,true);
 	$("#btn-load").effect('highlight',{},500); 
 	AppendLogLine("Loaded");

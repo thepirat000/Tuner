@@ -176,11 +176,11 @@ void ProcessInput(String recv) {
     recv = recv.substring(1);
     UpdateFrequencyValues(recv, true);
   }
-  else if (recv.startsWith("reset")) {
+  else if (recv.startsWith("load")) {
     // RESET
     ResetFreqDuty();
   }
-  else if (recv.startsWith("set")) {
+  else if (recv.startsWith("save")) {
     // SET
     SetFreqDuty();
   }
