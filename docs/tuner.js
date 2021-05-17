@@ -307,10 +307,14 @@ async function DutySliderInput(osc, value) {
 
 async function Save() {
 	await SendCommand("set");
+	$("#btn-save").stop(true,true);
+	$("#btn-save").effect('highlight',{},500); 
 	AppendLogLine("Saved");
 }
 async function Load() {
 	await SendCommand("reset");
+	$("#btn-load").stop(true,true);
+	$("#btn-load").effect('highlight',{},500); 
 	AppendLogLine("Loaded");
 }
 
