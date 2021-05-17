@@ -71,7 +71,7 @@ void setup(void);
 void loop(void);
 std::vector<double> splitParseVector(String msg, std::vector<double> *completeWith=nullptr);
 std::vector<String> splitString(String msg, const char delim);
-const char* join(std::vector<double> &v);
+const char* join(std::vector<double> &v, bool mustRound=false);
 void SetBLEFreqValue();
 void SetBLEDutyValue();
 void PrintValues(std::vector<double> &f, std::vector<double> &d);
@@ -403,7 +403,7 @@ void PrintValues(std::vector<double> &f, std::vector<double> &d) {
 }
 
 void SetBLEFreqValue() {
-  const char* strconfigValue = join(_freqs);
+  const char* strconfigValue = join(_freqs, true);
   pCharacteristicFreqs->setValue(strconfigValue);
   if (deviceConnected) {
     pCharacteristicFreqs->notify();
@@ -411,7 +411,7 @@ void SetBLEFreqValue() {
 }
 
 void SetBLEDutyValue() {
-  const char* strconfigValue = join(_duties);
+  const char* strconfigValue = join(_duties, true);
   pCharacteristicDuties->setValue(strconfigValue);
   if (deviceConnected) {
     pCharacteristicDuties->notify();
@@ -497,13 +497,13 @@ std::vector<std::string> SplitStringByNumber(const std::string &str, int len)
     return entries;
 }
 
-const char* join(std::vector<double> &v) {
+const char* join(std::vector<double> &v, bool mustRound) {
   std::stringstream ss;
   for (size_t i = 0; i < v.size(); ++i)
   {
     if(i != 0)
       ss << ",";
-    ss << v[i];
+    ss << (mustRound ? round(v[i]) : v[i]);
   }
   return ss.str().c_str();
 }

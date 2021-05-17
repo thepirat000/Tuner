@@ -364,7 +364,7 @@ async function ChangeFreqManual(osc, currValue) {
 			// Freq is not a number, assuming it is a note
 			let note = new Note();
 			note.setName(input);
-			await FreqInput(osc, note.frequency);
+			await FreqInput(osc, parseInt(note.frequency));
 		}
 	}
 }
