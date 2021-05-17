@@ -229,9 +229,10 @@ button {
 	color: var(--freq-color);
 	cursor: default;
 	height: 47px;
+}
+
+.duty-text {
 	
-	position: relative;
-	left: 25px;
 }
 
 .duty-div .mini-text {
@@ -241,8 +242,6 @@ button {
 }
 
 .duty-perc-text {
-	position: relative; 
-	left:4px;
 	font-size: 18px;
 	cursor: default;
 	color: black;
