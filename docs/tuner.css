@@ -223,14 +223,14 @@ button {
 
 .freq-div {
 	border: 1px solid var(--border-color);
-	width: 75%;
+	width: 70%;
 	float: left;
 	height: var(--config-height);
 }
 
 .duty-div {
 	border: 1px solid var(--border-color);
-	margin-left: 75%;
+	margin-left: 70%;
 	height: var(--config-height);
 }
 
@@ -296,4 +296,9 @@ button {
 
 .set-duty-buttons {
 	margin-top: 16px;
+}
+
+.set-duty-buttons .step-button {
+	font-size: x-small;
+	width: 24px;
 }
