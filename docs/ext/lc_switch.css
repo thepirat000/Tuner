@@ -1,7 +1,7 @@
 .lcs_wrap {
 	display: inline-block;	
 	direction: ltr;
-	height: 29px;
+	height: 20px;
     vertical-align: middle;
 	
 	float:right;
@@ -21,8 +21,6 @@
 	background: #ddd;
 	overflow: hidden;
 	cursor: pointer;
-	
-	margin-top: 10px;
 	
 	-webkit-transition: all .2s ease-in-out;  
 	-ms-transition: 	all .2s ease-in-out; 

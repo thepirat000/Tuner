@@ -224,11 +224,12 @@ button {
 
 .duty {
 	font-family: 'digital-clock-font', Arial;
-	font-size: 48px;
+	font-size: 38px;
 	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	color: var(--freq-color);
 	cursor: default;
-	height: 47px;
+	height: 40px;
+	margin-top: 7px;
 }
 
 .duty-text {
