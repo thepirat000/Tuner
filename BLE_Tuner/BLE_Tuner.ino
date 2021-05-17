@@ -284,10 +284,12 @@ void StartBLEServer() {
   pService->start();
   BLEAdvertising *pAdvertising = bleServer->getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
-  //pAdvertising->setScanResponse(false);
-  //pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
-  //BLEDevice::startAdvertising();
-  pAdvertising->start();
+  //TEST
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);
+  pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();
+  //pAdvertising->start();
 }
 
 // Helper methods
