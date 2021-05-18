@@ -308,7 +308,7 @@ async function FreqInput(osc, value) {
 	}
 	let msg = "";
 	for(let i = 1; i < osc; ++i) {
-		msg += "-1,";
+		msg += ",";
 	}
 	msg += value;
 	await SendCommand(msg);
@@ -319,7 +319,7 @@ async function DutyInput(osc, value) {
 	let duty = value >= 100 ? 1023 : parseInt(value * 1024 / 100);
 	let msg = "/";
 	for(let i = 1; i < osc; ++i) {
-		msg += "-1,";
+		msg += ",";
 	}
 	msg += duty;
 	await SendCommand(msg);
@@ -385,7 +385,7 @@ async function HandleFreqStepButton(osc, op) {
 		operand = op == '-' ? (operand * -1) : op == '/' ? (1 / operand) : operand;
 		let msg = (op == '+' || op == '-') ? "+" : "*";
 		for(let i = 1; i < osc; ++i) {
-			msg += (op == '+' || op == '-') ? "0," : "1,";
+			msg += ",";
 		}
 		msg += operand;
 		await SendCommand(msg);
