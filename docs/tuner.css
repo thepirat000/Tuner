@@ -11,9 +11,13 @@
   --osc-color: #F9E79F;
   --osc-shadow-color: #D4AC0D;
   --freq-color: #229954;
+  --duty-color: #229954;
   --running-freq-color: #909497;
+  --running-duty-color: #909497;
   --border-color: #7F8C8D;
-  --config-height: 116px;
+  --config-height: 120px;
+  --main-button-color: #0084ff;
+  --step-button-color: #75b936;
 }
 
 * {
@@ -40,11 +44,12 @@ body {
 }
 
 button {
-    background: #0084ff;
+    background: var(--main-button-color);
     border: none;
     border-radius: 5px;
-    padding: 8px 14px;
-    margin-top: 10px;
+    padding: 5px 12px;
+    margin-top: 6px;
+	margin-bottom: 6px;
     color: #fff;
     cursor: pointer;
     font-size: large;
@@ -55,9 +60,14 @@ button {
     border-radius: 4px;
     padding: 10px;
     font-size: xx-small;
-    text-align: center;
     transition: all 0.2s;
-    margin: 1em auto;
+    
+	margin: 1em auto;
+	
+	display: flex;
+	justify-content: center;
+	position: relative;
+	bottom: 0px;
 }
 
 /* Safari */
@@ -135,9 +145,9 @@ button {
 
 .command-output {
 	width: calc(100% - 6px); 
-	height: 120px;  
+	height: 80px;  
 	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
-	font-size: small;
+	font-size: x-small;
 	background-color: var(--console-background-color);
 	border: 1px solid #BDC3C7;
 	resize: vertical;
@@ -157,6 +167,10 @@ button {
 .console {
 	background-color: var(--console-background-color);
 	border: 1px solid var(--border-color);
+	font-size: x-small;
+	margin: 2px 2px 2px 2px;
+	cursor: default;
+	
 }
 
 #oscillators {
@@ -235,7 +249,7 @@ button {
 	font-family: 'digital-clock-font', Arial;
 	font-size: 38px;
 	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
-	color: var(--freq-color);
+	color: var(--duty-color);
 	cursor: default;
 	height: 40px;
 	margin-top: 2px;
@@ -273,13 +287,23 @@ button {
 }
 
 .step-button {
-	height: 24px;
+	height: 25px;
 	width: 32px;
+    background: var(--step-button-color);
+    border: none;
+    border-radius: 5px;
+    padding: 0px 0px;
+    margin-top: 0px;
+	margin-bottom: 0px;
+    color: #fff;
+    cursor: pointer;
+    font-size: large;
+	
 }
 
 .step {
 	width: 22px;
-	height: 20px;
+	height: 24px;
 	text-align: center;
 	color: #566573;
 }
@@ -302,8 +326,14 @@ button {
 
 .top-buttons {
 	margin: auto; 
-	width: 142px;
-	background-color: #FCF3CF;
+	display: flex;
+	align-items: center;
+	justify-content: space-evenly;
+	
+	background-color: var(--console-background-color);
+	border: 1px solid var(--border-color);
+	font-size: x-small;
+	
 }
 
 .clear-button {
@@ -314,3 +344,19 @@ button {
 .set-duty-buttons .step-button {
 	font-size: x-small;
 }
+
+.presets-text {
+	font-size: x-small;
+	margin-bottom: 4px;
+}
+
+.presets label {
+  display: inline-block;
+  text-align: center;
+  margin: 0px 10px 0px 0px;
+  font-size: x-small;
+}
+.presets label input[type="radio"] {
+  display: block;
+  margin: 0em 0em 0em 0em;
+}	

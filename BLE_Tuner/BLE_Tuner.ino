@@ -11,6 +11,7 @@ Docs/Links:
        https://www.arduino.cc/en/Reference/ArduinoBLE
        https://github.com/nkolban/esp32-snippets/blob/master/Documentation/BLE%20C%2B%2B%20Guide.pdf
        https://github.com/nkolban/ESP32_BLE_Arduino/blob/master/examples/BLE_notify/BLE_notify.ino
+       SourceCode: https://github.com/espressif/arduino-esp32/tree/master/libraries/BLE/src
 */
 
 // BLE Includes
@@ -51,9 +52,9 @@ Docs/Links:
 const int PINOUT[] = {2, 4, 5, 18}; 
 
 // Global vars
-std::vector<double> _freqs = {0, 0, 0, 0};
-std::vector<double> _cacheFreqs = {0, 0, 0, 0};
-std::vector<double> _duties = {DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT};
+std::vector<float> _freqs = {0, 0, 0, 0};
+std::vector<float> _cacheFreqs = {0, 0, 0, 0};
+std::vector<float> _duties = {DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT};
 std::vector<int> _switches = {1, 1, 1, 1};
 std::random_device _rnd;
 BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicCmd;
@@ -76,24 +77,24 @@ std::vector<String> _songs = {
 void setup(void);
 void loop(void);
 // def: default value to set when no value present (i.e. ,,440 means def,def,440). completeWith: vector to use to set the value when a negative value
-std::vector<double> splitParseVector(String msg, double def, std::vector<double> *completeWith=nullptr);
+std::vector<float> splitParseVector(String msg, float def, std::vector<float> *completeWith=nullptr);
 std::vector<String> splitString(String msg, const char delim);
-const char* join(std::vector<double> &v, bool mustRound=false);
+const char* join(std::vector<float> &v, bool mustRound=false);
 void NotifyBLEFreqValue();
 void NotifyBLEDutyValue();
-void PrintValues(std::vector<double> &f, std::vector<double> &d);
+void PrintValues(std::vector<float> &f, std::vector<float> &d);
 void AttachOutputPins();
 void DetachOutputPins();
 void UpdateFrequencyValues(String newValue, bool isIncrement);
 void UpdateDutyValues(String newValue, bool isIncrement);
 void SetFreqsPWM();
-void MultiplyFreqsPWM(std::vector<double> &mult);
+void MultiplyFreqsPWM(std::vector<float> &mult);
 void SetDutiesPWM();
 void ProcessPlayCommand(String command);
-void PlaySong(int songIndex, int repeat, double tempoDivider, int variation);
+void PlaySong(int songIndex, int repeat, float tempoDivider, int variation);
 void Log(String msg);
 std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
-void SetFreqPWM(int oscIndex, double freq, bool setup=false);
+void SetFreqPWM(int oscIndex, float freq, bool setup=false);
 std::vector<String> GetPreset(int pindex);
 void StorePreset(int pindex, std::vector<String> preset);
 
@@ -108,9 +109,7 @@ void setup() {
   
   AttachOutputPins();
   StartBLEServer();
-
   Load(0);
-  
   _cacheFreqs = _freqs;
   PrintValues(_freqs, _duties);
 }
@@ -156,7 +155,7 @@ void ProcessInput(String recv) {
   else if (recv.startsWith("*")) {
     // Frequencies (multipliers)
     recv = recv.substring(1);
-    std::vector<double> mult = splitParseVector(recv, 1.0);
+    std::vector<float> mult = splitParseVector(recv, 1.0);
     MultiplyFreqsPWM(mult);
     NotifyBLEFreqValue();
   }
@@ -251,9 +250,21 @@ void StartBLEServer() {
   bleServer = BLEDevice::createServer();
   bleServer->setCallbacks(new MyServerCallbacks());
   BLEService *pService = bleServer->createService(SERVICE_UUID);
+
+/*
+  pCharacteristicFreqs = BLECharacteristic(CHARACTERISTIC_FREQ_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY, 0, 4);
+  pCharacteristicDuties = BLECharacteristic(CHARACTERISTIC_DUTY_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY, 0, 4);
+  pCharacteristicCmd = BLECharacteristic(CHARACTERISTIC_CMD_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY, "");
+  pService->addCharacteristic(pCharacteristicFreqs);
+  pService->addCharacteristic(pCharacteristicDuties);
+  pService->addCharacteristic(pCharacteristicCmd);
+*/
+
+  
   pCharacteristicFreqs = pService->createCharacteristic(CHARACTERISTIC_FREQ_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   pCharacteristicDuties = pService->createCharacteristic(CHARACTERISTIC_DUTY_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   pCharacteristicCmd = pService->createCharacteristic(CHARACTERISTIC_CMD_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
+
 
   // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
   pCharacteristicFreqs->addDescriptor(new BLE2902());
@@ -286,11 +297,11 @@ void DetachOutputPins() {
   }
 }
 
-// Freq newValue valid formats: d[,d,d,d]   d is a double
+// Freq newValue valid formats: d[,d,d,d]   d is a float
 void UpdateFrequencyValues(String newValue, bool isIncrement) {
   Log("New freqs: " + newValue);
   if (isIncrement) {
-    std::vector<double> increments = splitParseVector(newValue, 0.0);
+    std::vector<float> increments = splitParseVector(newValue, 0.0);
     for (size_t i = 0; i < increments.size(); ++i) {
       _freqs[i] = _freqs[i] + increments[i];
     }
@@ -301,11 +312,11 @@ void UpdateFrequencyValues(String newValue, bool isIncrement) {
   NotifyBLEFreqValue();
 }
 
-// Duty newValue valid formats: d[,d,d,d]   d is a double
+// Duty newValue valid formats: d[,d,d,d]   d is a float
 void UpdateDutyValues(String newValue, bool isIncrement) {
   Log("New duties: " + newValue);
   if (isIncrement) {
-    std::vector<double> increments = splitParseVector(newValue, 0.0);
+    std::vector<float> increments = splitParseVector(newValue, 0.0);
     for (size_t i = 0; i < increments.size(); ++i) {
       _duties[i] = _duties[i] + increments[i];
     }
@@ -316,7 +327,7 @@ void UpdateDutyValues(String newValue, bool isIncrement) {
   NotifyBLEDutyValue();
 }
 
-void MultiplyFreqsPWM(std::vector<double> &mult) {
+void MultiplyFreqsPWM(std::vector<float> &mult) {
   for (size_t i = 0; i < mult.size(); ++i) {
     if (mult[i] < 0) {
       Log("Mutiply " + String(i) + ": " + String(_cacheFreqs[i]) + " by " + String(-mult[i]) + " = " + String(_cacheFreqs[i] * -mult[i]));
@@ -332,10 +343,10 @@ void MultiplyFreqsPWM(std::vector<double> &mult) {
 
 void SetFreqsPWM() {
   for (int i = 0; i < MAX_OUTPUT; i++) { 
-    double freq = 0;
+    float freq = 0;
     uint32_t duty = DUTY_CYCLE_DEFAULT;
     if (i <= _freqs.size() - 1) {
-      freq = (double)_freqs[i];
+      freq = (float)_freqs[i];
       duty = (uint32_t)_duties[i];
     }
     SetFreqPWM(i, freq, true);
@@ -346,7 +357,7 @@ void SetFreqsPWM() {
   }
 }  
 
-void SetFreqPWM(int oscIndex, double freq, bool setup) {
+void SetFreqPWM(int oscIndex, float freq, bool setup) {
   if (freq < 0) {
     freq = 0;
   }
@@ -375,24 +386,37 @@ void SetDutyPWM(int oscIndex, uint32_t duty) {
   }
 }
 
-void PrintValues(std::vector<double> &f, std::vector<double> &d) {
+void PrintValues(std::vector<float> &f, std::vector<float> &d) {
   Log("Status");
   for (size_t i = 0; i < f.size(); i++) {
     Log(String(i) + ": " + String(f[i]) + " Hz. D: " + String(d[i]));
   }
 }
 
+std::vector<byte> ToByteArray(std::vector<float> &v) {
+  std::vector<byte> arr;
+  for (size_t i = 0; i < v.size(); i++) {
+    word value = (word)round(v[i]);
+    byte low = lowByte(value);
+    byte high = highByte(value);
+    //Log("Value: " + String(value) + ". low: " + String(low) + ". high: " + String(high) + ".");
+    arr.push_back(high);
+    arr.push_back(low);
+  }
+  return arr;
+}
+
 void NotifyBLEFreqValue() {
-  const char* strconfigValue = join(_freqs, true);
-  pCharacteristicFreqs->setValue(strconfigValue);
+  std::vector<byte> arr = ToByteArray(_freqs);
+  pCharacteristicFreqs->setValue(&arr[0], arr.size());
   if (deviceConnected) {
     pCharacteristicFreqs->notify();
   }
 }
 
 void NotifyBLEDutyValue() {
-  const char* strconfigValue = join(_duties, true);
-  pCharacteristicDuties->setValue(strconfigValue);
+  std::vector<byte> arr = ToByteArray(_duties);
+  pCharacteristicDuties->setValue(&arr[0], arr.size());
   if (deviceConnected) {
     pCharacteristicDuties->notify();
   }
@@ -411,19 +435,19 @@ std::vector<String> splitString(String msg, const char delim) {
   return result;
 }
 
-std::vector<double> splitParseVector(String msg, double def, std::vector<double> *completeWith) {
-  std::vector<double> result;
+std::vector<float> splitParseVector(String msg, float def, std::vector<float> *completeWith) {
+  std::vector<float> result;
   int j = 0;
   String value;
   for (int i = 0; i < msg.length(); i++) {
     if (msg.charAt(i) == ',') {
       value = msg.substring(j, i);
-      result.push_back(value.length() > 0 ? value.toDouble() : def);
+      result.push_back(value.length() > 0 ? value.toFloat() : def);
       j = i + 1;
     }
   }
   value = msg.substring(j, msg.length());
-  result.push_back(value.length() > 0 ? value.toDouble() : def); //to grab the last value of the string
+  result.push_back(value.length() > 0 ? value.toFloat() : def); //to grab the last value of the string
   if (completeWith != nullptr) {
     // Override negatives with current value
     for (int i = 0; i < result.size(); ++i) {
@@ -480,7 +504,7 @@ std::vector<std::string> SplitStringByNumber(const std::string &str, int len)
     return entries;
 }
 
-const char* join(std::vector<double> &v, bool mustRound) {
+const char* join(std::vector<float> &v, bool mustRound) {
   std::stringstream ss;
   for (size_t i = 0; i < v.size(); ++i)
   {
@@ -552,7 +576,6 @@ void StorePreset(int pindex, std::vector<String> preset) {
   espFlashString.set(joinString(preset, '|'));
 }
 
-
 void ProcessOnOffCommand(String cmd) {
   if (cmd.startsWith("on")) {
     if (cmd.length() <= 3) {
@@ -602,7 +625,7 @@ void ProcessPlayCommand(String command) {
     std::vector<String> params = splitString(command.substring(5), ',');
     int song;
     int repeat = 1;
-    double speed = 1.00;
+    float speed = 1.00;
     int variation = -1;
     if (params.size() > 0) {
       song = params[0].toInt();
@@ -611,7 +634,7 @@ void ProcessPlayCommand(String command) {
       repeat = params[1].toInt();
     }
     if (params.size() > 2) {
-      speed = params[2].toDouble();
+      speed = params[2].toFloat();
     }
     if (params.size() > 3) {
       variation = params[3].toInt();
@@ -620,7 +643,7 @@ void ProcessPlayCommand(String command) {
   }
 }
 
-void PlaySong(int songIndex, int repeat, double speed, int variation) {
+void PlaySong(int songIndex, int repeat, float speed, int variation) {
   String song = _songs[songIndex];
   std::default_random_engine rndSeeded(variation);
   String variationString = variation < 0 ? "original variation" : variation > 0 ? ("variation #" + String(variation)) : "random variation";
@@ -664,7 +687,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
           values[0] = values[0].substring(1);
         }    
         Log(" Step " + String(i+1) + "/" + String(steps.size()) + " " + stepType);
-        std::vector<double> operands = splitParseVector(values[0], -1.0);
+        std::vector<float> operands = splitParseVector(values[0], -1.0);
         // set frequencies 
         for(size_t oscIndex = 0; oscIndex < operands.size(); ++oscIndex) {
           switch (stepType) {
@@ -695,7 +718,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
         }
         NotifyBLEFreqValue();
 
-        std::vector<double> duties;
+        std::vector<float> duties;
         if (values.size() > 2) {
           // Set duties
           duties = splitParseVector(values[2], -1.0);
@@ -709,7 +732,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
         }
         if (values.size() > 1) {
           // Delay
-          double duration = values[1].toDouble() / speed;
+          float duration = values[1].toFloat() / speed;
           Log("    Delay " + String(duration) + " secs.");
           delay(duration * 1000);
         }

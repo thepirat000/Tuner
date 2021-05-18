@@ -20,7 +20,9 @@ $(document).ready(function () {
 		let cmd = "debug " + (this.checked ? "1" : "0");
 		await SendCommand(cmd);
 	});
-	
+	$("input[name=preset]").change(async function(e) {
+		await Load();
+	});
 	$('#command').bind('keypress', async function (e) {
 		if(e.which == 13) {
 			await SendConsoleCommand();
@@ -80,6 +82,7 @@ var device;
 const encoder = new TextEncoder('utf-8');
 
 async function Scan() {
+	$("#console").show();
 	AppendLogLine("Scanning...");
 	try {
 		device = await navigator.bluetooth.requestDevice({
@@ -169,6 +172,11 @@ async function connectDeviceAndCacheCharacteristics() {
 }
 
 function handleFreqValueChange(event) {
+	for (let i = 0; i*2 < event.target.value.byteLength; ++i) {
+		let value = event.target.value.getUint16(i*2);
+		ShowFreqValue(i+1, value);
+	}
+	/*
 	let freqs = new TextDecoder().decode(event.target.value);
 	console.log("F: " + freqs);
 	if (AllDigitsOrComma(freqs)) {
@@ -176,10 +184,16 @@ function handleFreqValueChange(event) {
 		for (let i = 0; i < freqsArray.length; ++i) {
 			ShowFreqValue(i+1, freqsArray[i]);
 		}
-	} else { console.log("discarding freqs"); }
+	} else { console.log("discarding freqs"); }*/
 }
 
 function handleDutyValueChange(event) {
+	for (let i = 0; i*2 < event.target.value.byteLength; ++i) {
+		let value = event.target.value.getUint16(i*2);
+		ShowDutyValue(i+1, value);
+	}
+	
+	/*
 	let duties  = new TextDecoder().decode(event.target.value);
 	console.log("D: " + duties);
 	if (AllDigitsOrComma(duties)) {
@@ -187,7 +201,7 @@ function handleDutyValueChange(event) {
 		for (let i = 0; i < dutiesArray.length; ++i) {
 			ShowDutyValue(i+1, dutiesArray[i]);
 		}
-	} else { console.log("discarding duties"); }
+	} else { console.log("discarding duties"); }*/
 }
 
 function handleCmdValueChange(event) {
@@ -249,7 +263,7 @@ function ShowFreqValue(osc, value) {
 // value: 0-1023
 function ShowDutyValue(osc, value) {
 	let prevValue = $("#slider-duty-" + osc).attr("data-prev-value");
-	$("#duty-text-" + osc).css('color', 'var(--freq-color)');
+	$("#duty-text-" + osc).css('color', 'var(--duty-color)');
 	if (prevValue != value) {
 		let percentage = value * 100 / 1023;
 		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0));
@@ -295,7 +309,7 @@ function GetNote(freq) {
 
 function SlidingDuty(osc, value) {
 	// User is sliding the duty slider, show a visual feedback
-	$("#duty-text-" + osc).text(parseInt(value)).css('color', 'var(--running-freq-color)');
+	$("#duty-text-" + osc).text(parseInt(value)).css('color', 'var(--running-duty-color)');
 }
 
 async function FreqInput(osc, value) {
@@ -326,13 +340,15 @@ async function DutyInput(osc, value) {
 }
 
 async function Save() {
-	await SendCommand("save");
+	let pindex = $("input[name='preset']:checked").val() - 1;
+	await SendCommand("save " + pindex);
 	$("#btn-save").stop(true,true);
 	$("#btn-save").effect('highlight',{},500); 
 	AppendLogLine("Saved");
 }
 async function Load() {
-	await SendCommand("load");
+	let pindex = $("input[name='preset']:checked").val() - 1;
+	await SendCommand("load " + pindex);
 	$("#btn-load").stop(true,true);
 	$("#btn-load").effect('highlight',{},500); 
 	AppendLogLine("Loaded");

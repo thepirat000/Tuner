@@ -40,8 +40,27 @@
 				<div id="scan-status"></div>
 			</div>
 			<div class="top-buttons" style="display:none;">
-				<div style="float:left;"><button id="btn-load" class="load-button">Load</button></div>
-				<div style="float:right;"><button id="btn-save" class="save-button">Save</button></div>
+				<div><button id="btn-load" class="load-button">Load</button></div>
+				<div class="presets" >
+					<p class="presets-text">Presets</p>
+					<label for="preset1">
+						<input type="radio" id="preset1" name="preset" value="1" checked>
+						A
+					</label>
+					<label for="preset2">
+						<input type="radio" id="preset2" name="preset" value="2">
+						B
+					</label>					
+					<label for="preset3">
+						<input type="radio" id="preset3" name="preset" value="3">
+						C
+					</label>
+					<label for="preset4">
+						<input type="radio" id="preset4" name="preset" value="4">
+						D
+					</label>					
+				</div>
+				<div><button id="btn-save" class="save-button">Save</button></div>
 			</div>
 			
 			<div id="oscillators" style="display:none;">
@@ -93,9 +112,7 @@
 			</div>
 			
 			<div>
-				<div class="separator"></div>
-				
-				<div id="console" class="console mini-text">
+				<div id="console" class="console" style="display:none;">
 					<span class="no-select">Console</span>
 					<div id="command-div" style="display:none;">
 						<input type="text" id="command" class="command-input" maxlength="20" style="width: calc(100% - 60px);" title="Enter command" />
