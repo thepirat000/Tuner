@@ -33,13 +33,18 @@ Docs/Links:
 #define CHARACTERISTIC_FREQ_UUID "ca000000-fede-fede-0000-000000000001"       // Bluetooth characteristic to get the current frequencies of the oscillators in Hertz
 #define CHARACTERISTIC_DUTY_UUID "ca000000-fede-fede-0000-000000000002"       // Bluetooth characteristic to get the duties of the oscillators (0 to 1023)
 #define CHARACTERISTIC_CMD_UUID  "ca000000-fede-fede-0000-000000000099"       // Bluetooth characteristic to send commands and get the current status 
-#define CONFIG_FREQS_FILE        "/config_freqs.txt"
-#define CONFIG_DUTIES_FILE       "/config_duties.txt"
+
+#define PRESET_FILE_PREFIX "/p"
+#define PRESET_FILE_SUFFIX ".txt"
+
+
 #define LED_PIN 2
 #define MAX_OUTPUT 4
+#define MAX_PRESET_INDEX 3
 #define MAX_FREQUENCY 40000
 #define DUTY_RESOLUTION_BITS 10
 #define DUTY_CYCLE_DEFAULT 512
+#define DUTY_CYCLE_PRESET_DEFAULT "512,512,512,512"
 
 // Connect each of these PINS to a MOSFET driving 12v to a coil/electromaget (i.e. D2, D4, D5, D18)
 
@@ -58,6 +63,7 @@ bool deviceConnected = false;
 bool oldDeviceConnected = false;
 bool stop = false;  // Stop playing flag
 bool debug_ble = false; // Debug via BLE
+int last_preset_loaded = 0;
 
 // Songs format: Check README.md
 std::vector<String> _songs = {
@@ -78,21 +84,18 @@ void NotifyBLEDutyValue();
 void PrintValues(std::vector<double> &f, std::vector<double> &d);
 void AttachOutputPins();
 void DetachOutputPins();
-String GetConfigFreqs();
-String GetConfigDuties();
 void UpdateFrequencyValues(String newValue, bool isIncrement);
 void UpdateDutyValues(String newValue, bool isIncrement);
 void SetFreqsPWM();
 void MultiplyFreqsPWM(std::vector<double> &mult);
 void SetDutiesPWM();
-void StoreConfigFreqs();
-void StoreConfigDuties();
-void ResetFreqDuty();
 void ProcessPlayCommand(String command);
 void PlaySong(int songIndex, int repeat, double tempoDivider, int variation);
 void Log(String msg);
 std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
 void SetFreqPWM(int oscIndex, double freq, bool setup=false);
+std::vector<String> GetPreset(int pindex);
+void StorePreset(int pindex, std::vector<String> preset);
 
 // MAIN
 void setup() {
@@ -106,25 +109,8 @@ void setup() {
   AttachOutputPins();
   StartBLEServer();
 
-  String configValue = GetConfigFreqs();
-  if (configValue.length() > 0 && isDigit(configValue.charAt(0))) {
-    //Set the frequencies and initialize PWM
-    UpdateFrequencyValues(configValue, false);
-  }
-  else {
-    //Initialize PWM on 0hz
-    Log("Invalid freqs file " + configValue);
-    SetFreqsPWM();
-  }
-
-  configValue = GetConfigDuties();
-  if (configValue.length() > 0 && isDigit(configValue.charAt(0))) {
-    //Set the duties
-    UpdateDutyValues(configValue, false);
- } 
-  else {
-    Log("Invalid duties file " + configValue);
-  }
+  Load(0);
+  
   _cacheFreqs = _freqs;
   PrintValues(_freqs, _duties);
 }
@@ -180,12 +166,24 @@ void ProcessInput(String recv) {
     UpdateFrequencyValues(recv, true);
   }
   else if (recv.equals("load") || recv.equals("reset")) {
-    // RESET
-    ResetFreqDuty();
+    // Reload last preset 
+    Load(last_preset_loaded);
   }
   else if (recv.equals("save") || recv.equals("set")) {
-    // SET
-    SetFreqDuty();
+    // Save last preset loaded
+    Save(last_preset_loaded);
+  }
+  else if (recv.startsWith("load ")) {
+    // Load preset x
+    if (recv.length() > 5) {
+      Load(recv.substring(5).toInt());
+    }
+  }
+  else if (recv.startsWith("save ")) {
+    // Save preset x
+    if (recv.length() > 5) {
+      Save(recv.substring(5).toInt());
+    }
   }
   else if (recv.startsWith("play")) {
     // PLAY
@@ -247,27 +245,6 @@ class MyServerCallbacks: public BLEServerCallbacks {
       deviceConnected = false;
     }
 };
-
-// Load from config
-void ResetFreqDuty() {
-  Log("Load values");
-  String configValue = GetConfigFreqs();
-  if (configValue.length() > 0 && isDigit(configValue.charAt(0))) {
-    UpdateFrequencyValues(configValue, false);
-  }
-  configValue = GetConfigDuties();
-  if (configValue.length() > 0 && isDigit(configValue.charAt(0))) {
-    //Set the duties
-    UpdateDutyValues(configValue, false);
-  } 
-}
-
-// Save to config
-void SetFreqDuty() {
-  Log("Save values");
-  StoreConfigFreqs();
-  StoreConfigDuties();
-}
 
 void StartBLEServer() {
   BLEDevice::init(SERVICE_NAME);
@@ -514,30 +491,67 @@ const char* join(std::vector<double> &v, bool mustRound) {
   return ss.str().c_str();
 }
 
-void StoreConfigFreqs() {
-  String configValue = join(_freqs);
-  ESPFlashString espFlashString(CONFIG_FREQS_FILE);
-  espFlashString.set(configValue);
-  _cacheFreqs = _freqs;
+String joinString(std::vector<String> &s, const char delim) {
+  String result = "";
+  for (size_t i = 0; i < s.size(); i++) {
+    result += s[i] + delim;
+  }
+  return result.substring(0, result.length() - 1);
 }
 
-String GetConfigFreqs() {
-  ESPFlashString espFlashString(CONFIG_FREQS_FILE);
+void Load(int pindex) {
+  Log("Load P" + String(pindex));
+  std::vector<String> preset = GetPreset(pindex);
+  if (preset.size() > 0 && isDigit(preset[0].charAt(0))) {
+    // preset[0] are frequencies (d,d,d,d)
+    UpdateFrequencyValues(preset[0], false);
+  }
+  if (preset.size() > 1) {
+    if (isDigit(preset[1].charAt(0))) {
+      // preset[1] are duties (d,d,d,d)
+      UpdateDutyValues(preset[1], false);
+    }
+  }
+  else {
+    // Default duties
+    UpdateDutyValues(DUTY_CYCLE_PRESET_DEFAULT, false);
+  }
+  if (preset.size() > 2 && isDigit(preset[2].charAt(0))) {
+    // TODO: Handle switches
+    // preset[2] are switches (bbbb)
+  }
+  last_preset_loaded = pindex;
+}
+
+void Save(int pindex) {
+  std::vector<String> preset;
+  preset.push_back(join(_freqs, false));
+  preset.push_back(join(_duties, false));
+  // TODO: Handle switches
+  StorePreset(pindex, preset);
+}
+
+std::vector<String> GetPreset(int pindex) {
+  if (pindex < 0 || pindex > MAX_PRESET_INDEX) {
+    return {};
+  }
+  ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
   String value = espFlashString.get();
-  return value;
+  if (value.length() == 0) {
+    return {};
+  }
+  Log("Read preset: " + value);
+  return splitString(value, '|');
 }
 
-void StoreConfigDuties() {
-  String configValue = join(_duties);
-  ESPFlashString espFlashString(CONFIG_DUTIES_FILE);
-  espFlashString.set(configValue);
+void StorePreset(int pindex, std::vector<String> preset) {
+  if (pindex < 0 || pindex > MAX_PRESET_INDEX) {
+    return;
+  }
+  ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
+  espFlashString.set(joinString(preset, '|'));
 }
 
-String GetConfigDuties() {
-  ESPFlashString espFlashString(CONFIG_DUTIES_FILE);
-  String value = espFlashString.get();
-  return value;
-}
 
 void ProcessOnOffCommand(String cmd) {
   if (cmd.startsWith("on")) {
@@ -631,7 +645,7 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
       for(size_t i = 0; i < steps.size(); ++i) {
         if (stop) {
           Log("Stopping");
-          ResetFreqDuty();
+          Load(last_preset_loaded);
           return;
         }
         std::vector<String> values;
@@ -703,6 +717,6 @@ void PlaySong(int songIndex, int repeat, double speed, int variation) {
     }
     Log("End song");
     // Restore cache freqs, duties
-    ResetFreqDuty();
+    Load(last_preset_loaded);
   }
 }
