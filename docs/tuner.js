@@ -4,6 +4,8 @@ $(document).ready(function () {
 	
 	GenerateOscillatorsUI();
 	
+	StartMidi();
+	
 	$("#btn-scan").click(async function(e) {
 		await Scan();
 	});
@@ -410,5 +412,67 @@ async function HandleTurnOffOn(osc, status) {
 	await SendCommand(status + " " + osc);
 }
 
+function StartMidi() {
+	if (!navigator.requestMIDIAccess) {
+		return;
+	}
+	navigator.requestMIDIAccess()
+		.then(midi => {
+			for (var input of midi.inputs.values()) {
+				input.onmidimessage = onMIDIMessage;
+			}
+		});
+}
 
+async function onMIDIMessage(message) {
+    var command = message.data[0];
+    var note = message.data[1];
+    var velocity = (message.data.length > 2) ? message.data[2] : 0; // a velocity value might not be included with a noteOff command
 
+    switch (command) {
+        case 144: 
+            if (velocity > 0) {
+                await noteOn(note, velocity);
+            } else {
+                await noteOff(note);
+            }
+            break;
+        case 128: 
+            await noteOff(note);
+            break;
+    }
+}
+
+async function noteOn(note, velocity) {
+	let duty = velocityToDuty(velocity);
+	if (duty > 0) {
+		let freq = noteToFreq(note);
+		await FreqInput(1, freq);
+		await sleep(10);
+		await DutyInput(1, duty);
+	}
+	//await DutyInput(1, duty);
+}
+
+async function noteOff(note) {
+	//await sleep(10);
+	//await DutyInput(1, 0);
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function noteToFreq(note) {
+    let a = 440;
+    return (a / 32) * (2 ** ((note - 9) / 12));
+}
+
+function velocityToDuty(velocity) {
+	// 0 -> 0%
+	// 1-127 => 15%-85% (255-767)
+	if (velocity <= 0) {
+		return 0;
+	}
+	return ((velocity*70/127)+15).toFixed(0);
+}
