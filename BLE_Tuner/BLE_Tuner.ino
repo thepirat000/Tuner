@@ -240,6 +240,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       deviceConnected = true;
       NotifyBLEFreqValue();
       NotifyBLEDutyValue();
+      NotifyBLESwitchesValue();
     };
     void onDisconnect(BLEServer* server) {
       Log("Client disconnected");
