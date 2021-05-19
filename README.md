@@ -1,8 +1,10 @@
 # UUID
 
 SVC UUID: ca000000-fede-fede-0000-000000000000
-CMD/FREQ UUID: ca000000-fede-fede-0000-000000000001
+FREQ UUID: ca000000-fede-fede-0000-000000000001
 DUTY UUID: ca000000-fede-fede-0000-000000000002
+SWITCHES UUID: ca000000-fede-fede-0000-000000000003
+CMD UUID: ca000000-fede-fede-0000-000000000099
 
 # Commands
 
@@ -127,16 +129,22 @@ Will turn on the first oscillator
 ### Persistence
 
 #### Save
-Will save the frequency and duty values to their config file 
+Will save the current frequencies, duties and switches to a preset file
+Format: save i
+Being:
+	- i >= 0: Preset index (default is 0)
 
 Example:
-`save`
+`save 0`
 
 #### Load
-Will load and set the frequency and duty values from the config file 
+Will load and set the frequency, duty, and switches values from the preset file 
+Format: load i
+Being:
+	- i >= 0: Preset index (default is 0)
 
 Example:
-`load`
+`load 0`
 
 ### Songs
 
@@ -147,6 +155,8 @@ Being:
 	- SongIndex=The song index to play
 	- Iterations=Times to repeat the song (default is 1)
 	- Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
+		- > 0: Multiply speed by x
+		- <= 0: repeat for ever 
 	- Variation=(optional) number:
 		- > 0: randomize the steps order with the given number as seed. 
 		- = 0: pseudo randomize steps

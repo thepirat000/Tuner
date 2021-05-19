@@ -30,10 +30,11 @@ Docs/Links:
 
 // Defines and Consts
 #define SERVICE_NAME "Tuner by ThePirat"
-#define SERVICE_UUID             "fe000000-fede-fede-0000-000000000000"       // Bluetooth Service ID
-#define CHARACTERISTIC_FREQ_UUID "ca000000-fede-fede-0000-000000000001"       // Bluetooth characteristic to get the current frequencies of the oscillators in Hertz
-#define CHARACTERISTIC_DUTY_UUID "ca000000-fede-fede-0000-000000000002"       // Bluetooth characteristic to get the duties of the oscillators (0 to 1023)
-#define CHARACTERISTIC_CMD_UUID  "ca000000-fede-fede-0000-000000000099"       // Bluetooth characteristic to send commands and get the current status 
+#define SERVICE_UUID                "fe000000-fede-fede-0000-000000000000"       // Bluetooth Service ID
+#define CHARACTERISTIC_FREQ_UUID    "ca000000-fede-fede-0000-000000000001"       // Bluetooth characteristic to get the current frequencies of the oscillators in Hertz
+#define CHARACTERISTIC_DUTY_UUID    "ca000000-fede-fede-0000-000000000002"       // Bluetooth characteristic to get the duties of the oscillators (0 to 1023)
+#define CHARACTERISTIC_SWITCH_UUID  "ca000000-fede-fede-0000-000000000003"       // Bluetooth characteristic to get the switched of the oscillators (0 or 1)
+#define CHARACTERISTIC_CMD_UUID     "ca000000-fede-fede-0000-000000000099"       // Bluetooth characteristic to send commands and get the current status 
 
 #define PRESET_FILE_PREFIX "/p"
 #define PRESET_FILE_SUFFIX ".txt"
@@ -55,9 +56,9 @@ const int PINOUT[] = {2, 4, 5, 18};
 std::vector<float> _freqs = {0, 0, 0, 0};
 std::vector<float> _cacheFreqs = {0, 0, 0, 0};
 std::vector<float> _duties = {DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT};
-std::vector<int> _switches = {1, 1, 1, 1};
+std::vector<byte> _switches = {1, 1, 1, 1};
 std::random_device _rnd;
-BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicCmd;
+BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicSwitches, *pCharacteristicCmd;
 std::queue<String> _bleCommandBuffer;
 BLEServer* bleServer = NULL;
 bool deviceConnected = false;
@@ -206,6 +207,7 @@ void ProcessInput(String recv) {
   else if (recv.startsWith("?")) {
     NotifyBLEFreqValue();
     NotifyBLEDutyValue();
+    NotifyBLESwitchesValue();
   }
   else if (isOperand(recv)) {
     // Frequencies (in hz)
@@ -250,32 +252,22 @@ void StartBLEServer() {
   bleServer = BLEDevice::createServer();
   bleServer->setCallbacks(new MyServerCallbacks());
   BLEService *pService = bleServer->createService(SERVICE_UUID);
-
-/*
-  pCharacteristicFreqs = BLECharacteristic(CHARACTERISTIC_FREQ_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY, 0, 4);
-  pCharacteristicDuties = BLECharacteristic(CHARACTERISTIC_DUTY_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY, 0, 4);
-  pCharacteristicCmd = BLECharacteristic(CHARACTERISTIC_CMD_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY, "");
-  pService->addCharacteristic(pCharacteristicFreqs);
-  pService->addCharacteristic(pCharacteristicDuties);
-  pService->addCharacteristic(pCharacteristicCmd);
-*/
-
   
   pCharacteristicFreqs = pService->createCharacteristic(CHARACTERISTIC_FREQ_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   pCharacteristicDuties = pService->createCharacteristic(CHARACTERISTIC_DUTY_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+  pCharacteristicSwitches = pService->createCharacteristic(CHARACTERISTIC_SWITCH_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   pCharacteristicCmd = pService->createCharacteristic(CHARACTERISTIC_CMD_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
-
-
+  
   // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
   pCharacteristicFreqs->addDescriptor(new BLE2902());
   pCharacteristicDuties->addDescriptor(new BLE2902());
+  pCharacteristicSwitches->addDescriptor(new BLE2902());
   pCharacteristicCmd->addDescriptor(new BLE2902());
   
   pCharacteristicCmd->setCallbacks(new MyCallbacks());
   pService->start();
   BLEAdvertising *pAdvertising = bleServer->getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
-  //TEST
   pAdvertising->setScanResponse(true);
   pAdvertising->setMinPreferred(0x06);
   pAdvertising->setMinPreferred(0x12);
@@ -286,8 +278,6 @@ void StartBLEServer() {
 // Helper methods
 void AttachOutputPins() {
   for (int i = 0; i < MAX_OUTPUT; i++) { 
-    // assign pin[0] to channel 0, pin[1] to channel 2
-    // only using even channels since 0-1, 2-3, 4-5 share the same timer
     TurnOn(i);
   }
 }
@@ -295,6 +285,17 @@ void DetachOutputPins() {
   for (int i = 0; i < MAX_OUTPUT; i++) { 
     TurnOff(i);
   }
+}
+
+void TurnOn(int oscIndex) {
+  // assign pin[0] to channel 0, pin[1] to channel 2 (only using even channels since 0-1, 2-3, 4-5 share the same timer)
+  ledcAttachPin(PINOUT[oscIndex], oscIndex*2);
+  _switches[oscIndex] = 1;
+}
+
+void TurnOff(int oscIndex) {
+  _switches[oscIndex] = 0;
+  ledcDetachPin(PINOUT[oscIndex]);
 }
 
 // Freq newValue valid formats: d[,d,d,d]   d is a float
@@ -389,7 +390,7 @@ void SetDutyPWM(int oscIndex, uint32_t duty) {
 void PrintValues(std::vector<float> &f, std::vector<float> &d) {
   Log("Status");
   for (size_t i = 0; i < f.size(); i++) {
-    Log(String(i) + ": " + String(f[i]) + " Hz. D: " + String(d[i]));
+    Log(String(i) + ": " + String(f[i]) + " Hz. D: " + String(d[i]) + (_switches[i] == 1 ? "" : " (off)"));
   }
 }
 
@@ -419,6 +420,13 @@ void NotifyBLEDutyValue() {
   pCharacteristicDuties->setValue(&arr[0], arr.size());
   if (deviceConnected) {
     pCharacteristicDuties->notify();
+  }
+}
+
+void NotifyBLESwitchesValue() {
+  pCharacteristicSwitches->setValue(&_switches[0], _switches.size());
+  if (deviceConnected) {
+    pCharacteristicSwitches->notify();
   }
 }
 
@@ -492,8 +500,7 @@ void Log(String msg) {
   }
 }
 
-std::vector<std::string> SplitStringByNumber(const std::string &str, int len)
-{
+std::vector<std::string> SplitStringByNumber(const std::string &str, int len) {
     std::vector<std::string> entries;
     for(std::string::const_iterator it(str.begin()); it != str.end();)
     {
@@ -524,8 +531,8 @@ String joinString(std::vector<String> &s, const char delim) {
 }
 
 void Load(int pindex) {
-  Log("Load P" + String(pindex));
   std::vector<String> preset = GetPreset(pindex);
+  Log("Load P" + String(pindex) + "=" + joinString(preset, '|'));
   if (preset.size() > 0 && isDigit(preset[0].charAt(0))) {
     // preset[0] are frequencies (d,d,d,d)
     UpdateFrequencyValues(preset[0], false);
@@ -541,9 +548,21 @@ void Load(int pindex) {
     UpdateDutyValues(DUTY_CYCLE_PRESET_DEFAULT, false);
   }
   if (preset.size() > 2 && isDigit(preset[2].charAt(0))) {
-    // TODO: Handle switches
     // preset[2] are switches (bbbb)
+    for (int i = 0; (i < preset[2].length() && i < _switches.size()); ++i) {
+      if (preset[2].charAt(i) == '0') {
+        TurnOff(i);
+      } 
+      else {
+        TurnOn(i);
+      }
+    }
   }
+  else {
+    // Default switches all on
+    AttachOutputPins();
+  }
+  NotifyBLESwitchesValue();
   last_preset_loaded = pindex;
 }
 
@@ -551,7 +570,13 @@ void Save(int pindex) {
   std::vector<String> preset;
   preset.push_back(join(_freqs, false));
   preset.push_back(join(_duties, false));
-  // TODO: Handle switches
+  String switches = "";
+  for(size_t i = 0; i < _switches.size(); ++i) {
+    switches += String(_switches[i]);
+  }
+  if (switches.length() > 0) {
+    preset.push_back(switches);
+  }
   StorePreset(pindex, preset);
 }
 
@@ -564,7 +589,7 @@ std::vector<String> GetPreset(int pindex) {
   if (value.length() == 0) {
     return {};
   }
-  Log("Read preset: " + value);
+  Log("Read P" + String(pindex) + "=" + value);
   return splitString(value, '|');
 }
 
@@ -573,7 +598,9 @@ void StorePreset(int pindex, std::vector<String> preset) {
     return;
   }
   ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
-  espFlashString.set(joinString(preset, '|'));
+  String value = joinString(preset, '|');
+  Log("Store P" + String(pindex) + "=" + value);
+  espFlashString.set(value);
 }
 
 void ProcessOnOffCommand(String cmd) {
@@ -603,17 +630,7 @@ void ProcessOnOffCommand(String cmd) {
       }
     }
   }
-
-}
-
-void TurnOn(int oscIndex) {
-  ledcAttachPin(PINOUT[oscIndex], oscIndex*2);
-  _switches[oscIndex] = 1;
-}
-
-void TurnOff(int oscIndex) {
-  _switches[oscIndex] = 0;
-  ledcDetachPin(PINOUT[oscIndex]);
+  NotifyBLESwitchesValue();
 }
 
 void ProcessPlayCommand(String command) {
@@ -647,7 +664,7 @@ void PlaySong(int songIndex, int repeat, float speed, int variation) {
   String song = _songs[songIndex];
   std::default_random_engine rndSeeded(variation);
   String variationString = variation < 0 ? "original variation" : variation > 0 ? ("variation #" + String(variation)) : "random variation";
-  Log("Play song " + String(songIndex) + " " + variationString + " on " + String(repeat) + " it. @ " + String(speed) + "x");
+  Log("Play song " + String(songIndex) + " " + variationString + " " + (repeat <= 0 ? "infinite" : String(repeat)) + " times @ " + String(speed) + "x");
   if (song.length() > 0) {
     Log("Begin song");
     stop = false;
@@ -655,8 +672,15 @@ void PlaySong(int songIndex, int repeat, float speed, int variation) {
     song = song.substring(1);
     
     std::vector<String> steps = splitString(song, '|');
-    for(int times = 0; times < repeat; ++times) {
-      Log("Repeat " + String(times+1) + "/" + String(repeat));
+    int times = 0;
+    while(times < repeat || repeat <= 0) {
+      if (repeat > 0) {
+        times++;
+        Log("Repeat " + String(times+1) + "/" + String(repeat));
+      } else {
+        Log("Repeat");
+      }
+      
       // Variation (randomize steps)
       if (variation > 0) {
         std::shuffle(steps.begin(), steps.end(), rndSeeded);
@@ -732,9 +756,11 @@ void PlaySong(int songIndex, int repeat, float speed, int variation) {
         }
         if (values.size() > 1) {
           // Delay
-          float duration = values[1].toFloat() / speed;
-          Log("    Delay " + String(duration) + " secs.");
-          delay(duration * 1000);
+          if (speed > 0) {
+            float duration = values[1].toFloat() / speed;
+            Log("    Delay " + String(duration) + " secs.");
+            delay(duration * 1000);
+          }
         }
       }
     }

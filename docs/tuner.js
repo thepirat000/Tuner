@@ -159,6 +159,9 @@ async function connectDeviceAndCacheCharacteristics() {
 		characteristicDuties = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000002'))[0];
 		characteristicDuties.addEventListener('characteristicvaluechanged', handleDutyValueChange);
 		await characteristicDuties.startNotifications();
+		characteristicSwitches = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000003'))[0];
+		characteristicSwitches.addEventListener('characteristicvaluechanged', handleSwitchesValueChange);
+		await characteristicSwitches.startNotifications();
 		characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
 		characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
 		await characteristicCmd.startNotifications();
@@ -176,15 +179,6 @@ function handleFreqValueChange(event) {
 		let value = event.target.value.getUint16(i*2);
 		ShowFreqValue(i+1, value);
 	}
-	/*
-	let freqs = new TextDecoder().decode(event.target.value);
-	console.log("F: " + freqs);
-	if (AllDigitsOrComma(freqs)) {
-		let freqsArray = freqs.split(',');
-		for (let i = 0; i < freqsArray.length; ++i) {
-			ShowFreqValue(i+1, freqsArray[i]);
-		}
-	} else { console.log("discarding freqs"); }*/
 }
 
 function handleDutyValueChange(event) {
@@ -192,16 +186,13 @@ function handleDutyValueChange(event) {
 		let value = event.target.value.getUint16(i*2);
 		ShowDutyValue(i+1, value);
 	}
-	
-	/*
-	let duties  = new TextDecoder().decode(event.target.value);
-	console.log("D: " + duties);
-	if (AllDigitsOrComma(duties)) {
-		let dutiesArray = duties.split(',');
-		for (let i = 0; i < dutiesArray.length; ++i) {
-			ShowDutyValue(i+1, dutiesArray[i]);
-		}
-	} else { console.log("discarding duties"); }*/
+}
+
+function handleSwitchesValueChange(event) {
+	for (let i = 0; i < event.target.value.byteLength; ++i) {
+		let value = event.target.value.getUint8(i);
+		ShowSwitchValue(i+1, value);
+	}
 }
 
 function handleCmdValueChange(event) {
@@ -271,6 +262,17 @@ function ShowDutyValue(osc, value) {
 		$("#slider-duty-" + osc).attr("data-prev-value", value);
 		$("#duty-div-" + osc).stop(true,true);
 		$("#duty-div-" + osc).effect('highlight',{},500); 
+	}
+}
+
+function ShowSwitchValue(osc, value) {
+	// Change the switch values without triggering the onchange
+	let oscSwitch = $("#osc-" + osc + " .lcs_wrap .lcs_switch")
+	if (value) {
+		oscSwitch.removeClass('lcs_off').addClass('lcs_on');
+	} 
+	else {
+		oscSwitch.removeClass('lcs_on').addClass('lcs_off');
 	}
 }
 
@@ -352,10 +354,6 @@ async function Load() {
 	$("#btn-load").stop(true,true);
 	$("#btn-load").effect('highlight',{},500); 
 	AppendLogLine("Loaded");
-}
-
-function AllDigitsOrComma(str) {
-  return str.split('').every(c => c == ',' || c == '.' || (c >= '0' && c <= '9'));
 }
 
 function ShowWaitCursor() {
