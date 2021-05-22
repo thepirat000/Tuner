@@ -1,3 +1,10 @@
+let characteristicCmd;
+let characteristicDuties;
+let characteristicFreqs;
+let device;
+const encoder = new TextEncoder('utf-8');
+let lastFreqFromMic = 0.0;
+
 $(document).ready(function () {
 	
 	$('.lcs_check').lc_switch();
@@ -25,7 +32,7 @@ $(document).ready(function () {
 		let cmd = "debug " + (this.checked ? "1" : "0");
 		await SendCommand(cmd);
 	});
-	$("input[name=preset]").change(async function(e) {
+	$("input[name=preset]").dblclick(async function(e) {
 		await Load();
 	});
 	$('#command').bind('keypress', async function (e) {
@@ -83,12 +90,6 @@ $(document).ready(function () {
 		HandleMicCheck(osc, this.checked);
 	});	
 });
-
-var characteristicCmd;
-var characteristicDuties;
-var characteristicFreqs;
-var device;
-const encoder = new TextEncoder('utf-8');
 
 async function Scan() {
 	$("#console").show();
@@ -509,6 +510,7 @@ function velocityToDuty(velocity) {
 function HandleMicCheck(osc, checked) {
 	if (PitchDetect.AudioContext == null && checked) {
 		// Turn on Mic
+		PitchDetect.MinTimeBetweenUpdates = 250;
 		PitchDetect.Init();
 		PitchDetect.StartLiveInput(async (current, lastKnown) => await callbackPitchDetect(current, lastKnown));
 	}
@@ -518,8 +520,6 @@ function HandleMicCheck(osc, checked) {
 		PitchDetect.AudioContext = null;
 	}
 }
-
-let lastFreqFromMic = 0.0;
 
 async function callbackPitchDetect(current, lastKnown) {
 	let freq = Math.round(lastKnown);
