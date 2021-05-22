@@ -43,11 +43,11 @@ $(document).ready(function () {
 	
 	$('.freq-div').on("change", ".slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
-		await FreqInput(osc, parseFloat(this.value));
+		await SendFreqUpdate(osc, parseFloat(this.value));
 	});
 	$('.freq-div').on("input", ".slider", function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
-		SlidingFreq(osc, parseFloat(this.value));
+		SetFreqText(osc, parseFloat(this.value));
 	});
 
 	$('.duty-div').on("change", ".slider", async function(e) {
@@ -56,7 +56,7 @@ $(document).ready(function () {
 	});	
 	$('.duty-div').on("input", ".slider", function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
-		SlidingDuty(osc, parseFloat(this.value));
+		SetDutyText(osc, parseFloat(this.value));
 	});
 	
 	$('.freq-div').on("click", ".freq,.note", async function(e) {
@@ -260,8 +260,7 @@ function ShowFreqValue(osc, value) {
 		let freq = parseInt(value);
 		$("#freq-" + osc).text(freq);
 		$("#freq-note-" + osc).text(GetNote(freq));
-		$("#slider-freq-" + osc).val(value);
-		$("#slider-freq-" + osc).attr("data-prev-value", value);
+		SetSliderFreqValue(osc, value)
 		$("#freq-div-" + osc).stop(true,true);
 		$("#freq-div-" + osc).effect('highlight',{},500); 
 	}
@@ -273,8 +272,7 @@ function ShowDutyValue(osc, value) {
 	if (prevValue != value) {
 		let percentage = value * 100 / 1023;
 		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0));
-		$("#slider-duty-" + osc).val(percentage);
-		$("#slider-duty-" + osc).attr("data-prev-value", value);
+		SetSliderDutyValue(osc, percentage);
 		$("#duty-div-" + osc).stop(true,true);
 		$("#duty-div-" + osc).effect('highlight',{},500); 
 	}
@@ -300,7 +298,7 @@ async function SendCommand(cmd) {
 	}
 }
 
-function SlidingFreq(osc, value) {
+function SetFreqText(osc, value) {
 	// User is sliding the freq slider, show a visual feedback
 	let freq = parseInt(value);
 	$("#freq-" + osc).text(freq).css('color', 'var(--running-freq-color)');
@@ -326,12 +324,12 @@ function GetNote(freq) {
 	return "N/A";
 }
 
-function SlidingDuty(osc, value) {
+function SetDutyText(osc, value) {
 	// User is sliding the duty slider, show a visual feedback
 	$("#duty-text-" + osc).text(parseInt(value)).css('color', 'var(--running-duty-color)');
 }
 
-async function FreqInput(osc, value) {
+async function SendFreqUpdate(osc, value) {
 	// User finished sliding freq slider
 	if (value < 0) {
 		value = 0;
@@ -389,15 +387,24 @@ async function ChangeFreqManual(osc, currValue) {
 		if (!isNaN(freq)) {
 			// Freq is a number in hertz
 			if (freq >= 0) {
-				await FreqInput(osc, freq);
+				await SendFreqUpdate(osc, freq);
+				SetFreqText(osc, freq);
+				resetConfigButtons(osc);
 			}
 		} else {
 			// Freq is not a number, assuming it is a note
 			let note = new Note();
 			note.setName(input);
-			await FreqInput(osc, parseInt(note.frequency));
+			freq = parseInt(note.frequency);
+			await SendFreqUpdate(osc, freq);
+			SetFreqText(osc, freq);
+			resetConfigButtons(osc);
 		}
 	}
+}
+
+function resetConfigButtons(osc) {
+	$(".osc-config input[type=checkbox][id$=" + osc + "]:checked").attr('checked', false);
 }
 
 async function ChangeDutyManual(osc, currValue) {
@@ -471,9 +478,11 @@ async function noteOn(note, velocity, osc, sustain) {
 	let duty = velocityToDuty(velocity);
 	if (duty > 0) {
 		let freq = noteToFreq(note);
-		SlidingFreq(osc, freq);
-		SlidingDuty(osc, duty);
-		await FreqInput(osc, freq);
+		SetFreqText(osc, freq);
+		SetDutyText(osc, duty);
+		SetSliderFreqValue(osc, freq)
+		SetSliderDutyValue(osc, duty)
+		await SendFreqUpdate(osc, freq);
 		await sleep(10);
 		await DutyInput(osc, duty);
 	}
@@ -484,7 +493,7 @@ async function noteOn(note, velocity, osc, sustain) {
 
 async function noteOff(note, osc, sustain) {
 	if (!sustain) {
-		SlidingDuty(osc, 0);
+		SetDutyText(osc, 0);
 		await DutyInput(osc, 0);
 	}
 }
@@ -527,8 +536,20 @@ async function callbackPitchDetect(current, lastKnown) {
 		lastFreqFromMic = freq;
 		for(let micCheck of $("input[name=mic]:checked")) {
 			let osc = parseInt(micCheck.id[micCheck.id.length - 1]);
-			SlidingFreq(osc, freq);
-			FreqInput(osc, freq);
+			SetSliderFreqValue(osc, freq)
+			SetFreqText(osc, freq);
+			SendFreqUpdate(osc, freq);
 		}
 	}
 }
+
+function SetSliderFreqValue(osc, freq) {
+	$("#slider-freq-" + osc).val(freq);
+	$("#slider-freq-" + osc).attr("data-prev-value", freq);
+}
+
+function SetSliderDutyValue(osc, duty) {
+	$("#slider-duty-" + osc).val(duty);
+	$("#slider-duty-" + osc).attr("data-prev-value", duty);
+}
+
