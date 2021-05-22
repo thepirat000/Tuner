@@ -9,6 +9,9 @@ $(document).ready(function () {
 	$("#btn-scan").click(async function(e) {
 		await Scan();
 	});
+	$("#btn-test").click(async function(e) {
+		ShowOscillators();
+	});
 	$("#btn-load").click(async function(e) {
 		await Load();
 	});
@@ -519,7 +522,7 @@ function HandleMicCheck(osc, checked) {
 let lastFreqFromMic = 0.0;
 
 async function callbackPitchDetect(current, lastKnown) {
-	let freq = lastKnown.toFixed(2);
+	let freq = Math.round(lastKnown);
 	if (freq > 0 && lastFreqFromMic != freq) {
 		lastFreqFromMic = freq;
 		for(let micCheck of $("input[name=mic]:checked")) {
