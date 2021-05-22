@@ -25,9 +25,10 @@
 	<link rel="stylesheet" href="./ext/lc_switch.css">
 	
 	<script src="./ext/nu.js" type="text/javascript"></script>
+	<script src="./ext/pitchdetect.js" type="text/javascript"></script>
 </head>
 <body>
-    <div id="big-one" style="max-width: 980px; min-width: 390px; margin: 0 auto;">
+    <div id="big-one" style="max-width: 940px; min-width: 390px; margin: 0 auto;">
         <div class="banner-message">
             <div class="app-title">
                 <span id="title" style="margin: 0 auto;">
@@ -63,10 +64,16 @@
 				<div><button id="btn-save" class="save-button">Save</button></div>
 			</div>
 			
-			<div id="oscillators" style="display:none;">
+			<div id="oscillators" style="">
 				<div id="osc-1" class="oscillator">
 					<div class="id-div">
-						<span class="no-select" style="margin-left: 50px;">#<span id="osc-id-1" class="osc-number no-select">1</span></span>
+						<div class="osc-config">
+							<label for="midi-osc-1" class="no-select osc-config-text">MIDI</label><input type="checkbox" name="midi" id="midi-osc-1" title="Enable MIDI input">
+							<label for="mic-osc-1" class="no-select osc-config-text">MIC</label><input type="checkbox" name="mic" id="mic-osc-1" title="Enable Microphone input">
+						</div>
+						<span class="no-select" style="margin:right: 50px;">#<span id="osc-id-1" class="osc-number no-select">1</span></span>
+						
+						
 						<input type="checkbox" id="switch-osc-1" value="1" class="lcs_check switch" autocomplete="off" checked="checked" />	
 					</div>
 					<div class="config-container">

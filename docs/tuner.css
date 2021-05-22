@@ -168,7 +168,7 @@ button {
 	background-color: var(--console-background-color);
 	border: 1px solid var(--border-color);
 	font-size: x-small;
-	margin: 2px 2px 2px 2px;
+	margin: 8px 2px 2px 2px;
 	cursor: default;
 	
 }
@@ -184,7 +184,6 @@ button {
 .oscillator {
 	background-color: var(--osc-color);
 	border: 1px solid var(--border-color);
-	margin: auto;
 	margin-top: 8px;
 	min-width: 350px;
 	max-width: 450px;
@@ -360,3 +359,22 @@ button {
   display: block;
   margin: 0em 0em 0em 0em;
 }	
+
+.osc-config {
+	float: left;
+	margin-top: 6px;
+	display: flex;
+	align-items: center;
+}
+
+.osc-config input[type=checkbox] {
+	margin-right: 7px;
+	margin-left: 2px;
+}
+
+.osc-config-text {
+	font-size: x-small;
+	margin-left: 2px;
+	vertical-align: text-top;
+	
+}

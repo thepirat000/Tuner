@@ -75,6 +75,10 @@ $(document).ready(function () {
 		await DutyInput(osc, parseFloat(this.attributes["data-value"].value));
 	});
 	
+	$('.id-div').on("change", "input[name=mic]", function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		HandleMicCheck(osc, this.checked);
+	});	
 });
 
 var characteristicCmd;
@@ -228,6 +232,11 @@ function GenerateOscillatorsUI() {
 				this.id = this.id.substring(0, this.id.length - 1) + i;
 			}
 		});
+		clone.find('[for]').each(function () { 
+			if (this.htmlFor.endsWith("-1")) {
+				this.htmlFor = this.htmlFor.substring(0, this.htmlFor.length - 1) + i;
+			}
+		});		
 		$(clone).find("#osc-id-" + i).text(i);
 		$("#oscillators").append(clone);
 	}
@@ -281,7 +290,9 @@ function ShowSwitchValue(osc, value) {
 async function SendCommand(cmd) {
 	if (cmd) {
 		let value = encoder.encode(cmd);
-		await characteristicCmd.writeValue(value);
+		try {
+			await characteristicCmd.writeValue(value);
+		} catch {}
 	}
 }
 
@@ -425,38 +436,53 @@ function StartMidi() {
 }
 
 async function onMIDIMessage(message) {
+	let checked = $("input[name=midi]:checked");
+	if (checked.length == 0) {
+		return;
+	}
+	
     var command = message.data[0];
     var note = message.data[1];
     var velocity = (message.data.length > 2) ? message.data[2] : 0; // a velocity value might not be included with a noteOff command
 
-    switch (command) {
-        case 144: 
-            if (velocity > 0) {
-                await noteOn(note, velocity);
-            } else {
-                await noteOff(note);
-            }
-            break;
-        case 128: 
-            await noteOff(note);
-            break;
-    }
+	for(let input of checked) {
+		let osc = input.id.substring(input.id.length - 1);
+		switch (command) {
+			case 144: 
+				if (velocity > 0) {
+					await noteOn(note, velocity, osc, true);
+				} else {
+					await noteOff(note, osc, true);
+				}
+				break;
+			case 128: 
+				await noteOff(note, osc, true);
+				break;
+		}
+	}		
 }
 
-async function noteOn(note, velocity) {
+
+async function noteOn(note, velocity, osc, sustain) {
 	let duty = velocityToDuty(velocity);
 	if (duty > 0) {
 		let freq = noteToFreq(note);
-		await FreqInput(1, freq);
+		SlidingFreq(osc, freq);
+		SlidingDuty(osc, duty);
+		await FreqInput(osc, freq);
 		await sleep(10);
-		await DutyInput(1, duty);
+		await DutyInput(osc, duty);
 	}
-	//await DutyInput(1, duty);
+	if (!sustain) {
+		await DutyInput(osc, duty);
+	}
 }
 
-async function noteOff(note) {
-	//await sleep(10);
-	//await DutyInput(1, 0);
+async function noteOff(note, osc, sustain) {
+	if (!sustain) {
+		SlidingDuty(osc, 0);
+		await DutyInput(osc, 0);
+	}
 }
 
 function sleep(ms) {
@@ -475,4 +501,31 @@ function velocityToDuty(velocity) {
 		return 0;
 	}
 	return ((velocity*70/127)+15).toFixed(0);
+}
+
+function HandleMicCheck(osc, checked) {
+	if (PitchDetect.AudioContext == null && checked) {
+		// Turn on Mic
+		PitchDetect.Init();
+		PitchDetect.StartLiveInput(async (current, lastKnown) => await callbackPitchDetect(current, lastKnown));
+	}
+	else if (PitchDetect.AudioContext != null && $("input[name=mic]:checked").length == 0) {
+		// Turn off Mic
+		PitchDetect.StopLiveInput();
+		PitchDetect.AudioContext = null;
+	}
+}
+
+let lastFreqFromMic = 0.0;
+
+async function callbackPitchDetect(current, lastKnown) {
+	let freq = lastKnown.toFixed(2);
+	if (freq > 0 && lastFreqFromMic != freq) {
+		lastFreqFromMic = freq;
+		for(let micCheck of $("input[name=mic]:checked")) {
+			let osc = parseInt(micCheck.id[micCheck.id.length - 1]);
+			SlidingFreq(osc, freq);
+			FreqInput(osc, freq);
+		}
+	}
 }
