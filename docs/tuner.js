@@ -49,7 +49,7 @@ $(document).ready(function () {
 
 	$('.duty-div').on("change", ".slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
-		await DutyInput(osc, parseFloat(this.value));
+		await SendDutyUpdate(osc, parseFloat(this.value));
 	});	
 	$('.duty-div').on("input", ".slider", function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
@@ -79,7 +79,7 @@ $(document).ready(function () {
 
 	$('.set-duty-buttons').on("click", ".step-button", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
-		await DutyInput(osc, parseFloat(this.attributes["data-value"].value));
+		await SendDutyUpdate(osc, parseFloat(this.attributes["data-value"].value));
 	});
 	
 	$('.id-div').on("change", "input[name=mic]", function(e) {
@@ -246,8 +246,10 @@ function GenerateOscillatorsUI() {
 async function SendConsoleCommand() {
 	let cmd = $("#command").val();
 	AppendLogLine("> " + cmd);
-	await SendCommand(cmd);
-	$("#command").val("");
+	let ok = await SendCommand(cmd);
+	if (ok) {
+		$("#command").val("");
+	}
 }
 
 function ShowFreqValue(osc, value) {
@@ -264,10 +266,10 @@ function ShowFreqValue(osc, value) {
 }
 // value: 0-1023
 function ShowDutyValue(osc, value) {
+	let percentage = value * 100 / 1023;
 	let prevValue = $("#slider-duty-" + osc).attr("data-prev-value");
 	$("#duty-text-" + osc).css('color', 'var(--duty-color)');
-	if (prevValue != value) {
-		let percentage = value * 100 / 1023;
+	if (prevValue != percentage) {
 		$("#duty-text-" + osc).text(parseFloat(percentage).toFixed(0));
 		SetSliderDutyValue(osc, percentage);
 		$("#duty-div-" + osc).stop(true,true);
@@ -301,7 +303,8 @@ async function SendCommand(cmd) {
 		let value = encoder.encode(cmd);
 		try {
 			await characteristicCmd.writeValue(value);
-		} catch {}
+		} catch { return false; }
+		return true;
 	}
 }
 
@@ -352,7 +355,7 @@ async function SendFreqUpdate(osc, value) {
 	await SendCommand(msg);
 }
 
-async function DutyInput(osc, value) {
+async function SendDutyUpdate(osc, value) {
 	// User finished sliding duty slider
 	let duty = value >= 100 ? 1023 : parseInt(value * 1024 / 100);
 	let msg = "/";
@@ -365,17 +368,21 @@ async function DutyInput(osc, value) {
 
 async function Save() {
 	let pindex = $("input[name='preset']:checked").val() - 1;
-	await SendCommand("save " + pindex);
-	$("#btn-save").stop(true,true);
-	$("#btn-save").effect('highlight',{},500); 
-	AppendLogLine("Saved");
+	let ok = await SendCommand("save " + pindex);
+	if (ok) {
+		$("#btn-save").stop(true,true);
+		$("#btn-save").effect('highlight',{},500); 
+		AppendLogLine("Saved");
+	}
 }
 async function Load() {
 	let pindex = $("input[name='preset']:checked").val() - 1;
-	await SendCommand("load " + pindex);
-	$("#btn-load").stop(true,true);
-	$("#btn-load").effect('highlight',{},500); 
-	AppendLogLine("Loaded");
+	let ok = await SendCommand("load " + pindex);
+	if (ok) {
+		$("#btn-load").stop(true,true);
+		$("#btn-load").effect('highlight',{},500); 
+		AppendLogLine("Loaded");
+	}
 }
 
 function ShowWaitCursor() {
@@ -419,7 +426,7 @@ async function ChangeDutyManual(osc, currValue) {
 	if (input) {
 		let duty = parseInt(input);
 		if (duty >= 0) {
-			await DutyInput(osc, duty);
+			await SendDutyUpdate(osc, duty);
 		}
 	}
 }
@@ -490,17 +497,17 @@ async function noteOn(note, velocity, osc, sustain) {
 		SetSliderDutyValue(osc, duty)
 		await SendFreqUpdate(osc, freq);
 		await sleep(10);
-		await DutyInput(osc, duty);
+		await SendDutyUpdate(osc, duty);
 	}
 	if (!sustain) {
-		await DutyInput(osc, duty);
+		await SendDutyUpdate(osc, duty);
 	}
 }
 
 async function noteOff(note, osc, sustain) {
 	if (!sustain) {
 		SetDutyText(osc, 0);
-		await DutyInput(osc, 0);
+		await SendDutyUpdate(osc, 0);
 	}
 }
 
@@ -538,7 +545,6 @@ function HandleMicCheck(osc, checked) {
 
 async function callbackPitchDetect(current, lastKnown) {
 	let freq = Math.round(lastKnown);
-	freq = freq - 1;
 	if (freq > 0 && lastFreqFromMic != freq) {
 		lastFreqFromMic = freq;
 		for(let micCheck of $("input[name=mic]:checked")) {
