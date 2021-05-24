@@ -570,6 +570,7 @@ async function callbackPitchDetect(current, lastKnown) {
 }
 
 let seqTimerId = null;
+let seqPlaying = false;
 let seqIndex;
 
 async function Play() {
@@ -581,20 +582,25 @@ async function Play() {
 			seqIndex = 0;
 			$("#btn-load").prop('disabled', true);
 			$("#btn-save").prop('disabled', true);
-			seqTimerId = setInterval(async () => await playNextSequence(), wait * 1000);
+			seqPlaying = true;
+			await playNextSequence(wait);
 		}
 	}
 }
 
-async function playNextSequence() {
+async function playNextSequence(wait) {
 	$("input[name='preset']:checked").prop("checked", false);
 	$("#preset" + (seqIndex + 1)).prop("checked", true);
 	seqIndex = (seqIndex + 1) % 4;
 	await Load();
+	if (seqPlaying) {
+		seqTimerId = setTimeout(async () => await playNextSequence(wait), wait * 1000);
+	}
 }
 
 async function Stop() {
-	if (seqTimerId) {
+	if (seqPlaying) {
+		seqPlaying = false;
 		clearInterval(seqTimerId);
 		seqTimerId = null;
 		$("#btn-load").prop('disabled', false);

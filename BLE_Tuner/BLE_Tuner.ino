@@ -39,10 +39,9 @@ Docs/Links:
 #define PRESET_FILE_PREFIX "/p"
 #define PRESET_FILE_SUFFIX ".txt"
 
-
 #define LED_PIN 2
+#define MAX_PRESET 4
 #define MAX_OUTPUT 4
-#define MAX_PRESET_INDEX 3
 #define MAX_FREQUENCY 40000
 #define DUTY_RESOLUTION_BITS 10
 #define DUTY_CYCLE_DEFAULT 512
@@ -53,10 +52,11 @@ Docs/Links:
 const int PINOUT[] = {2, 4, 5, 18}; 
 
 // Global vars
-std::vector<float> _freqs = {0, 0, 0, 0};
-std::vector<float> _cacheFreqs = {0, 0, 0, 0};
-std::vector<float> _duties = {DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT, DUTY_CYCLE_DEFAULT};
-std::vector<byte> _switches = {1, 1, 1, 1};
+std::vector<float> _freqs;
+std::vector<float> _cacheFreqs;
+std::vector<String> _cachePresets;
+std::vector<float> _duties;
+std::vector<byte> _switches;
 std::random_device _rnd;
 BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicSwitches, *pCharacteristicCmd;
 std::queue<String> _bleCommandBuffer;
@@ -98,12 +98,14 @@ std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
 void SetFreqPWM(int oscIndex, float freq, bool setup=false);
 std::vector<String> GetPreset(int pindex);
 void StorePreset(int pindex, std::vector<String> preset);
+void InitializeVectors();
 
 // MAIN
 void setup() {
   Serial.begin(115200);
   Log("Initializing");
-
+  InitializeVectors();
+  
   //ESPFlashCounter flashCounter("/counter");
   //Log(String(flashCounter.get()) + " executions");
   //flashCounter.increment();
@@ -214,6 +216,18 @@ void ProcessInput(String recv) {
     UpdateFrequencyValues(recv, false);
   }
   PrintValues(_freqs, _duties);  
+}
+
+void InitializeVectors() {
+  for(int i = 0; i < MAX_OUTPUT; ++i) {
+    _freqs.push_back(0);
+    _cacheFreqs.push_back(0);
+    _duties.push_back(DUTY_CYCLE_DEFAULT);
+    _switches.push_back(1);
+  }
+  for(int i = 0; i < MAX_PRESET; ++i) {
+    _cachePresets.push_back("");
+  }
 }
 
 bool isOperand(String str) {
@@ -582,11 +596,15 @@ void Save(int pindex) {
 }
 
 std::vector<String> GetPreset(int pindex) {
-  if (pindex < 0 || pindex > MAX_PRESET_INDEX) {
+  if (pindex < 0 || pindex > (MAX_PRESET-1)) {
     return {};
   }
-  ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
-  String value = espFlashString.get();
+  String value = _cachePresets[pindex];
+  if (value.length() == 0) {
+    ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
+    _cachePresets[pindex] = espFlashString.get();
+    value = _cachePresets[pindex];
+  }
   if (value.length() == 0) {
     return {};
   }
@@ -595,12 +613,13 @@ std::vector<String> GetPreset(int pindex) {
 }
 
 void StorePreset(int pindex, std::vector<String> preset) {
-  if (pindex < 0 || pindex > MAX_PRESET_INDEX) {
+  if (pindex < 0 || pindex > (MAX_PRESET-1)) {
     return;
   }
   ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
   String value = joinString(preset, '|');
   Log("Store P" + String(pindex) + "=" + value);
+  _cachePresets[pindex] = value;
   espFlashString.set(value);
 }
 
