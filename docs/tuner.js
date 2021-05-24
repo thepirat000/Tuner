@@ -22,6 +22,12 @@ $(document).ready(function () {
 	$("#btn-save").click(async function(e) {
 		await Save();
 	});
+	$("#btn-play").click(async function(e) {
+		await Play();
+	});
+	$("#btn-stop").click(async function(e) {
+		await Stop();
+	});
 	$("#btn-clear").click(function(e) {
 		Clear();
 	});
@@ -61,7 +67,7 @@ $(document).ready(function () {
 		await ChangeFreqManual(osc, $(this).text());
 	});	
 	
-	$('.duty-div').on("click", ".duty", async function(e) {
+	$('.duty-div').on("click", ".duty-text,.duty-perc-text", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await ChangeDutyManual(osc, $(this).text());
 	});
@@ -352,7 +358,7 @@ async function SendFreqUpdate(osc, value) {
 		msg += ",";
 	}
 	msg += value;
-	await SendCommand(msg);
+	return await SendCommand(msg);
 }
 
 async function SendDutyUpdate(osc, value) {
@@ -363,7 +369,7 @@ async function SendDutyUpdate(osc, value) {
 		msg += ",";
 	}
 	msg += duty;
-	await SendCommand(msg);
+	return await SendCommand(msg);
 }
 
 async function Save() {
@@ -422,11 +428,18 @@ function resetConfigButtons(osc) {
 }
 
 async function ChangeDutyManual(osc, currValue) {
+	currValue = parseInt(currValue.trim());
 	let input = prompt("Enter the new duty cycle (0-100) for OSC " + osc, currValue);
 	if (input) {
 		let duty = parseInt(input);
-		if (duty >= 0) {
+		if (!isNaN(duty)) {
+			if (duty < 0) {
+				duty = 0;
+			} else if(duty > 100) {
+				duty = 100;
+			}
 			await SendDutyUpdate(osc, duty);
+			SetDutyText(osc, duty);
 		}
 	}
 }
@@ -553,5 +566,38 @@ async function callbackPitchDetect(current, lastKnown) {
 			SetFreqText(osc, freq);
 			SendFreqUpdate(osc, freq);
 		}
+	}
+}
+
+let seqTimerId = null;
+let seqIndex;
+
+async function Play() {
+	let input = prompt("Time to wait between steps (in Seconds)", 1);
+	if (input) {
+		let wait = parseFloat(input);
+		if (!isNaN(wait) && wait > 0) {
+			Stop();
+			seqIndex = 0;
+			$("#btn-load").prop('disabled', true);
+			$("#btn-save").prop('disabled', true);
+			seqTimerId = setInterval(async () => await playNextSequence(), wait * 1000);
+		}
+	}
+}
+
+async function playNextSequence() {
+	$("input[name='preset']:checked").prop("checked", false);
+	$("#preset" + (seqIndex + 1)).prop("checked", true);
+	seqIndex = (seqIndex + 1) % 4;
+	await Load();
+}
+
+async function Stop() {
+	if (seqTimerId) {
+		clearInterval(seqTimerId);
+		seqTimerId = null;
+		$("#btn-load").prop('disabled', false);
+		$("#btn-save").prop('disabled', false);
 	}
 }
