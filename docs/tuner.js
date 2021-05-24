@@ -4,6 +4,8 @@ let characteristicFreqs;
 let device;
 const encoder = new TextEncoder('utf-8');
 let lastFreqFromMic = 0.0;
+const OSC_COUNT = 4;
+
 
 $(document).ready(function () {
 	$('.lcs_check').lc_switch();
@@ -231,7 +233,7 @@ function Clear() {
 }
 
 function GenerateOscillatorsUI() {
-	for (let i = 2; i <= 4; ++i) {
+	for (let i = 2; i <= OSC_COUNT; ++i) {
 		let clone = $("#osc-1").clone();
 		clone.attr("id", clone.attr("id").substring(0, clone.attr("id").length - 1) + i);
 		clone.find('[id]').each(function () { 

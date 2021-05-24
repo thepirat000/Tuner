@@ -40,16 +40,15 @@ Docs/Links:
 #define PRESET_FILE_SUFFIX ".txt"
 
 #define LED_PIN 2
-#define MAX_PRESET 4
-#define MAX_OUTPUT 4
+#define MAX_PRESET 4  // Presets MAX count
+#define MAX_OUTPUT 4  // Oscillators MAX count (up to 8)
 #define MAX_FREQUENCY 40000
 #define DUTY_RESOLUTION_BITS 10
 #define DUTY_CYCLE_DEFAULT 512
-#define DUTY_CYCLE_PRESET_DEFAULT "512,512,512,512"
 
-// Connect each of these PINS to a MOSFET driving 12v to a coil/electromaget (i.e. D2, D4, D5, D18)
+// Connect each of these PINS to a MOSFET driving 12v to a coil/electromaget (i.e. D2, D4, D5, D18, etc)
 
-const int PINOUT[] = {2, 4, 5, 18}; 
+const int PINOUT[] = {2, 4, 5, 18, 19, 21, 22, 23 }; 
 
 // Global vars
 std::vector<float> _freqs;
@@ -560,7 +559,9 @@ void Load(int pindex) {
   }
   else {
     // Default duties
-    UpdateDutyValues(DUTY_CYCLE_PRESET_DEFAULT, false);
+    for (size_t d = 0; d < _duties.size(); ++d) {
+      _duties[d] = DUTY_CYCLE_DEFAULT;
+    }
   }
   if (preset.size() > 2 && isDigit(preset[2].charAt(0))) {
     // preset[2] are switches (bbbb)
