@@ -6,13 +6,10 @@ const encoder = new TextEncoder('utf-8');
 let lastFreqFromMic = 0.0;
 
 $(document).ready(function () {
-	
 	$('.lcs_check').lc_switch();
-	
 	GenerateOscillatorsUI();
-	
 	StartMidi();
-	
+
 	$("#btn-scan").click(async function(e) {
 		await Scan();
 	});
@@ -278,6 +275,16 @@ function ShowDutyValue(osc, value) {
 	}
 }
 
+function SetSliderFreqValue(osc, freq) {
+	$("#slider-freq-" + osc).val(freq);
+	$("#slider-freq-" + osc).attr("data-prev-value", freq);
+}
+
+function SetSliderDutyValue(osc, duty) {
+	$("#slider-duty-" + osc).val(duty);
+	$("#slider-duty-" + osc).attr("data-prev-value", duty);
+}
+
 function ShowSwitchValue(osc, value) {
 	// Change the switch values without triggering the onchange
 	let oscSwitch = $("#osc-" + osc + " .lcs_wrap .lcs_switch")
@@ -473,7 +480,6 @@ async function onMIDIMessage(message) {
 	}		
 }
 
-
 async function noteOn(note, velocity, osc, sustain) {
 	let duty = velocityToDuty(velocity);
 	if (duty > 0) {
@@ -532,6 +538,7 @@ function HandleMicCheck(osc, checked) {
 
 async function callbackPitchDetect(current, lastKnown) {
 	let freq = Math.round(lastKnown);
+	freq = freq - 1;
 	if (freq > 0 && lastFreqFromMic != freq) {
 		lastFreqFromMic = freq;
 		for(let micCheck of $("input[name=mic]:checked")) {
@@ -542,14 +549,3 @@ async function callbackPitchDetect(current, lastKnown) {
 		}
 	}
 }
-
-function SetSliderFreqValue(osc, freq) {
-	$("#slider-freq-" + osc).val(freq);
-	$("#slider-freq-" + osc).attr("data-prev-value", freq);
-}
-
-function SetSliderDutyValue(osc, duty) {
-	$("#slider-duty-" + osc).val(duty);
-	$("#slider-duty-" + osc).attr("data-prev-value", duty);
-}
-
