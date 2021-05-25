@@ -547,7 +547,7 @@ function velocityToDuty(velocity) {
 function HandleMicCheck(osc, checked) {
 	if (PitchDetect.AudioContext == null && checked) {
 		// Turn on Mic
-		PitchDetect.MinTimeBetweenUpdates = 250;
+		PitchDetect.MinTimeBetweenUpdates = 200;
 		PitchDetect.Init();
 		PitchDetect.StartLiveInput(async (current, lastKnown) => await callbackPitchDetect(current, lastKnown));
 	}
