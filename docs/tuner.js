@@ -558,9 +558,14 @@ function HandleMicCheck(osc, checked) {
 	}
 }
 
+
+let sameFreqCount = 0;
+
 async function callbackPitchDetect(current, lastKnown) {
 	let freq = Math.round(lastKnown);
+	
 	if (freq > 0 && lastFreqFromMic != freq) {
+		sameFreqCount = 0;
 		lastFreqFromMic = freq;
 		for(let micCheck of $("input[name=mic]:checked")) {
 			let osc = parseInt(micCheck.id[micCheck.id.length - 1]);
@@ -568,6 +573,19 @@ async function callbackPitchDetect(current, lastKnown) {
 			SetFreqText(osc, freq);
 			SendFreqUpdate(osc, freq);
 		}
+	}
+
+	current = Math.round(current);
+	if (current > 0 && lastFreqFromMic == current) {
+		sameFreqCount++;
+		console.log(sameFreqCount);
+	} 
+
+	if (sameFreqCount >= 4) {
+		// Stop
+		$("input[name=mic]:checked").prop('checked', false);
+		PitchDetect.StopLiveInput();
+		PitchDetect.AudioContext = null;
 	}
 }
 

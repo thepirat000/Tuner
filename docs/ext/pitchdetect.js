@@ -28,7 +28,7 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 let PitchDetect = {};
 
-PitchDetect.analizer = null;
+PitchDetect.analyser = null;
 PitchDetect.mediaStreamSource = null;
 PitchDetect.rafID = null;
 PitchDetect.buffer = new Float32Array( 2048 );
@@ -48,9 +48,9 @@ PitchDetect.GotStream = function (stream, callback_freq) {
     PitchDetect.mediaStreamSource = PitchDetect.AudioContext.createMediaStreamSource(stream);
 
     // Connect it to the destination.
-    analyser = PitchDetect.AudioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    PitchDetect.mediaStreamSource.connect(analyser);
+    PitchDetect.analyser = PitchDetect.AudioContext.createAnalyser();
+    PitchDetect.analyser.fftSize = 2048;
+    PitchDetect.mediaStreamSource.connect(PitchDetect.analyser);
     PitchDetect.UpdatePitch(0, callback_freq);
 }
 
@@ -91,7 +91,7 @@ PitchDetect.StopLiveInput = function() {
 		}
 		window.cancelAnimationFrame(PitchDetect.rafID);
 		
-		analyser = null;
+		PitchDetect.analyser = null;
 		PitchDetect.AudioContext = null;
 	}
 }
@@ -144,9 +144,9 @@ PitchDetect.AutoCorrelate = function ( buffer, sampleRate ) {
 PitchDetect.UpdatePitch = function (time, callback_freq) {
 	const elapsed = time - PitchDetect.lastUpdate;
 	
-	if (time == 0 || elapsed > PitchDetect.MinTimeBetweenUpdates) {
+	if (PitchDetect.analyser != null && (time == 0 || elapsed > PitchDetect.MinTimeBetweenUpdates)) {
 		let cycles = new Array;
-		analyser.getFloatTimeDomainData( PitchDetect.buffer );
+		PitchDetect.analyser.getFloatTimeDomainData( PitchDetect.buffer );
 		let ac = PitchDetect.AutoCorrelate( PitchDetect.buffer, PitchDetect.AudioContext.sampleRate );
 		PitchDetect.CurrentPitch = ac;
 		if (ac != -1) {
