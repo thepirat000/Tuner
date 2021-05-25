@@ -574,15 +574,14 @@ async function callbackPitchDetect(current, lastKnown) {
 			SendFreqUpdate(osc, freq);
 		}
 	}
-
 	current = Math.round(current);
 	if (current > 0 && lastFreqFromMic == current) {
 		sameFreqCount++;
 		console.log(sameFreqCount);
 	} 
-
 	if (sameFreqCount >= 4) {
 		// Stop
+		sameFreqCount = 0;
 		$("input[name=mic]:checked").prop('checked', false);
 		PitchDetect.StopLiveInput();
 		PitchDetect.AudioContext = null;
