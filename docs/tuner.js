@@ -544,10 +544,13 @@ function velocityToDuty(velocity) {
 	return ((velocity*70/127)+15).toFixed(0);
 }
 
+let sameFreqCount = 0;
+
 function HandleMicCheck(osc, checked) {
 	if (PitchDetect.AudioContext == null && checked) {
 		// Turn on Mic
 		PitchDetect.MinTimeBetweenUpdates = 200;
+		sameFreqCount = 0;
 		PitchDetect.Init();
 		PitchDetect.StartLiveInput(async (current, lastKnown) => await callbackPitchDetect(current, lastKnown));
 	}
@@ -557,9 +560,6 @@ function HandleMicCheck(osc, checked) {
 		PitchDetect.AudioContext = null;
 	}
 }
-
-
-let sameFreqCount = 0;
 
 async function callbackPitchDetect(current, lastKnown) {
 	let freq = Math.round(lastKnown);
@@ -577,11 +577,9 @@ async function callbackPitchDetect(current, lastKnown) {
 	current = Math.round(current);
 	if (current > 0 && lastFreqFromMic == current) {
 		sameFreqCount++;
-		console.log(sameFreqCount);
 	} 
 	if (sameFreqCount >= 4) {
 		// Stop
-		sameFreqCount = 0;
 		$("input[name=mic]:checked").prop('checked', false);
 		PitchDetect.StopLiveInput();
 		PitchDetect.AudioContext = null;
