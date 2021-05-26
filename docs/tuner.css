@@ -24,12 +24,13 @@
   --slider-back-color: #F4D03F;
   --note-color: #626567;
   --footer-back-color: lightgray;
+  --slider-color: #04AA6D;
 }
 
 .dark-mode {
   color-scheme: dark;
   --back-color: #000;
-  --title-back-color: #404040;
+  --title-back-color: #17314a;
   --title-color: #08E;
   --console-background-color: #252525;
   --osc-color: #040404;
@@ -43,8 +44,9 @@
   --step-button-color: #366AB9;
   --body-color: #D6CDCD;
   --slider-back-color: #676148;
-  --note-color: #626567;
+  --note-color: #909294;
   --footer-back-color: #404040;
+  --slider-color: #00ffa1;
 }
 
 * {
@@ -233,14 +235,14 @@ button:disabled {
   appearance: none;
   width: 4px;
   height: 25px;
-  background: #04AA6D;
+  background: var(--slider-color);
   cursor: pointer;
   border: 1px solid #626567;
 }
 .slider::-moz-range-thumb {
   width: 4px;
   height: 25px;
-  background: #04AA6D;
+  background: var(--slider-color);
   cursor: pointer;
   border: 1px solid #626567;
 }
@@ -327,7 +329,6 @@ button:disabled {
 	width: 22px;
 	height: 24px;
 	text-align: center;
-	color: #566573;
 }
 
 .op-container {
