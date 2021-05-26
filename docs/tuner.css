@@ -233,6 +233,7 @@ button:disabled {
 	border: 1px solid var(--border-color);
 	padding-bottom: 0px;
 	border-bottom: none;
+	height: 32px;
 }
 
 .freq-div {
