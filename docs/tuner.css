@@ -23,6 +23,28 @@
   --body-color: #2d2d2d;
   --slider-back-color: #F4D03F;
   --note-color: #626567;
+  --footer-back-color: lightgray;
+}
+
+.dark-mode {
+  color-scheme: dark;
+  --back-color: #000;
+  --title-back-color: #404040;
+  --title-color: #08E;
+  --console-background-color: #252525;
+  --osc-color: #040404;
+  --osc-shadow-color: #D4AC0D;
+  --freq-color: #12FB71;
+  --duty-color: #12FB71;
+  --running-freq-color: #909497;
+  --running-duty-color: #909497;
+  --border-color: #566B6D;
+  --main-button-color: #215382;
+  --step-button-color: #366AB9;
+  --body-color: #D6CDCD;
+  --slider-back-color: #676148;
+  --note-color: #626567;
+  --footer-back-color: #404040;
 }
 
 * {
@@ -77,6 +99,7 @@ button:disabled {
 	justify-content: center;
 	position: relative;
 	bottom: 0px;
+	background-color: var(--footer-back-color);
 }
 
 /* Safari */
@@ -109,10 +132,6 @@ button:disabled {
 
 .ui-accordion .ui-accordion-header {
     padding: 0;
-}
-
-.text-muted {
-	background-color: lightgray;
 }
 
 .freq {

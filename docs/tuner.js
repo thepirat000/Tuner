@@ -12,6 +12,21 @@ $(document).ready(function () {
 	GenerateOscillatorsUI();
 	StartMidi();
 
+	if (localStorage.getItem('dark') == 'true') {
+		$("#dark").prop('checked', true);
+		$('body').addClass('dark-mode');
+	}
+	$("#dark").click(function() {
+		if (this.checked) {
+			$('body').addClass('dark-mode');
+			localStorage.setItem('dark', true);
+		} 
+		else {
+			$('body').removeClass('dark-mode');
+			localStorage.setItem('dark', false);
+		}
+	});
+
 	$("#btn-scan").click(async function(e) {
 		await Scan();
 	});
