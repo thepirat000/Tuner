@@ -15,7 +15,6 @@
   --running-freq-color: #909497;
   --running-duty-color: #909497;
   --border-color: #7F8C8D;
-  --config-height: 120px;
   --main-button-color: #0084ff;
   --step-button-color: #75b936;
 }
@@ -223,7 +222,7 @@ button:disabled {
 
 .duty-div .slider {
 	width: 82%;
-	margin-top: 4px;
+	margin-top: 10px;
 }
 .freq-div .slider {
 	width: 90%;
@@ -233,34 +232,25 @@ button:disabled {
 	border: 1px solid var(--border-color);
 	padding-bottom: 0px;
 	border-bottom: none;
-	height: 32px;
 }
 
 .freq-div {
 	border: 1px solid var(--border-color);
 	width: 70%;
-	float: left;
-	height: var(--config-height);
 }
 
 .duty-div {
 	border: 1px solid var(--border-color);
-	margin-left: 70%;
-	height: var(--config-height);
+	width: 30%;
 }
 
 .duty {
 	font-family: 'digital-clock-font', Arial;
 	font-size: 38px;
-	/*text-shadow: 2px 2px 2px var(--osc-shadow-color);	*/
 	color: var(--duty-color);
 	cursor: default;
-	height: 40px;
 	margin-top: 2px;
-}
-
-.duty-text {
-	
+	display: contents;
 }
 
 .duty-div .mini-text {
@@ -277,7 +267,7 @@ button:disabled {
 
 .config-container {
   margin: auto;
-  height: var(--config-height);
+  display: flex;
 }
 
 .set-button {
@@ -291,7 +281,7 @@ button:disabled {
 }
 
 .step-button {
-	height: 32px;
+	height: 30px;
 	width: 32px;
     background: var(--step-button-color);
     border: none;
@@ -344,7 +334,6 @@ button:disabled {
 	float:right;
 }
 
-
 .set-duty-buttons .step-button {
 	font-size: x-small;
 }
@@ -368,7 +357,7 @@ button:disabled {
 
 .osc-config {
 	float: left;
-	margin-top: 4px;
+	margin-top: 1px;
 	margin-left: 4px;
 	display: flex;
 	align-items: center;
@@ -385,12 +374,5 @@ button:disabled {
 	display: block;
 	margin-right: 8px;
 	margin-left: 8px;
-	transform: scale(1.2);
+	transform: scale(1.1);
 }
-/*
-.osc-config-text {
-	font-size: x-small;
-	margin-left: 2px;
-	vertical-align: text-top;
-	
-}*/
