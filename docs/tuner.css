@@ -6,7 +6,10 @@
 }
 
 :root {
+  color-scheme: light;
   --back-color: #fff;
+  --title-back-color: #08E;
+  --title-color: white;
   --console-background-color: #f2f8ff;
   --osc-color: #F9E79F;
   --osc-shadow-color: #D4AC0D;
@@ -17,6 +20,9 @@
   --border-color: #7F8C8D;
   --main-button-color: #0084ff;
   --step-button-color: #75b936;
+  --body-color: #2d2d2d;
+  --slider-back-color: #F4D03F;
+  --note-color: #626567;
 }
 
 * {
@@ -25,8 +31,8 @@
 }
 
 body {
-  background: #20262E;
   font-family: Helvetica;
+  color: var(--body-color);
 }
 
 .banner-message {
@@ -90,10 +96,10 @@ button:disabled {
 
 .app-title {
     font-size: large;
-    color: white;
+    color: var(--title-color);
     text-align: center;
     padding: 0em;
-    background-color: #08E;
+    background-color: var(--title-back-color);
 }
 
 .clickable {
@@ -118,7 +124,7 @@ button:disabled {
 }
 
 .note {
-	color: #626567;
+	color: var(--note-color);
 	vertical-align: 1.37em;
 	margin-left: -25px;
 }
@@ -197,7 +203,7 @@ button:disabled {
   -webkit-appearance: none;
   height: 20px;
   
-  background: #F4D03F;
+  background: var(--slider-back-color);
   outline: none;
   opacity: 0.7;
   -webkit-transition: .2s;
@@ -245,12 +251,15 @@ button:disabled {
 }
 
 .duty {
-	font-family: 'digital-clock-font', Arial;
-	font-size: 38px;
-	color: var(--duty-color);
 	cursor: default;
 	margin-top: 2px;
 	display: contents;
+}
+
+.duty-text {
+	font-family: 'digital-clock-font', Arial;
+	font-size: 38px;
+	color: var(--duty-color);
 }
 
 .duty-div .mini-text {
