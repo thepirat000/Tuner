@@ -249,7 +249,7 @@ button:disabled {
 
 .duty-div .slider {
 	width: 82%;
-	margin-top: 3px;
+	margin-top: 8px;
 }
 .freq-div .slider {
 	width: 90%;
@@ -278,7 +278,7 @@ button:disabled {
 
 .duty-text {
 	font-family: 'digital-clock-font', Arial;
-	font-size: 38px;
+	font-size: 32px;
 	color: var(--duty-color);
 }
 
@@ -384,7 +384,7 @@ button:disabled {
 
 .osc-config {
 	float: left;
-	margin-top: 1px;
+	margin-top: 3px;
 	margin-left: 4px;
 	display: flex;
 	align-items: center;
