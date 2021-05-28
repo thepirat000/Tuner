@@ -57,11 +57,11 @@
 body {
   font-family: Helvetica;
   color: var(--body-color);
+  background-color: var(--back-color);
 }
 
 .banner-message {
   background: var(--back-color);
-  border-radius: 4px;
   padding: 10px;
   font-size: 15px;
   text-align: center;
@@ -249,7 +249,7 @@ button:disabled {
 
 .duty-div .slider {
 	width: 82%;
-	margin-top: 10px;
+	margin-top: 3px;
 }
 .freq-div .slider {
 	width: 90%;
@@ -273,7 +273,6 @@ button:disabled {
 
 .duty {
 	cursor: default;
-	margin-top: 2px;
 	display: contents;
 }
 
@@ -292,7 +291,6 @@ button:disabled {
 .duty-perc-text {
 	font-size: 18px;
 	cursor: default;
-	color: black;
 }
 
 .config-container {

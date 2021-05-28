@@ -1,11 +1,11 @@
 .lcs_wrap {
 	display: inline-block;	
 	direction: ltr;
-	height: 20px;
+	height: 24px;
     vertical-align: middle;
 	
 	float:right;
-	margin-top: 4px !important;
+	margin-top: 2px !important;
 	margin-right: 6px !important;
 }
 .lcs_wrap input {
@@ -15,8 +15,8 @@
 .lcs_switch {
 	display: inline-block;	
 	position: relative;
-	width: 53px;
-	height: 20px;
+	width: 65px;
+	height: 100%;
 	border-radius: 30px;
 	background: #ddd;
 	overflow: hidden;
@@ -29,7 +29,7 @@
 .lcs_cursor {
 	display: inline-block;
 	position: absolute;
-	top: 3px;	
+	top: 5px;	
 	width: 12px;
 	height: 13px;
 	border-radius: 100%;
@@ -50,8 +50,7 @@
 	color: #fff;
 	font-weight: bold;
 	position: absolute;
-	width: 22px;
-	top: 5px;
+	top: 7px;
 	overflow: hidden;
 	text-align: center;
 	opacity: 0;
@@ -76,7 +75,7 @@
     box-shadow: 0 0 2px #579022 inset;
 }
 .lcs_switch.lcs_on .lcs_cursor {
-	left: 38px;
+	left: 50px;
 }
 .lcs_switch.lcs_on .lcs_label_on {
 	left: 10px;	
