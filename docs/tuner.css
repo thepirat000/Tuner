@@ -25,6 +25,7 @@
   --note-color: #626567;
   --footer-back-color: lightgray;
   --slider-color: #04AA6D;
+  --switch-on-color: #75b936;
 }
 
 .dark-mode {
@@ -47,6 +48,7 @@
   --note-color: #909294;
   --footer-back-color: #404040;
   --slider-color: #00ffa1;
+  --switch-on-color: #64903b;
 }
 
 * {

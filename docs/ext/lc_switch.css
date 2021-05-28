@@ -68,11 +68,9 @@
 	z-index: 5;	
 }
 
-
 /* on */
 .lcs_switch.lcs_on {
-	background: #75b936;
-    box-shadow: 0 0 2px #579022 inset;
+	background: var(--switch-on-color);
 }
 .lcs_switch.lcs_on .lcs_cursor {
 	left: 50px;
@@ -80,6 +78,7 @@
 .lcs_switch.lcs_on .lcs_label_on {
 	left: 10px;	
 	opacity: 1;
+	user-select: none;
 }
 
 
@@ -94,6 +93,7 @@
 .lcs_switch.lcs_off .lcs_label_off {
 	right: 10px;
 	opacity: 1;	
+	user-select: none;
 }
 
 
