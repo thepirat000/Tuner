@@ -384,7 +384,7 @@ button:disabled {
 
 .osc-config {
 	float: left;
-	margin-top: 3px;
+	margin-top: 1px;
 	margin-left: 4px;
 	display: flex;
 	align-items: center;
