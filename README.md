@@ -130,8 +130,9 @@ Will turn on the first oscillator
 
 #### Save
 Will save the current frequencies, duties and switches to a preset file
-Format: save i
-Being:
+
+- Format: save i
+- Being:
 	- i >= 0: Preset index (default is 0)
 
 Example:
@@ -139,8 +140,8 @@ Example:
 
 #### Load
 Will load and set the frequency, duty, and switches values from the preset file 
-Format: load i
-Being:
+- Format: load i
+- Being:
 	- i >= 0: Preset index (default is 0)
 
 Example:
@@ -150,8 +151,8 @@ Example:
 
 #### Play a song
 
-Format: play SongIndex[,Iterations[,Speed[,Variation]]]
-Being: 
+- Format: play SongIndex[,Iterations[,Speed[,Variation]]]
+- Being: 
 	- SongIndex=The song index to play
 	- Iterations=Times to repeat the song (default is 1)
 		- > 0: Times to repeat
@@ -178,7 +179,7 @@ Examples:
 `play 0,2,1.5,5`
 
 ### Song format
-Format: DefaultStepTypeChar StepsPSV
+- Format: DefaultStepTypeChar StepsPSV
 (no space separation)
 
 Being
