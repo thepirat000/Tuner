@@ -89,9 +89,14 @@ $(document).ready(function () {
 		await ChangeDutyManual(osc, $(this).text());
 	});
 
-	$('.freq-div').on("click", ".step-button", async function(e) {
+	$('.incr-config').on("click", ".step-button", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await HandleFreqStepButton(osc, $(this).attr('data-op'));
+	});	
+
+	$('.mult-config').on("click", ".mult-button", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		await HandleMultButton(osc, $(this).attr('data-mult'));
 	});	
 	
 	$('.oscillator').on("lcs-statuschange", ".lcs_check", async function(e) {
@@ -462,16 +467,25 @@ async function ChangeDutyManual(osc, currValue) {
 }
 
 async function HandleFreqStepButton(osc, op) {
-	let operand = parseFloat((op == '+' || op == '-') ? $("#incr-freq-step-" + osc).val() : $("#mult-freq-step-" + osc).val());
+	let operand = parseFloat($("#incr-freq-step-" + osc).val());
 	if (operand > 0) {
-		operand = op == '-' ? (operand * -1) : op == '/' ? (1 / operand) : operand;
-		let msg = (op == '+' || op == '-') ? "+" : "*";
+		operand = op == '-' ? (operand * -1) : operand;
+		let msg = "+";
 		for(let i = 1; i < osc; ++i) {
 			msg += ",";
 		}
 		msg += operand;
 		await SendCommand(msg);
 	}
+}
+
+async function HandleMultButton(osc, mult) {
+	let msg = "*";
+	for(let i = 1; i < osc; ++i) {
+		msg += ",";
+	}
+	msg += mult;
+	await SendCommand(msg);
 }
 
 async function HandleTurnOffOn(osc, status) {

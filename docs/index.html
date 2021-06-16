@@ -51,19 +51,19 @@
 					<p class="presets-text">Presets</p>
 					<label for="preset1">
 						<input type="radio" id="preset1" name="preset" value="1" checked>
-						A
+						1
 					</label>
 					<label for="preset2">
 						<input type="radio" id="preset2" name="preset" value="2">
-						B
+						2
 					</label>					
 					<label for="preset3">
 						<input type="radio" id="preset3" name="preset" value="3">
-						C
+						3
 					</label>
 					<label for="preset4">
 						<input type="radio" id="preset4" name="preset" value="4">
-						D
+						4
 					</label>					
 				</div>
 				<div><button id="btn-play" class="play-button">Play</button></div>
@@ -97,9 +97,10 @@
 								</div>
 								<div class="mult-config">
 									<p class="mini-text" style="display:none;">Multiply</p>
-									<input id="divi-freq-1" type="button" class="step-button" value="/" data-op="/" />
-									<input id="mult-freq-step-1" type="text" class="step" value="2" />
-									<input id="mult-freq-1" type="button" class="step-button" value="x" data-op="*" />
+									<input id="mult-1/2-freq-1" type="button" class="mult-button" value="1⁄2" data-mult="0.5" />
+									<input id="mult-2/3-freq-1" type="button" class="mult-button" value="2⁄3" data-mult="0.66666" />
+									<input id="mult-3/2-freq-1" type="button" class="mult-button" value="3⁄2" data-mult="1.5" />
+									<input id="mult-2/1-freq-1" type="button" class="mult-button" value="x2" style="font-size: small;" data-mult="2" />
 								</div>
 							</div>
 							<div class="separator"></div>
@@ -139,7 +140,7 @@
 				</div>
 			</div>
 
-            <footer class="border-top footer">
+            <footer class="border-top footer" style="display:none;">
                 <div class="container">
                     <p>&copy; 2021 ThePirat</p>
                 </div>
