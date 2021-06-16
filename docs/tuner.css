@@ -321,6 +321,11 @@ button:disabled {
     font-size: large;
 }
 
+.top-buttons button {
+	width: 48px;
+	padding: 3px;
+}
+
 .step {
 	width: 22px;
 	height: 24px;
@@ -381,13 +386,12 @@ button:disabled {
 .presets label {
   display: inline-block;
   text-align: center;
-  margin: 0px 10px 0px 0px;
+  margin: 0px 5px 0px 0px;
   font-size: x-small;
 }
 .presets label input[type="radio"] {
   display: block;
   transform: scale(1.2);
-  margin-bottom: 2px;
 }	
 
 .osc-config {
