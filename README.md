@@ -154,9 +154,10 @@ Format: play SongIndex[,Iterations[,Speed[,Variation]]]
 Being: 
 	- SongIndex=The song index to play
 	- Iterations=Times to repeat the song (default is 1)
+		- > 0: Times to repeat
+		- <= 0: Repeat forever until it's stopped
 	- Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
 		- > 0: Multiply speed by x
-		- <= 0: repeat for ever 
 	- Variation=(optional) number:
 		- > 0: randomize the steps order with the given number as seed. 
 		- = 0: pseudo randomize steps
@@ -177,10 +178,11 @@ Examples:
 `play 0,2,1.5,5`
 
 ### Song format
-Format: DefaultStepType,StepsPSV
+Format: DefaultStepTypeChar StepsPSV
+(no space separation)
 
 Being
-	- DefaultStepType:
+	- DefaultStepTypeChar:
 		- F: Set the base and current frequency
 		- f: Set the current frequency
 		- M: Multiply the base frequency
@@ -214,7 +216,37 @@ Default step type is "m"
 6th step: Set the first oscillator value as the base frequency + 10 hz, and wait 1 second
 
 #### Stop playing a song
-Will stop playing the current song (only available via BLE)
+Will stop playing the current song (only available via Bluetooth)
+
+Example:
+`stop`
+
+#### Play presets sequence
+
+Format: seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
+Being: 
+	- StartIndex=The first preset index to play (default is 0)
+	- EndIndex=The last preset index to play  (default is 3)
+	- Interval=Time in seconds to play each preset (default is 1 second)
+	- Iterations=(optional) Times to repeat the preset loop (default is 0, forever)
+		- > 0: Times to repeat
+		- <= 0: Repeat forever until it's stopped
+	- Variation=(optional) number:
+		- > 0: randomize the steps order with the given number as seed. 
+		- = 0: pseudo randomize steps
+		- < 0: no randomizing (default)
+
+Examples:
+
+- Play the presets 0 to 3 in order, on a forever loop, one second each preset
+`seq 0,3,1` 
+
+- Play the presets 0 to 15, in random order, 5 times, ten seconds on each preset
+`seq 0,15,10,5,0` 
+
+
+#### Stop playing presets loop
+Will stop playing the preset loop (only available via Bluetooth)
 
 Example:
 `stop`

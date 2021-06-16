@@ -91,6 +91,7 @@ void SetFreqsPWM();
 void MultiplyFreqsPWM(std::vector<float> &mult);
 void SetDutiesPWM();
 void ProcessPlayCommand(String command);
+void ProcessSeqCommand(String command);
 void PlaySong(int songIndex, int repeat, float tempoDivider, int variation);
 void Log(String msg);
 std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
@@ -98,6 +99,8 @@ void SetFreqPWM(int oscIndex, float freq, bool setup=false);
 std::vector<String> GetPreset(int pindex);
 void StorePreset(int pindex, std::vector<String> preset);
 void InitializeVectors();
+void PlayPresetSequence(int startIndex, int endIndex, float interval, int repeat, int variation);
+std::vector<int> GetPresetRange(int startIndex, int endIndex);
 
 // MAIN
 void setup() {
@@ -189,6 +192,10 @@ void ProcessInput(String recv) {
   else if (recv.startsWith("play")) {
     // PLAY
     ProcessPlayCommand(recv);
+  }
+  else if (recv.startsWith("seq")) {
+    // SEQ
+    ProcessSeqCommand(recv);
   }
   else if (recv.startsWith("on") || recv.startsWith("off")) {
     ProcessOnOffCommand(recv);
@@ -654,6 +661,7 @@ void ProcessOnOffCommand(String cmd) {
   NotifyBLESwitchesValue();
 }
 
+// Format: play SongIndex[,Iterations[,Speed[,Variation]]]
 void ProcessPlayCommand(String command) {
   if (command.length() <= 5) {
     // Default params
@@ -681,6 +689,38 @@ void ProcessPlayCommand(String command) {
   }
 }
 
+//Format: seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
+void ProcessSeqCommand(String command) {
+  if (command.length() <= 4) {
+    // Default params
+    PlayPresetSequence(0, 3, 1.0, 0, -1);
+  } 
+  else {
+    std::vector<String> params = splitString(command.substring(4), ',');
+    int startIndex = 0;
+    int endIndex = 3;
+    float interval = 1.0;
+    int repeat = 0;
+    int variation = -1;
+    if (params.size() > 0) {
+      startIndex = params[0].toInt();
+    }
+    if (params.size() > 1) {
+      endIndex = params[1].toInt();
+    }
+    if (params.size() > 2) {
+      interval = params[2].toFloat();
+    }
+    if (params.size() > 3) {
+      repeat = params[3].toInt();
+    }
+    if (params.size() > 4) {
+      variation = params[4].toInt();
+    }
+    PlayPresetSequence(startIndex, endIndex, interval, repeat, variation);
+  }
+}
+
 void PlaySong(int songIndex, int repeat, float speed, int variation) {
   String song = _songs[songIndex];
   std::default_random_engine rndSeeded(variation);
@@ -697,7 +737,7 @@ void PlaySong(int songIndex, int repeat, float speed, int variation) {
     while(times < repeat || repeat <= 0) {
       if (repeat > 0) {
         times++;
-        Log("Repeat " + String(times+1) + "/" + String(repeat));
+        Log("Repeat " + String(times) + "/" + String(repeat));
       } else {
         Log("Repeat");
       }
@@ -789,4 +829,54 @@ void PlaySong(int songIndex, int repeat, float speed, int variation) {
     // Restore cache freqs, duties
     Load(last_preset_loaded);
   }
+}
+
+void PlayPresetSequence(int startIndex, int endIndex, float interval, int repeat, int variation) {
+  std::default_random_engine rndSeeded(variation);
+  String variationString = variation < 0 ? "original variation" : variation > 0 ? ("variation #" + String(variation)) : "random variation";
+  Log("Play preset loop " + String(startIndex) + "-" + String(endIndex) + " " + variationString + " " + (repeat <= 0 ? "infinite" : String(repeat)) + " times @ " + String(interval) + "s interval");
+
+  if(startIndex >= 0 && endIndex >= 0 && endIndex >= startIndex && endIndex + 1 <= MAX_PRESET) {
+    stop = false;
+    int times = 0;
+    while(times < repeat || repeat <= 0) {
+      if (repeat > 0) {
+        times++;
+        Log("Repeat " + String(times) + "/" + String(repeat));
+      } else {
+        Log("Repeat");
+      }
+      std::vector<int> range = GetPresetRange(startIndex, endIndex);
+      // Variation (randomize steps)
+      if (variation > 0) {
+        std::shuffle(range.begin(), range.end(), rndSeeded);
+      } 
+      else if (variation == 0) {
+        std::shuffle(range.begin(), range.end(), _rnd);
+      }
+      // Play
+      for(size_t i = 0; i < range.size(); ++i) {
+        if (stop) {
+          Log("Stopping");
+          Load(0);
+          return;
+        }
+        Load(range[i]);
+        if (interval > 0) {
+          Log("    Delay " + String(interval) + " secs.");
+          delay(interval * 1000);
+        }
+      }
+    }
+    Log("End sequence");
+    Load(0);
+  }
+}
+
+std::vector<int> GetPresetRange(int startIndex, int endIndex) {
+  std::vector<int> range;
+  for(int i = startIndex; i <= endIndex; ++i) {
+    range.push_back(i);
+  }
+  return range;
 }
