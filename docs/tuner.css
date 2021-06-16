@@ -322,7 +322,8 @@ button:disabled {
 }
 
 .top-buttons button {
-	width: 48px;
+	width: 62px;
+	height: 36px;
 	padding: 3px;
 }
 

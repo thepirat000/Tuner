@@ -1,11 +1,12 @@
 let characteristicCmd;
 let characteristicDuties;
 let characteristicFreqs;
+let characteristicPreset;
 let device;
 const encoder = new TextEncoder('utf-8');
 let lastFreqFromMic = 0.0;
 const OSC_COUNT = 4;
-
+const MAX_PRESETS = 8;
 
 $(document).ready(function () {
 	$('.lcs_check').lc_switch();
@@ -197,6 +198,9 @@ async function connectDeviceAndCacheCharacteristics() {
 		characteristicSwitches = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000003'))[0];
 		characteristicSwitches.addEventListener('characteristicvaluechanged', handleSwitchesValueChange);
 		await characteristicSwitches.startNotifications();
+		characteristicPreset = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000004'))[0];
+		characteristicPreset.addEventListener('characteristicvaluechanged', handlePresetChange);
+		await characteristicPreset.startNotifications();
 		characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
 		characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
 		await characteristicCmd.startNotifications();
@@ -227,6 +231,13 @@ function handleSwitchesValueChange(event) {
 	for (let i = 0; i < event.target.value.byteLength; ++i) {
 		let value = event.target.value.getUint8(i);
 		ShowSwitchValue(i+1, value);
+	}
+}
+
+function handlePresetChange(event) {
+	if (event.target.value.byteLength > 0) {
+		let pindex = event.target.value.getUint8(0);
+		$("#preset" + (pindex + 1)).prop('checked', true);
 	}
 }
 
@@ -615,41 +626,17 @@ async function callbackPitchDetect(current, lastKnown) {
 	}
 }
 
-let seqTimerId = null;
-let seqPlaying = false;
-let seqIndex;
-
 async function Play() {
 	let input = prompt("Time to wait between steps (in Seconds)", 1);
 	if (input) {
 		let wait = parseFloat(input);
 		if (!isNaN(wait) && wait > 0) {
-			Stop();
-			seqIndex = 0;
-			$("#btn-load").prop('disabled', true);
-			$("#btn-save").prop('disabled', true);
-			seqPlaying = true;
-			await playNextSequence(wait);
+			
+			await SendCommand("seq 0,7," + input);
 		}
 	}
 }
 
-async function playNextSequence(wait) {
-	$("input[name='preset']:checked").prop("checked", false);
-	$("#preset" + (seqIndex + 1)).prop("checked", true);
-	seqIndex = (seqIndex + 1) % 4;
-	await Load();
-	if (seqPlaying) {
-		seqTimerId = setTimeout(async () => await playNextSequence(wait), wait * 1000);
-	}
-}
-
 async function Stop() {
-	if (seqPlaying) {
-		seqPlaying = false;
-		clearInterval(seqTimerId);
-		seqTimerId = null;
-		$("#btn-load").prop('disabled', false);
-		$("#btn-save").prop('disabled', false);
-	}
+	await SendCommand("stop");
 }

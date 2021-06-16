@@ -34,6 +34,7 @@ Docs/Links:
 #define CHARACTERISTIC_FREQ_UUID    "ca000000-fede-fede-0000-000000000001"       // Bluetooth characteristic to get the current frequencies of the oscillators in Hertz
 #define CHARACTERISTIC_DUTY_UUID    "ca000000-fede-fede-0000-000000000002"       // Bluetooth characteristic to get the duties of the oscillators (0 to 1023)
 #define CHARACTERISTIC_SWITCH_UUID  "ca000000-fede-fede-0000-000000000003"       // Bluetooth characteristic to get the switched of the oscillators (0 or 1)
+#define CHARACTERISTIC_PRESET_UUID  "ca000000-fede-fede-0000-000000000004"       // Bluetooth characteristic to get the preset loaded (preset index)
 #define CHARACTERISTIC_CMD_UUID     "ca000000-fede-fede-0000-000000000099"       // Bluetooth characteristic to send commands and get the current status 
 
 #define PRESET_FILE_PREFIX "/p"
@@ -59,7 +60,7 @@ std::vector<String> _cachePresets;
 std::vector<float> _duties;
 std::vector<byte> _switches;
 std::random_device _rnd;
-BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicSwitches, *pCharacteristicCmd;
+BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicSwitches, *pCharacteristicPresets, *pCharacteristicCmd;
 std::queue<String> _commandBuffer;
 BLEServer* bleServer = NULL;
 bool deviceConnected = false;
@@ -84,6 +85,7 @@ std::vector<String> splitString(String msg, const char delim);
 const char* join(std::vector<float> &v, bool mustRound=false);
 void NotifyBLEFreqValue();
 void NotifyBLEDutyValue();
+void NotifyBLEPresetLoaded();
 void PrintValues(std::vector<float> &f, std::vector<float> &d);
 void AttachOutputPins();
 void DetachOutputPins();
@@ -231,6 +233,7 @@ void ProcessInput(String recv) {
     NotifyBLEFreqValue();
     NotifyBLEDutyValue();
     NotifyBLESwitchesValue();
+    NotifyBLEPresetLoaded();
   }
   else if (isOperand(recv)) {
     // Frequencies (in hz)
@@ -276,6 +279,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       NotifyBLEFreqValue();
       NotifyBLEDutyValue();
       NotifyBLESwitchesValue();
+      NotifyBLEPresetLoaded();
     };
     void onDisconnect(BLEServer* server) {
       Log("Client disconnected");
@@ -287,17 +291,19 @@ void StartBLEServer() {
   BLEDevice::init(SERVICE_NAME);
   bleServer = BLEDevice::createServer();
   bleServer->setCallbacks(new MyServerCallbacks());
-  BLEService *pService = bleServer->createService(SERVICE_UUID);
+  BLEService *pService = bleServer->createService(BLEUUID(SERVICE_UUID), 30, 0);
   
   pCharacteristicFreqs = pService->createCharacteristic(CHARACTERISTIC_FREQ_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   pCharacteristicDuties = pService->createCharacteristic(CHARACTERISTIC_DUTY_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   pCharacteristicSwitches = pService->createCharacteristic(CHARACTERISTIC_SWITCH_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+  pCharacteristicPresets = pService->createCharacteristic(CHARACTERISTIC_PRESET_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   pCharacteristicCmd = pService->createCharacteristic(CHARACTERISTIC_CMD_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
   
   // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
   pCharacteristicFreqs->addDescriptor(new BLE2902());
   pCharacteristicDuties->addDescriptor(new BLE2902());
   pCharacteristicSwitches->addDescriptor(new BLE2902());
+  pCharacteristicPresets->addDescriptor(new BLE2902());
   pCharacteristicCmd->addDescriptor(new BLE2902());
   
   pCharacteristicCmd->setCallbacks(new MyCallbacks());
@@ -466,6 +472,14 @@ void NotifyBLESwitchesValue() {
   }
 }
 
+void NotifyBLEPresetLoaded() {
+  byte msg[1] = {(byte)last_preset_loaded};
+  pCharacteristicPresets->setValue(&msg[0], 1);
+  if (deviceConnected) {
+    pCharacteristicPresets->notify();
+  }
+}
+
 std::vector<String> splitString(String msg, const char delim) {
   std::vector<String> result;
   int j = 0;
@@ -602,6 +616,7 @@ void Load(int pindex) {
   }
   NotifyBLESwitchesValue();
   last_preset_loaded = pindex;
+  NotifyBLEPresetLoaded();
 }
 
 void Save(int pindex) {
