@@ -136,14 +136,14 @@ void loop() {
   if (Serial.available() > 0) {
     String recv = Serial.readStringUntil('\r');
     if (recv) {
-      ProcessInput(recv);
+      ProcessCommand(recv);
     }
   }
   // Process BLE commands
   if (!_commandBuffer.empty()) {
     String recv = _commandBuffer.front();
     _commandBuffer.pop();
-    ProcessInput(recv);
+    ProcessCommand(recv);
   }
 
   // Handle bluetooth reconnect
@@ -159,7 +159,7 @@ void loop() {
 }
 
 // ************ PROCESS COMMAND ***************
-void ProcessInput(String recv) {
+void ProcessCommand(String recv) {
   recv.trim();
   recv.toLowerCase();
   Log("Recv: '" + recv + "'");
@@ -183,6 +183,10 @@ void ProcessInput(String recv) {
   else if (recv.equals("load") || recv.equals("reset")) {
     // Reload last preset 
     Load(last_preset_loaded);
+  }
+  else if (recv.equals("restart")) {
+    Log("Restarting...");
+    ESP.restart();
   }
   else if (recv.equals("save") || recv.equals("set")) {
     // Save last preset loaded
