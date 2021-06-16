@@ -224,8 +224,8 @@ Example:
 
 #### Play presets sequence
 
-Format: seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
-Being: 
+- Format: seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
+- Being: 
 	- StartIndex=The first preset index to play (default is 0)
 	- EndIndex=The last preset index to play  (default is 3)
 	- Interval=Time in seconds to play each preset (default is 1 second)
