@@ -155,14 +155,14 @@ Example:
 - Being: 
 	- SongIndex=The song index to play
 	- Iterations=Times to repeat the song (default is 1)
-		- > 0: Times to repeat
-		- <= 0: Repeat forever until it's stopped
+		- >0: Times to repeat
+		- <=0: Repeat forever until it's stopped
 	- Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
-		- > 0: Multiply speed by x
+		- >0: Multiply speed by x
 	- Variation=(optional) number:
-		- > 0: randomize the steps order with the given number as seed. 
-		- = 0: pseudo randomize steps
-		- < 0: no randomizing (default)
+		- >0: randomize the steps order with the given number as seed. 
+		- =0: pseudo randomize steps
+		- <0: no randomizing (default)
 
 Examples:
 
@@ -230,12 +230,12 @@ Example:
 	- EndIndex=The last preset index to play  (default is 3)
 	- Interval=Time in seconds to play each preset (default is 1 second)
 	- Iterations=(optional) Times to repeat the preset loop (default is 0, forever)
-		- > 0: Times to repeat
-		- <= 0: Repeat forever until it's stopped
+		- >0: Times to repeat
+		- <=0: Repeat forever until it's stopped
 	- Variation=(optional) number:
-		- > 0: randomize the steps order with the given number as seed. 
-		- = 0: pseudo randomize steps
-		- < 0: no randomizing (default)
+		- >0: randomize the steps order with the given number as seed. 
+		- =0: pseudo randomize steps
+		- <0: no randomizing (default)
 
 Examples:
 
