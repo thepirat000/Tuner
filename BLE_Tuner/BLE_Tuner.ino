@@ -107,6 +107,7 @@ void PlayPresetSequence(int startIndex, int endIndex, float interval, int repeat
 std::vector<int> GetPresetRange(int startIndex, int endIndex);
 std::vector<String> GetInitCommand();
 void StoreInitCommand(String cmd);
+void HandleBluetoothReconnect();
 
 // MAIN
 void setup() {
@@ -147,9 +148,13 @@ void loop() {
   }
 
   // Handle bluetooth reconnect
+  HandleBluetoothReconnect();
+}
+
+void HandleBluetoothReconnect() {
   if (!deviceConnected && oldDeviceConnected) {
       Log("Restart advertising");
-      delay(500); // give time to bluetooth stack 
+      delay(100); // give time to bluetooth stack 
       bleServer->startAdvertising(); // restart advertising
       oldDeviceConnected = deviceConnected;
   }
@@ -795,6 +800,7 @@ void PlaySong(int songIndex, int repeat, float speed, int variation) {
       }
       // Read and play
       for(size_t i = 0; i < steps.size(); ++i) {
+        HandleBluetoothReconnect();
         if (stop) {
           Log("Stopping");
           Load(last_preset_loaded);
@@ -900,6 +906,7 @@ void PlayPresetSequence(int startIndex, int endIndex, float interval, int repeat
       }
       // Play
       for(size_t i = 0; i < range.size(); ++i) {
+        HandleBluetoothReconnect();
         if (stop) {
           Log("Stopping");
           Load(0);
