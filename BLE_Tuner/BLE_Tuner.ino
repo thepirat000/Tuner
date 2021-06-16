@@ -608,15 +608,12 @@ void Save(int pindex) {
   std::vector<String> preset;
   preset.push_back(join(_freqs, false));
   preset.push_back(join(_duties, false));
-  Log("DBG 0: " + preset[0]);
-  Log("DBG 1: " + preset[1]);
   String switches = "";
   for(size_t i = 0; i < _switches.size(); ++i) {
     switches += String(_switches[i]);
   }
   if (switches.length() > 0) {
     preset.push_back(switches);
-    Log("DBG 2: " + preset[2]);
   }
   StorePreset(pindex, preset);
 }
