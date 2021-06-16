@@ -1,10 +1,10 @@
 # UUID
 
-SVC UUID: ca000000-fede-fede-0000-000000000000
-FREQ UUID: ca000000-fede-fede-0000-000000000001
-DUTY UUID: ca000000-fede-fede-0000-000000000002
-SWITCHES UUID: ca000000-fede-fede-0000-000000000003
-CMD UUID: ca000000-fede-fede-0000-000000000099
+- SVC UUID: ca000000-fede-fede-0000-000000000000
+- FREQ UUID: ca000000-fede-fede-0000-000000000001
+- DUTY UUID: ca000000-fede-fede-0000-000000000002
+- SWITCHES UUID: ca000000-fede-fede-0000-000000000003
+- CMD UUID: ca000000-fede-fede-0000-000000000099
 
 # Commands
 
@@ -230,12 +230,12 @@ Example:
 	- EndIndex=The last preset index to play  (default is 3)
 	- Interval=Time in seconds to play each preset (default is 1 second)
 	- Iterations=(optional) Times to repeat the preset loop (default is 0, forever)
-		- >0: Times to repeat
-		- <=0: Repeat forever until it's stopped
+		- value>0: Times to repeat
+		- value<=0: Repeat forever until it's stopped
 	- Variation=(optional) number:
-		- >0: randomize the steps order with the given number as seed. 
-		- =0: pseudo randomize steps
-		- <0: no randomizing (default)
+		- value>0: randomize the steps order with the given number as seed. 
+		- value=0: pseudo randomize steps
+		- value<0: no randomizing (default)
 
 Examples:
 
@@ -251,6 +251,19 @@ Will stop playing the preset loop (only available via Bluetooth)
 
 Example:
 `stop`
+
+### Init command
+To Set the initial commands to execute after turning on the device
+
+- Format: init cmd1|cmd2|...
+- Being:
+	- cmdx: Any valid string command 
+
+#### Set a sequencer from preset 0 to 3 as the initial command
+`init seq 0,3,1,0`
+
+#### Load the preset at index 0 and then play the song 1, twice
+`init load 2|play 1,2`
 
 ### Debug
 
@@ -268,6 +281,5 @@ Notify the BLE clients for the current frequencies and duties and prints the cur
 
 Example:
 `?` 
-
 
 

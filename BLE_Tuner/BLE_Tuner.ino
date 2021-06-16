@@ -39,8 +39,10 @@ Docs/Links:
 #define PRESET_FILE_PREFIX "/p"
 #define PRESET_FILE_SUFFIX ".txt"
 
+#define INIT_FILE "/init.cmd"
+
 #define LED_PIN 2
-#define MAX_PRESET 4  // Presets MAX count
+#define MAX_PRESET 8  // Presets MAX count
 #define MAX_OUTPUT 4  // Oscillators MAX count (up to 8)
 #define MAX_FREQUENCY 40000
 #define DUTY_RESOLUTION_BITS 10
@@ -58,7 +60,7 @@ std::vector<float> _duties;
 std::vector<byte> _switches;
 std::random_device _rnd;
 BLECharacteristic *pCharacteristicFreqs, *pCharacteristicDuties, *pCharacteristicSwitches, *pCharacteristicCmd;
-std::queue<String> _bleCommandBuffer;
+std::queue<String> _commandBuffer;
 BLEServer* bleServer = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
@@ -101,6 +103,8 @@ void StorePreset(int pindex, std::vector<String> preset);
 void InitializeVectors();
 void PlayPresetSequence(int startIndex, int endIndex, float interval, int repeat, int variation);
 std::vector<int> GetPresetRange(int startIndex, int endIndex);
+std::vector<String> GetInitCommand();
+void StoreInitCommand(String cmd);
 
 // MAIN
 void setup() {
@@ -108,15 +112,20 @@ void setup() {
   Log("Initializing");
   InitializeVectors();
   
-  //ESPFlashCounter flashCounter("/counter");
-  //Log(String(flashCounter.get()) + " executions");
-  //flashCounter.increment();
-  
   AttachOutputPins();
   StartBLEServer();
-  Load(0);
+
+  std::vector<String> initCmds = GetInitCommand();
+  if (initCmds.size() > 0 && initCmds[0].length() > 0) {
+    Log("Init with cmds: " + joinString(initCmds, '|'));
+    for (size_t i = 0; i < initCmds.size(); ++i) {
+      _commandBuffer.push(initCmds[i]);
+    }
+  } else {
+    _commandBuffer.push("load 0");
+  }
+
   _cacheFreqs = _freqs;
-  PrintValues(_freqs, _duties);
 }
 
 // Loop
@@ -129,9 +138,9 @@ void loop() {
     }
   }
   // Process BLE commands
-  if (!_bleCommandBuffer.empty()) {
-    String recv = _bleCommandBuffer.front();
-    _bleCommandBuffer.pop();
+  if (!_commandBuffer.empty()) {
+    String recv = _commandBuffer.front();
+    _commandBuffer.pop();
     ProcessInput(recv);
   }
 
@@ -212,6 +221,12 @@ void ProcessInput(String recv) {
       }
     }
   }
+  else if (recv.startsWith("init ")) {
+    // INIT command
+    if (recv.length() > 5) {
+      StoreInitCommand(recv.substring(5));
+    }
+  }
   else if (recv.startsWith("?")) {
     NotifyBLEFreqValue();
     NotifyBLEDutyValue();
@@ -248,7 +263,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         stop = true;
       }
       else {
-        _bleCommandBuffer.push(value);
+        _commandBuffer.push(value);
       }
     }
 };
@@ -593,12 +608,15 @@ void Save(int pindex) {
   std::vector<String> preset;
   preset.push_back(join(_freqs, false));
   preset.push_back(join(_duties, false));
+  Log("DBG 0: " + preset[0]);
+  Log("DBG 1: " + preset[1]);
   String switches = "";
   for(size_t i = 0; i < _switches.size(); ++i) {
     switches += String(_switches[i]);
   }
   if (switches.length() > 0) {
     preset.push_back(switches);
+    Log("DBG 2: " + preset[2]);
   }
   StorePreset(pindex, preset);
 }
@@ -609,7 +627,7 @@ std::vector<String> GetPreset(int pindex) {
   }
   String value = _cachePresets[pindex];
   if (value.length() == 0) {
-    ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
+    ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str(), "");
     _cachePresets[pindex] = espFlashString.get();
     value = _cachePresets[pindex];
   }
@@ -629,6 +647,16 @@ void StorePreset(int pindex, std::vector<String> preset) {
   Log("Store P" + String(pindex) + "=" + value);
   _cachePresets[pindex] = value;
   espFlashString.set(value);
+}
+
+std::vector<String> GetInitCommand() {
+  ESPFlashString espFlashString(INIT_FILE, "load 0");
+  return splitString(espFlashString.get(), '|');
+}
+void StoreInitCommand(String cmd) {
+  ESPFlashString espFlashString(INIT_FILE);
+  Log("Store Init: " + cmd);
+  espFlashString.set(cmd);
 }
 
 void ProcessOnOffCommand(String cmd) {
