@@ -155,14 +155,14 @@ Example:
 - Being: 
 	- SongIndex=The song index to play
 	- Iterations=Times to repeat the song (default is 1)
-		- >0: Times to repeat
-		- <=0: Repeat forever until it's stopped
+		- value>0: Times to repeat
+		- value<=0: Repeat forever until it's stopped
 	- Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
-		- >0: Multiply speed by x
+		- value>0: Multiply speed by x
 	- Variation=(optional) number:
-		- >0: randomize the steps order with the given number as seed. 
-		- =0: pseudo randomize steps
-		- <0: no randomizing (default)
+		- value>0: randomize the steps order with the given number as seed. 
+		- value=0: pseudo randomize steps
+		- value<0: no randomizing (default)
 
 Examples:
 
