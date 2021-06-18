@@ -179,11 +179,11 @@ Examples:
 `play 0,2,1.5,5`
 
 ### Song format
-- Format: _DefaultStepTypeChar StepsPSV_
+- Format: _DefaultStepType StepsPSV_
 (no space separation)
 
 - Being
-	- DefaultStepTypeChar:
+	- DefaultStepType:
 		- F: Set the base and current frequency
 		- f: Set the current frequency
 		- M: Multiply the base frequency
@@ -202,19 +202,20 @@ Examples:
 				- A: Increment the base frequency and set current as base + operand
 				- a: Increment the current frequency 
 				- =: Repeat the step #operand (first step is 1, etc)
+				- NULL: If no StepType is specified, the DefaultStepType is used
 
 ### Sample Song:
 `mF440,520:1:512,512|2,1.5:1|f460,540:2|a1,1:1|=4|A10:1`
 
 - Description
 
-Default step type is "m"
-1st step: Set the first two oscillators base frequencies to 440 and 520 hz respectively, set the first two oscillator duties to 512, and wait 1 second
-2nd step: Multiply the first two oscillators current frequencies by 2 and 1.5 respectively, and wait 1 second
-3rd step: Set the first two oscillators current frequencies to 460 and 540 hz respectively, and wait 2 seconds
-4th step: Increment the first two oscillators current frequencies by 1, and wait 1 second
-5th step: Repeat the last step: increment the first two oscillators current frequencies by 1, and wait 1 second
-6th step: Set the first oscillator value as the base frequency + 10 hz, and wait 1 second
+	- Default step type is "m"
+		- 1st step: Set the first two oscillators base frequencies to 440 and 520 hz respectively, set the first two oscillator duties to 512, and wait 1 second
+		- 2nd step: Multiply the first two oscillators current frequencies by 2 and 1.5 respectively, and wait 1 second
+		- 3rd step: Set the first two oscillators current frequencies to 460 and 540 hz respectively, and wait 2 seconds
+		- 4th step: Increment the first two oscillators current frequencies by 1, and wait 1 second
+		- 5th step: Repeat the last step: increment the first two oscillators current frequencies by 1, and wait 1 second
+		- 6th step: Set the first oscillator value as the base frequency + 10 hz, and wait 1 second
 
 #### Stop playing a song
 Will stop playing the current song (only available via Bluetooth)
