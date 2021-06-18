@@ -14,9 +14,9 @@
 
 - Format: d[,d[,d[,d]]]
 - Being: d=decimal number 
-	   - > 0: frequency in Hertz
-	   - = 0: turn off the oscillator
-	   - < 0: no change in frequency
+   - > 0: frequency in Hertz
+   - = 0: turn off the oscillator
+   - < 0: no change in frequency
 
 Examples:
 
@@ -38,9 +38,9 @@ same as:
 
 - Format: *d[,d[,d[,d]]]
 - Being: d=decimal number 
-	   - > 0: number to multiply the current frequency
-	   - = 0: turn off the oscillator
-	   - < 0: multiply the base frequency from config by ABS(d)
+   - > 0: number to multiply the current frequency
+   - = 0: turn off the oscillator
+   - < 0: multiply the base frequency from config by ABS(d)
 
 > The multiplication does not trigger the frequency values saving to the config file.
 
@@ -59,9 +59,9 @@ Examples:
 
 - Format: +d[,d[,d[,d]]]
 - Being: d=decimal number 
-	   - > 0: increment the frequency in d hertz
-	   - = 0: no imcrement
-	   - < 0: decrement the frequency in -d hertz
+   - > 0: increment the frequency in d hertz
+   - = 0: no imcrement
+   - < 0: decrement the frequency in -d hertz
 	   
 > The incrementation does not trigger the frequency values saving to the config file.
 
@@ -77,9 +77,9 @@ Examples:
 
 - Format: /d[,d[,d[,d]]]
 - Being: d=decimal number 
-	   - > 0: duty for the oscillator (1-1023)
-	   - = 0: turn off the oscillator (0% duty)
-	   - < 0: no change in duty
+   - > 0: duty for the oscillator (1-1023)
+   - = 0: turn off the oscillator (0% duty)
+   - < 0: no change in duty
 
 Examples:
 
@@ -112,7 +112,7 @@ Will turn off the first oscillator
 #### Turn on
 Turn on an oscillator
 - Format: on n
-- Being 
+- Being: 
 	- n > 0: the oscillator number to turn on
 	- n missing: turn off all the oscillators (default)
 
