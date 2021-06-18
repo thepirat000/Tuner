@@ -16,6 +16,7 @@ $(document).ready(function () {
 		$("#dark").prop('checked', true);
 		$('body').addClass('dark-mode');
 	}
+	
 	$("#dark").click(function() {
 		if (this.checked) {
 			$('body').addClass('dark-mode');
@@ -36,6 +37,7 @@ $(document).ready(function () {
 	});
 	$("#btn-test").click(async function(e) {
 		ShowOscillators();
+		$("#console").show();
 	});
 	$("#btn-load").click(async function(e) {
 		await Load();
