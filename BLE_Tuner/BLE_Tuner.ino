@@ -663,6 +663,10 @@ void StorePreset(int pindex, std::vector<String> preset) {
   if (pindex < 0 || pindex > (MAX_PRESET-1)) {
     return;
   }
+  if (preset.size() == 0 || preset[0].length() == 0) {
+    Log("Empty preset discarded");
+    return;
+  }
   ESPFlashString espFlashString((PRESET_FILE_PREFIX + String(pindex) + PRESET_FILE_SUFFIX).c_str());
   String value = joinString(preset, '|');
   Log("Store P" + String(pindex) + "=" + value);
