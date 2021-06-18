@@ -42,8 +42,6 @@ same as:
    - d = 0: turn off the oscillator
    - d < 0: multiply the base frequency from config by ABS(d)
 
-> The multiplication does not trigger the frequency values saving to the config file.
-
 Examples:
 
 - Multiply the current oscillator frequencies by 2, 0.5, 4 and 3 respectively:
@@ -63,8 +61,6 @@ Examples:
    - d = 0: no imcrement
    - d < 0: decrement the frequency in -d hertz
 	   
-> The incrementation does not trigger the frequency values saving to the config file.
-
 Examples:
 
 - Increment the current oscillator frequencies by 100, -50, 20 and 30 Hertz respectively:
@@ -111,7 +107,7 @@ Will turn off the first oscillator
 
 #### Turn on
 Turn on an oscillator
-- Format: _on n_
+- Format: _on [n]_
 - Being: 
 	- n > 0: the oscillator number to turn on
 	- n missing: turn off all the oscillators (default)
@@ -186,7 +182,7 @@ Examples:
 - Format: _DefaultStepTypeChar StepsPSV_
 (no space separation)
 
-Being
+- Being
 	- DefaultStepTypeChar:
 		- F: Set the base and current frequency
 		- f: Set the current frequency
@@ -196,8 +192,8 @@ Being
 		- a: Increment the current frequency 
 
 	- StepsPSV: Pipe (|) separated list of steps
-		Step format: [StepType]OperandValuesCSV:DurationInSeconds[:DutiesCSV]
-		Being
+		- Step format: [StepType]OperandValuesCSV:DurationInSeconds[:DutiesCSV]
+		- Being
 			- StepType: One of 
 				- F: Set the base and current frequency
 				- f: Set the current frequency
