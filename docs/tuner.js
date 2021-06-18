@@ -5,12 +5,11 @@ let characteristicPreset;
 let device;
 const encoder = new TextEncoder('utf-8');
 let lastFreqFromMic = 0.0;
-const OSC_COUNT = 4;
-const MAX_PRESETS = 8;
+let oscCount = 4;
+let presetCount = 4;
 
 $(document).ready(function () {
 	$('.lcs_check').lc_switch();
-	GenerateOscillatorsUI();
 	StartMidi();
 
 	if (localStorage.getItem('dark') == 'true') {
@@ -26,6 +25,10 @@ $(document).ready(function () {
 			$('body').removeClass('dark-mode');
 			localStorage.setItem('dark', false);
 		}
+	});
+
+	$("#btn-restart").click(async function(e) {
+		await Restart();
 	});
 
 	$("#btn-scan").click(async function(e) {
@@ -62,40 +65,40 @@ $(document).ready(function () {
 		}
 	});
 	
-	$('.freq-div').on("change", ".slider", async function(e) {
+	$('#oscillators').on("change", ".freq-div .slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await SendFreqUpdate(osc, parseFloat(this.value));
 	});
-	$('.freq-div').on("input", ".slider", function(e) {
+	$('#oscillators').on("input", ".freq-div .slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		SetFreqText(osc, parseFloat(this.value));
 	});
 
-	$('.duty-div').on("change", ".slider", async function(e) {
+	$('#oscillators').on("change", ".duty-div .slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await SendDutyUpdate(osc, parseFloat(this.value));
 	});	
-	$('.duty-div').on("input", ".slider", function(e) {
+	$('#oscillators').on("input", ".duty-div .slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		SetDutyText(osc, parseFloat(this.value));
 	});
-	
-	$('.freq-div').on("click", ".freq,.note", async function(e) {
+
+	$('#oscillators').on("click", ".freq-div .freq,.freq-div .note", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await ChangeFreqManual(osc, $(this).text());
 	});	
 	
-	$('.duty-div').on("click", ".duty-text,.duty-perc-text", async function(e) {
+	$('#oscillators').on("click", ".duty-div .duty-text", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await ChangeDutyManual(osc, $(this).text());
 	});
 
-	$('.incr-config').on("click", ".step-button", async function(e) {
+	$('#oscillators').on("click", ".incr-config .step-button", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await HandleFreqStepButton(osc, $(this).attr('data-op'));
 	});	
 
-	$('.mult-config').on("click", ".mult-button", async function(e) {
+	$('#oscillators').on("click", ".mult-config .mult-button", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await HandleMultButton(osc, $(this).attr('data-mult'));
 	});	
@@ -106,12 +109,12 @@ $(document).ready(function () {
 		await HandleTurnOffOn(osc, status);
 	});	
 
-	$('.set-duty-buttons').on("click", ".step-button", async function(e) {
+	$('#oscillators').on("click", ".set-duty-buttons .step-button", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await SendDutyUpdate(osc, parseFloat(this.attributes["data-value"].value));
 	});
 	
-	$('.id-div').on("change", "input[name=mic]", function(e) {
+	$('#oscillators').on("change", ".id-div input[name=mic]", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		HandleMicCheck(osc, this.checked);
 	});	
@@ -142,7 +145,8 @@ async function Scan() {
 }
 
 function ShowOscillators() {
-	$("#div-scan").hide();
+	GenerateOscillatorsUI();
+	$("#div-config").hide();
 	$("#btn-reconnect").show();
 	$(".top-buttons").show();
 	$("#command-div").show();
@@ -150,7 +154,7 @@ function ShowOscillators() {
 }
 
 function HideOscillators() {
-	$("#div-scan").show();
+	$("#div-config").show();
 	$("#btn-reconnect").hide();
 	$(".top-buttons").hide();
 	$("#command-div").hide();
@@ -264,7 +268,9 @@ function Clear() {
 }
 
 function GenerateOscillatorsUI() {
-	for (let i = 2; i <= OSC_COUNT; ++i) {
+	$(".oscillator:not(:first)").remove();
+	oscCount = $("#oscCount").val();
+	for (let i = 2; i <= oscCount; ++i) {
 		let clone = $("#osc-1").clone();
 		clone.attr("id", clone.attr("id").substring(0, clone.attr("id").length - 1) + i);
 		clone.find('[id]').each(function () { 
@@ -280,6 +286,12 @@ function GenerateOscillatorsUI() {
 		$(clone).find("#osc-id-" + i).text(i);
 		$("#oscillators").append(clone);
 	}
+
+	let maxRange = $("#freqRange").val();
+	$(".freq-div .slider").prop('max', maxRange);
+	
+	presetCount = $("#presetCount").val();
+	$("#preset-group-2").toggle(presetCount > 4);
 }
 
 async function SendConsoleCommand() {
@@ -631,8 +643,7 @@ async function Play() {
 	if (input) {
 		let wait = parseFloat(input);
 		if (!isNaN(wait) && wait > 0) {
-			
-			await SendCommand("seq 0,7," + input);
+			await SendCommand("seq 0," + (presetCount - 1) + "," + input);
 		}
 	}
 }
@@ -640,3 +651,9 @@ async function Play() {
 async function Stop() {
 	await SendCommand("stop");
 }
+
+async function Restart() {
+	HideOscillators();
+	$("#console").hide();
+}
+	

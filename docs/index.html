@@ -36,12 +36,46 @@
                 </span>
             </div>
 
-			<div id="div-scan">
+			<div id="div-config">
+				<div>
+					<label for="oscCount">Oscillators</label>
+					<select name="oscCount" id="oscCount">
+					  <option value="1">1</option>
+					  <option value="2">2</option>
+					  <option value="3">3</option>
+					  <option value="4" selected>4</option>
+					  <option value="5">5</option>
+					  <option value="6">6</option>
+					  <option value="7">7</option>
+					  <option value="8">8</option>
+					</select>
+				</div>
+				<div>
+					<label for="freqRange">Frequency range</label>
+					<select name="freqRange" id="freqRange">
+					  <option value="1000">0-100 Hz</option>
+					  <option value="1000">0-500 Hz</option>
+					  <option value="1000">0-1000 Hz</option>
+					  <option value="2000" selected>0-2000 Hz</option>
+					  <option value="3000">0-3000 Hz</option>
+					  <option value="4000">0-4000 Hz</option>
+					  <option value="8000">0-8000 Hz</option>
+					</select>
+				</div>
+				<div>
+					<label for="presetCount">Presets</label>
+					<select name="presetCount" id="presetCount">
+					  <option value="4">4</option>
+					  <option value="8" selected>8</option>
+					</select>
+				</div>
+				<div>
+					<label for="dark" class="no-select"><input type="checkbox" id="dark" name="dark" value="1"> Dark mode</label>
+				</div>
 				<div>
 					<button id="btn-scan" class="scan-button">Connect</button>
 					<button id="btn-test" style="margin-left: 10px;">Test</button>
 				</div>
-				<label for="dark" class="no-select"><input type="checkbox" id="dark" name="dark" value="1"> Dark mode</label>
 
 			</div>
 			<div class="top-buttons" style="display:none;">
@@ -49,39 +83,42 @@
 				<div><button id="btn-stop" class="stop-button">Stop</button></div>
 				<div class="presets" >
 					<p class="presets-text">Presets</p>
-					<label for="preset1">
-						<input type="radio" id="preset1" name="preset" value="1" checked>
-						1
-					</label>
-					<label for="preset2">
-						<input type="radio" id="preset2" name="preset" value="2">
-						2
-					</label>					
-					<label for="preset3">
-						<input type="radio" id="preset3" name="preset" value="3">
-						3
-					</label>
-					<label for="preset4">
-						<input type="radio" id="preset4" name="preset" value="4">
-						4
-					</label>	
-					<br/>					
-					<label for="preset5">
-						<input type="radio" id="preset5" name="preset" value="5">
-						5
-					</label>					
-					<label for="preset6">
-						<input type="radio" id="preset6" name="preset" value="6">
-						6
-					</label>					
-					<label for="preset7">
-						<input type="radio" id="preset7" name="preset" value="7">
-						7
-					</label>					
-					<label for="preset8">
-						<input type="radio" id="preset8" name="preset" value="8">
-						8
-					</label>					
+					<div id="preset-group-1">
+						<label for="preset1">
+							<input type="radio" id="preset1" name="preset" value="1" checked>
+							1
+						</label>
+						<label for="preset2">
+							<input type="radio" id="preset2" name="preset" value="2">
+							2
+						</label>					
+						<label for="preset3">
+							<input type="radio" id="preset3" name="preset" value="3">
+							3
+						</label>
+						<label for="preset4">
+							<input type="radio" id="preset4" name="preset" value="4">
+							4
+						</label>	
+					</div>
+					<div id="preset-group-2">					
+						<label for="preset5">
+							<input type="radio" id="preset5" name="preset" value="5">
+							5
+						</label>					
+						<label for="preset6">
+							<input type="radio" id="preset6" name="preset" value="6">
+							6
+						</label>					
+						<label for="preset7">
+							<input type="radio" id="preset7" name="preset" value="7">
+							7
+						</label>					
+						<label for="preset8">
+							<input type="radio" id="preset8" name="preset" value="8">
+							8
+						</label>					
+					</div>
 				</div>
 				<div><button id="btn-play" class="play-button">Play</button></div>
 				<div><button id="btn-save" class="save-button">Save</button></div>
@@ -152,6 +189,7 @@
 						<textarea id="command-output" class="command-output" readonly></textarea>
 					</div>
 					<div style="width:100%; height: 20px;">
+						<input id="btn-restart" type="button" class="restart-button" value="Restart" />
 						<input id="btn-clear" type="button" class="clear-button" value="Clear output" />
 					</div>
 				</div>

@@ -371,8 +371,20 @@ button:disabled {
 	
 }
 
+#div-config {
+	border: 1px solid var(--border-color);
+}
+
+#div-config div {
+	margin-top: 5px;
+}
+
 .clear-button {
 	float:right;
+}
+
+.restart-button {
+	float:left;
 }
 
 .set-duty-buttons .step-button {
