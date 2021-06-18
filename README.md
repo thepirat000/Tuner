@@ -290,4 +290,8 @@ Notify the BLE clients for the current frequencies and duties and prints the cur
 Example:
 `?` 
 
+### Restart
+Restart the hardware
 
+Example:
+`restart`
