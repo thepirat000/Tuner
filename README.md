@@ -209,12 +209,12 @@ Examples:
 
 - Description
 
-	- Default step type is "m"
+	- Default step type is "m" (multiply the current frequency)
 		- 1st step: Set the first two oscillators base frequencies to 440 and 520 hz respectively, set the first two oscillator duties to 512, and wait 1 second
 		- 2nd step: Multiply the first two oscillators current frequencies by 2 and 1.5 respectively, and wait 1 second
 		- 3rd step: Set the first two oscillators current frequencies to 460 and 540 hz respectively, and wait 2 seconds
 		- 4th step: Increment the first two oscillators current frequencies by 1, and wait 1 second
-		- 5th step: Repeat the last step: increment the first two oscillators current frequencies by 1, and wait 1 second
+		- 5th step: Repeat the 4ty step
 		- 6th step: Set the first oscillator value as the base frequency + 10 hz, and wait 1 second
 
 #### Stop playing a song
