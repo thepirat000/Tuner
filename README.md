@@ -36,7 +36,7 @@ same as:
 
 ### Multipliers
 
-- Format: *d[,d[,d[,d]]]
+- Format: _*d[,d[,d[,d]]]_
 - Being: d=decimal number 
    - d > 0: number to multiply the current frequency
    - d = 0: turn off the oscillator
@@ -57,7 +57,7 @@ Examples:
 
 ### Increments
 
-- Format: +d[,d[,d[,d]]]
+- Format: _+d[,d[,d[,d]]]_
 - Being: d=decimal number 
    - d > 0: increment the frequency in d hertz
    - d = 0: no imcrement
@@ -75,7 +75,7 @@ Examples:
 
 ## Duties
 
-- Format: /d[,d[,d[,d]]]
+- Format: _/d[,d[,d[,d]]]_
 - Being: d=decimal number 
    - d > 0: duty for the oscillator (1-1023)
    - d = 0: turn off the oscillator (0% duty)
@@ -99,7 +99,7 @@ Examples:
 
 #### Turn off 
 Turn off an oscillator
-- Format: off [n]
+- Format: _off [n]_
 - Being 
 	- n > 0: the oscillator number to turn off
 	- n missing: turn off all the oscillators (default)
@@ -111,7 +111,7 @@ Will turn off the first oscillator
 
 #### Turn on
 Turn on an oscillator
-- Format: on n
+- Format: _on n_
 - Being: 
 	- n > 0: the oscillator number to turn on
 	- n missing: turn off all the oscillators (default)
@@ -127,7 +127,7 @@ Will turn on the first oscillator
 #### Save
 Will save the current frequencies, duties and switches to a preset file
 
-- Format: save i
+- Format: _save i_
 - Being:
 	- i >= 0: Preset index (default is 0)
 
@@ -136,7 +136,7 @@ Example:
 
 #### Load
 Will load and set the frequency, duty, and switches values from the preset file 
-- Format: load i
+- Format: _load i_
 - Being:
 	- i >= 0: Preset index (default is 0)
 
@@ -145,7 +145,7 @@ Example:
 
 #### Presets format
 
-- Format: f,f,f,f|d,d,d,d|ssss
+- Format: _f,f,f,f|d,d,d,d|ssss_
 - Being:
 	- f: Frequency values
 	- d: Duty values
@@ -155,7 +155,7 @@ Example:
 
 #### Play a song
 
-- Format: play SongIndex[,Iterations[,Speed[,Variation]]]
+- Format: _play SongIndex[,Iterations[,Speed[,Variation]]]_
 - Being: 
 	- SongIndex=The song index to play
 	- Iterations=Times to repeat the song (default is 1)
@@ -183,7 +183,7 @@ Examples:
 `play 0,2,1.5,5`
 
 ### Song format
-- Format: DefaultStepTypeChar StepsPSV
+- Format: _DefaultStepTypeChar StepsPSV_
 (no space separation)
 
 Being
@@ -228,7 +228,7 @@ Example:
 
 ### Play presets sequence
 
-- Format: seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
+- Format: _seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]_
 - Being: 
 	- StartIndex=The first preset index to play (default is 0)
 	- EndIndex=The last preset index to play  (default is 3)
@@ -259,7 +259,7 @@ Example:
 ### Init command
 To Set the initial commands to execute after turning on the device
 
-- Format: init cmd1|cmd2|...
+- Format: _init cmd1|cmd2|..._
 - Being:
 	- cmdx: Any valid string command 
 
