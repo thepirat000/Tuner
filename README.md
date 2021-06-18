@@ -126,7 +126,7 @@ Example:
 Will turn on the first oscillator
 
 
-### Persistence
+### Presets
 
 #### Save
 Will save the current frequencies, duties and switches to a preset file
@@ -146,6 +146,14 @@ Will load and set the frequency, duty, and switches values from the preset file
 
 Example:
 `load 0`
+
+#### Presets format
+
+- Format: f,f,f,f|d,d,d,d|ssss
+- Being:
+	- f: Frequency values
+	- d: Duty values
+	- s: switch value
 
 ### Songs
 
@@ -222,7 +230,7 @@ Will stop playing the current song (only available via Bluetooth)
 Example:
 `stop`
 
-#### Play presets sequence
+### Play presets sequence
 
 - Format: seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
 - Being: 
