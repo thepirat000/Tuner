@@ -576,7 +576,8 @@ const char* join(std::vector<float> &v, bool mustRound) {
   {
     if(i != 0)
       ss << ",";
-    ss << (mustRound ? round(v[i]) : v[i]);
+    ss << (mustRound ? round(v[i]) : roundf(v[i]*100.0)/100.0);
+    
   }
   return ss.str().c_str();
 }
