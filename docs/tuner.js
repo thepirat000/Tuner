@@ -8,6 +8,12 @@ let lastFreqFromMic = 0.0;
 let oscCount = 4;
 let presetCount = 4;
 
+function fullScreenRequest() {
+	if ($("#fullscreen").prop('checked')) {
+		document.documentElement.requestFullscreen();
+	}
+}
+
 $(document).ready(function () {
 	$('.lcs_check').lc_switch();
 	StartMidi();
@@ -19,11 +25,14 @@ $(document).ready(function () {
 	});
 
 	$("#btn-scan").click(async function(e) {
+		fullScreenRequest();
 		await Scan();
 	});
 	$("#btn-test").click(async function(e) {
 		ShowOscillators();
 		$("#console").show();
+		fullScreenRequest();
+		
 	});
 	
 	$("#btn-load").click(async function(e) {
@@ -119,11 +128,11 @@ function LoadAndSetupConfig() {
 	$("#sliders-config").prop('checked', slidersEnabled);
 	$("#freqRange").prop('disabled', !slidersEnabled);
 	$(".slider").toggle(slidersEnabled);
+	$("#fullscreen").prop('checked', localStorage.getItem('fullscreen') == 'true');
 
 	$("#oscCount").val(localStorage.getItem('osc-count') ?? 4);
 	$("#freqRange").val(localStorage.getItem('freq-range') ?? 2000);
 	$("#presetCount").val(localStorage.getItem('preset-count') ?? 8);
-
 	
 
 	// Setup
@@ -140,6 +149,9 @@ function LoadAndSetupConfig() {
 		localStorage.setItem('sliders-enabled', this.checked);
 		$("#freqRange").prop('disabled', !this.checked);
 		$(".slider").toggle(this.checked);
+	});
+	$("#fullscreen").change(function(e) {
+		localStorage.setItem('fullscreen', this.checked);
 	});
 	$("#oscCount").change(function() {
 		localStorage.setItem('osc-count', this.value);
