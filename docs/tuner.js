@@ -19,14 +19,11 @@ $(document).ready(function () {
 	});
 
 	$("#btn-scan").click(async function(e) {
-		await Scan();
-		fullScreenRequest();
+		let ok = await Scan();
 	});
 	$("#btn-test").click(async function(e) {
 		ShowOscillators();
 		$("#console").show();
-		fullScreenRequest();
-		
 	});
 	
 	$("#btn-load").click(async function(e) {
@@ -122,7 +119,6 @@ function LoadAndSetupConfig() {
 	$("#sliders-config").prop('checked', slidersEnabled);
 	$("#freqRange").prop('disabled', !slidersEnabled);
 	$(".slider").toggle(slidersEnabled);
-	$("#fullscreen").prop('checked', localStorage.getItem('fullscreen') == 'true');
 
 	$("#oscCount").val(localStorage.getItem('osc-count') ?? 4);
 	$("#freqRange").val(localStorage.getItem('freq-range') ?? 2000);
@@ -145,7 +141,7 @@ function LoadAndSetupConfig() {
 		$(".slider").toggle(this.checked);
 	});
 	$("#fullscreen").change(function(e) {
-		localStorage.setItem('fullscreen', this.checked);
+		fullScreenRequest();
 	});
 	$("#oscCount").change(function() {
 		localStorage.setItem('osc-count', this.value);
@@ -170,7 +166,7 @@ async function Scan() {
 	} catch(err) {
 		AppendLogLine("Error: " + err);
 		HideOscillators();
-		return;
+		return false;
 	}
 	$("#title").text(device.name);
 	AppendLogLine("Connecting to '" + device.name + "'. Please wait...");
@@ -180,6 +176,7 @@ async function Scan() {
 	SendCommand("?");
 	ShowOscillators();
 	HideWaitCursor();
+	return true;
 }
 
 function ShowOscillators() {
@@ -691,9 +688,8 @@ async function Stop() {
 }
 
 async function Restart() {
-	if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
+	$("#fullscreen").prop('checked', false);
+	fullScreenRequest();
 	HideOscillators();
 	$("#console").hide();
 }
@@ -701,5 +697,9 @@ async function Restart() {
 function fullScreenRequest() {
 	if ($("#fullscreen").prop('checked')) {
 		document.documentElement.requestFullscreen();
+	} else {
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		}
 	}
 }
