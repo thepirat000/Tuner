@@ -458,7 +458,7 @@ async function Save() {
 	if (ok) {
 		$("#btn-save").stop(true,true);
 		$("#btn-save").effect('highlight',{},500); 
-		AppendLogLine("Saved");
+		AppendLogLine("Saved P" + (pindex+1));
 	}
 }
 async function Load() {
@@ -467,7 +467,7 @@ async function Load() {
 	if (ok) {
 		$("#btn-load").stop(true,true);
 		$("#btn-load").effect('highlight',{},500); 
-		AppendLogLine("Loaded");
+		AppendLogLine("Loaded P" + (pindex+1));
 	}
 }
 
