@@ -12,21 +12,7 @@ $(document).ready(function () {
 	$('.lcs_check').lc_switch();
 	StartMidi();
 
-	if (localStorage.getItem('dark') == 'true') {
-		$("#dark").prop('checked', true);
-		$('body').addClass('dark-mode');
-	}
-	
-	$("#dark").click(function() {
-		if (this.checked) {
-			$('body').addClass('dark-mode');
-			localStorage.setItem('dark', true);
-		} 
-		else {
-			$('body').removeClass('dark-mode');
-			localStorage.setItem('dark', false);
-		}
-	});
+	LoadAndSetupConfig();
 
 	$("#btn-restart").click(async function(e) {
 		await Restart();
@@ -39,6 +25,7 @@ $(document).ready(function () {
 		ShowOscillators();
 		$("#console").show();
 	});
+	
 	$("#btn-load").click(async function(e) {
 		await Load();
 	});
@@ -66,7 +53,7 @@ $(document).ready(function () {
 			await SendConsoleCommand();
 		}
 	});
-	
+
 	$('#oscillators').on("change", ".freq-div .slider", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		await SendFreqUpdate(osc, parseFloat(this.value));
@@ -121,6 +108,49 @@ $(document).ready(function () {
 		HandleMicCheck(osc, this.checked);
 	});	
 });
+
+function LoadAndSetupConfig() {
+	// Load values
+	if (localStorage.getItem('dark') == 'true') {
+		$("#dark").prop('checked', true);
+		$('body').addClass('dark-mode');
+	}	
+	let slidersEnabled = localStorage.getItem('sliders-enabled') == 'true';
+	$("#sliders-config").prop('checked', slidersEnabled);
+	$("#freqRange").prop('disabled', !slidersEnabled);
+	$(".slider").toggle(slidersEnabled);
+
+	$("#oscCount").val(localStorage.getItem('osc-count') ?? 4);
+	$("#freqRange").val(localStorage.getItem('freq-range') ?? 2000);
+	$("#presetCount").val(localStorage.getItem('preset-count') ?? 8);
+
+	
+
+	// Setup
+	$("#dark").click(function() {
+		localStorage.setItem('dark', this.checked);
+		if (this.checked) {
+			$('body').addClass('dark-mode');
+		} 
+		else {
+			$('body').removeClass('dark-mode');
+		}
+	});
+	$("#sliders-config").change(function(e) {
+		localStorage.setItem('sliders-enabled', this.checked);
+		$("#freqRange").prop('disabled', !this.checked);
+		$(".slider").toggle(this.checked);
+	});
+	$("#oscCount").change(function() {
+		localStorage.setItem('osc-count', this.value);
+	});	
+	$("#freqRange").change(function() {
+		localStorage.setItem('freq-range', this.value);
+	});	
+	$("#presetCount").change(function() {
+		localStorage.setItem('preset-count', this.value);
+	});	
+}
 
 async function Scan() {
 	$("#console").show();
