@@ -19,8 +19,8 @@ $(document).ready(function () {
 	});
 
 	$("#btn-scan").click(async function(e) {
-		fullScreenRequest();
 		await Scan();
+		fullScreenRequest();
 	});
 	$("#btn-test").click(async function(e) {
 		ShowOscillators();
