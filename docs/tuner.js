@@ -8,12 +8,6 @@ let lastFreqFromMic = 0.0;
 let oscCount = 4;
 let presetCount = 4;
 
-function fullScreenRequest() {
-	if ($("#fullscreen").prop('checked')) {
-		document.documentElement.requestFullscreen();
-	}
-}
-
 $(document).ready(function () {
 	$('.lcs_check').lc_switch();
 	StartMidi();
@@ -697,7 +691,15 @@ async function Stop() {
 }
 
 async function Restart() {
+	if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
 	HideOscillators();
 	$("#console").hide();
 }
 	
+function fullScreenRequest() {
+	if ($("#fullscreen").prop('checked')) {
+		document.documentElement.requestFullscreen();
+	}
+}

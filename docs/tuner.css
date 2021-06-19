@@ -177,14 +177,14 @@ button:disabled {
 
 .command-output {
 	width: calc(100% - 6px); 
-	height: 50px;  
+	height: 40px;  
 	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
 	font-size: x-small;
 	background-color: var(--console-background-color);
 	border: 1px solid #BDC3C7;
 	resize: vertical;
 	padding-left: 4px;
-	line-height: 1.25;
+	line-height: 1.20;
 }
 
 .command-input {
