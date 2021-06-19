@@ -265,6 +265,7 @@ button:disabled {
 
 .freq-div {
 	border: 1px solid var(--border-color);
+	padding-top: 5px;
 	width: 70%;
 }
 
