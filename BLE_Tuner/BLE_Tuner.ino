@@ -82,7 +82,7 @@ void loop(void);
 // def: default value to set when no value present (i.e. ,,440 means def,def,440). completeWith: vector to use to set the value when a negative value
 std::vector<float> splitParseVector(String msg, float def, std::vector<float> *completeWith=nullptr);
 std::vector<String> splitString(String msg, const char delim);
-const char* join(std::vector<float> &v, bool mustRound=false);
+const char* join(std::vector<float> &v);
 void NotifyBLEFreqValue();
 void NotifyBLEDutyValue();
 void NotifyBLEPresetLoaded();
@@ -570,16 +570,17 @@ std::vector<std::string> SplitStringByNumber(const std::string &str, int len) {
     return entries;
 }
 
-const char* join(std::vector<float> &v, bool mustRound) {
+const char* join(std::vector<float> &v) {
   std::stringstream ss;
   for (size_t i = 0; i < v.size(); ++i)
   {
     if(i != 0)
       ss << ",";
-    ss << (mustRound ? round(v[i]) : roundf(v[i]*100.0)/100.0);
+    ss << round(v[i]);
     
   }
-  return ss.str().c_str();
+  std::string s = ss.str();
+  return s.c_str();
 }
 
 String joinString(std::vector<String> &s, const char delim) {
@@ -631,14 +632,17 @@ void Load(int pindex) {
 
 void Save(int pindex) {
   std::vector<String> preset;
-  preset.push_back(join(_freqs, false));
-  preset.push_back(join(_duties, false));
+  preset.push_back(join(_freqs));
+  Log("DBG 1 " + preset[0]);
+  preset.push_back(join(_duties));
+  Log("DBG 2 " + preset[1]);
   String switches = "";
   for(size_t i = 0; i < _switches.size(); ++i) {
     switches += String(_switches[i]);
   }
   if (switches.length() > 0) {
     preset.push_back(switches);
+    Log("DBG 3 " + preset[2]);
   }
   StorePreset(pindex, preset);
 }
