@@ -9,8 +9,8 @@ let oscCount = 4;
 let presetCount = 4;
 
 $(document).ready(function () {
-	$('.lcs_check').lc_switch();
 	StartMidi();
+	$('.lcs_check').lc_switch();
 
 	LoadAndSetupConfig();
 
@@ -92,7 +92,7 @@ $(document).ready(function () {
 		await HandleMultButton(osc, $(this).attr('data-mult'));
 	});	
 	
-	$('.oscillator').on("lcs-statuschange", ".lcs_check", async function(e) {
+	$('#oscillators').on("lcs-statuschange", ".lcs_check", async function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		let status = ($(this).is(':checked')) ? 'on' : 'off';
 		await HandleTurnOffOn(osc, status);
@@ -103,10 +103,17 @@ $(document).ready(function () {
 		await SendDutyUpdate(osc, parseFloat(this.attributes["data-value"].value));
 	});
 	
-	$('#oscillators').on("change", ".id-div input[name=mic]", async function(e) {
+	$('#oscillators').on("change", ".id-div input[name=mic]", function(e) {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		HandleMicCheck(osc, this.checked);
 	});	
+
+	$('#oscillators').on("change", ".id-div input[name=solo]", async function(e) {
+		let osc = parseInt(this.id[this.id.length - 1]);
+		HandleSoloCheck(osc, this.checked);
+	});	
+	
+	
 });
 
 function LoadAndSetupConfig() {
@@ -645,6 +652,16 @@ function HandleMicCheck(osc, checked) {
 		// Turn off Mic
 		PitchDetect.StopLiveInput();
 		PitchDetect.AudioContext = null;
+	}
+}
+
+async function HandleSoloCheck(osc, checked) {
+	if (checked) {
+		$("#oscillators input[name=solo]").prop('checked', false);
+		$("#solo-osc-" + osc).prop('checked', true);
+		await SendCommand("solo " + (osc-1));
+	} else {
+		await SendCommand("on");
 	}
 }
 

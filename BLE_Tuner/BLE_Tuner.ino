@@ -96,6 +96,7 @@ void MultiplyFreqsPWM(std::vector<float> &mult);
 void SetDutiesPWM();
 void ProcessPlayCommand(String command);
 void ProcessSeqCommand(String command);
+void ProcessSoloCommand(int pindex);
 void PlaySong(int songIndex, int repeat, float tempoDivider, int variation);
 void Log(String msg);
 std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
@@ -220,6 +221,11 @@ void ProcessCommand(String recv) {
   else if (recv.startsWith("on") || recv.startsWith("off")) {
     ProcessOnOffCommand(recv);
   }
+  else if (recv.startsWith("solo ")) {
+    if (recv.length() > 5) {
+      ProcessSoloCommand(recv.substring(5).toInt());
+    }
+  }  
   else if (recv.startsWith("debug")) {
     if (recv.length() == 5) {
       Log(String(debug_ble ? "Disable" : "Enable") + " debug");
@@ -714,6 +720,17 @@ void ProcessOnOffCommand(String cmd) {
         Log("Turn off " + String(oscIndex));
         TurnOff(oscIndex);
       }
+    }
+  }
+  NotifyBLESwitchesValue();
+}
+
+void ProcessSoloCommand(int pindex) {
+  for(int i = 0; i < MAX_PRESET; ++i) {
+    if (i == pindex) {
+      TurnOn(i);
+    } else {
+      TurnOff(i);
     }
   }
   NotifyBLESwitchesValue();
