@@ -278,6 +278,16 @@ function handleSwitchesValueChange(event) {
 		let value = event.target.value.getUint8(i);
 		ShowSwitchValue(i+1, value);
 	}
+	checkSolo();
+}
+
+function checkSolo() {
+	let turnedOn = $(".oscillator .lcs_on").length;
+	$("#oscillators input[name=solo]").prop('checked', false);
+	if (turnedOn == 1) {
+		$(".lcs_wrap .lcs_on").parents('.oscillator').attr('id')
+		$(".lcs_wrap .lcs_on").parents('.oscillator').find('input[name=solo]').prop('checked', true);
+	}
 }
 
 function handlePresetChange(event) {
@@ -555,6 +565,7 @@ async function HandleMultButton(osc, mult) {
 
 async function HandleTurnOffOn(osc, status) {
 	await SendCommand(status + " " + osc);
+	checkSolo();
 }
 
 function StartMidi() {
