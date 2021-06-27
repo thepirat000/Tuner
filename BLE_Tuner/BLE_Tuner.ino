@@ -582,7 +582,7 @@ const char* join(std::vector<float> &v) {
   {
     if(i != 0)
       ss << ",";
-    ss << round(v[i]);
+    ss << (int)round(v[i]);
     
   }
   std::string s = ss.str();
@@ -638,17 +638,18 @@ void Load(int pindex) {
 
 void Save(int pindex) {
   std::vector<String> preset;
-  preset.push_back(join(_freqs));
-  Log("DBG 1 " + preset[0]);
+  String strFreq = join(_freqs);
+  if (strFreq.length() <= 1) {
+    Log("Error, discarding...");
+  }
+  preset.push_back(strFreq);
   preset.push_back(join(_duties));
-  Log("DBG 2 " + preset[1]);
   String switches = "";
   for(size_t i = 0; i < _switches.size(); ++i) {
     switches += String(_switches[i]);
   }
   if (switches.length() > 0) {
     preset.push_back(switches);
-    Log("DBG 3 " + preset[2]);
   }
   StorePreset(pindex, preset);
 }

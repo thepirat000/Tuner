@@ -177,7 +177,7 @@ button:disabled {
 
 .command-output {
 	width: calc(100% - 6px); 
-	height: 40px;  
+	height: 80px;  
 	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
 	font-size: x-small;
 	background-color: var(--console-background-color);
