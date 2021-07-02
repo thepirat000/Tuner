@@ -55,7 +55,7 @@ const int PINOUT[] = {2, 4, 5, 18, 19, 21, 22, 23 };
 
 // Global vars
 std::vector<float> _freqs;
-std::vector<float> _cacheFreqs;
+std::vector<float> _lastLoadedFreqs; // Last loaded/saved frequencies
 std::vector<String> _cachePresets;
 std::vector<float> _duties;
 std::vector<byte> _switches;
@@ -72,8 +72,9 @@ int last_preset_loaded = 0;
 // Songs format: Check README.md
 std::vector<String> _songs = {
   "M.5,.33,.5,.33:4|.33,.5,.33,.5:4|.25,2,.25,2:2.5|2,.25,2,.25:4|1.5,3,1.5,3:2|3,1.5,3,1.5:4|1,2,1,2:4|.125,.125,.125,.125:2|4,2,4,2:2|.5,4,.5,4:2|1.5,3,1.5,3:2",
-  "M1.5,1.33,.25,1.25:4|1.33,1.5,1.5,1.33:4|.25,1.25,2,.25:3|2,.25,.5,3:4|.5,3,2,.25:2|3,.5,1,2:2|1,2,3,.5:6|1.125,1.125,4,2:2|4,2,1.125,1.125:2|.5,2.5,2.5,5:2|2.5,.5,.5,2.5:2",
-  "a-1,-1,-1,-1:1|=1|=1|=1|=1|a1,1,1,1:1|=6|=6|=6|=6|=6|=6|=6|=6|=6|=1|=1|=1|=1|=1"
+  "M1.5,1,2,2:2|3,1.5,1.5,1:2|2,1.25,2,2:1.5|2,2,.5,3:2|.5,3,2,2:1|3,.5,1,2:1|1,2,3,.5:3|3,3,4,2:1|4,2,3,3:.5|.5,2.5,2.5,5:.5|2.5,.5,.5,2.5:.5",
+  "a-1,-1,-1,-1:1|=1|=1|=1|=1|a1,1,1,1:1|=6|=6|=6|=6|=6|=6|=6|=6|=6|=1|=1|=1|=1|=1",
+  "a-1,1,-1,1:1|=1|=1|=1|=1|a1,-1,1,-1:1|=6|=6|=6|=6|=6|=6|=6|=6|=6|=1|=1|=1|=1|=1"
 };
 
 // Prototypes
@@ -129,7 +130,6 @@ void setup() {
     _commandBuffer.push("load 0");
   }
 
-  _cacheFreqs = _freqs;
 }
 
 // Loop
@@ -260,7 +260,7 @@ void ProcessCommand(String recv) {
 void InitializeVectors() {
   for(int i = 0; i < MAX_OUTPUT; ++i) {
     _freqs.push_back(0);
-    _cacheFreqs.push_back(0);
+    _lastLoadedFreqs.push_back(0);
     _duties.push_back(DUTY_CYCLE_DEFAULT);
     _switches.push_back(1);
   }
@@ -388,8 +388,8 @@ void UpdateDutyValues(String newValue, bool isIncrement) {
 void MultiplyFreqsPWM(std::vector<float> &mult) {
   for (size_t i = 0; i < mult.size(); ++i) {
     if (mult[i] < 0) {
-      Log("Mutiply " + String(i) + ": " + String(_cacheFreqs[i]) + " by " + String(-mult[i]) + " = " + String(_cacheFreqs[i] * -mult[i]));
-      _freqs[i] = _cacheFreqs[i] * -mult[i];
+      Log("Mutiply " + String(i) + ": " + String(_lastLoadedFreqs[i]) + " by " + String(-mult[i]) + " = " + String(_lastLoadedFreqs[i] * -mult[i]));
+      _freqs[i] = _lastLoadedFreqs[i] * -mult[i];
     }
     else {    
       Log("Mutiply " + String(i) + ": " + String(_freqs[i]) + " by " + String(mult[i]) + " = " + String(_freqs[i] * mult[i]));
@@ -634,6 +634,7 @@ void Load(int pindex) {
   NotifyBLESwitchesValue();
   last_preset_loaded = pindex;
   NotifyBLEPresetLoaded();
+  _lastLoadedFreqs = _freqs;
 }
 
 void Save(int pindex) {
@@ -652,6 +653,7 @@ void Save(int pindex) {
     preset.push_back(switches);
   }
   StorePreset(pindex, preset);
+  _lastLoadedFreqs = _freqs;
 }
 
 std::vector<String> GetPreset(int pindex) {
@@ -854,20 +856,20 @@ void PlaySong(int songIndex, int repeat, float speed, int variation) {
         for(size_t oscIndex = 0; oscIndex < operands.size(); ++oscIndex) {
           switch (stepType) {
             case 'F': // Set base and current freq
-              _cacheFreqs[oscIndex] = operands[oscIndex];
+              _lastLoadedFreqs[oscIndex] = operands[oscIndex];
               _freqs[oscIndex] = operands[oscIndex];
               break;
             case 'f': // Set current freq
               _freqs[oscIndex] = operands[oscIndex];
               break;
             case 'M': // Multiply base
-              _freqs[oscIndex] = _cacheFreqs[oscIndex] * operands[oscIndex];
+              _freqs[oscIndex] = _lastLoadedFreqs[oscIndex] * operands[oscIndex];
               break;
             case 'm': // Multiply current
               _freqs[oscIndex] = _freqs[oscIndex] * operands[oscIndex];
               break;
             case 'A': // Add base
-              _freqs[oscIndex] = _cacheFreqs[oscIndex] + operands[oscIndex];
+              _freqs[oscIndex] = _lastLoadedFreqs[oscIndex] + operands[oscIndex];
               break;
             case 'a': // Add current
               _freqs[oscIndex] = _freqs[oscIndex] + operands[oscIndex];
