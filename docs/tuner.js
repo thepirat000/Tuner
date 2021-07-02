@@ -459,13 +459,22 @@ async function SendFreqUpdate(osc, value) {
 }
 
 async function SendDutyUpdate(osc, value) {
-	// User finished sliding duty slider
 	let duty = value >= 100 ? 1023 : parseInt(value * 1024 / 100);
 	let msg = "/";
-	for(let i = 1; i < osc; ++i) {
-		msg += ",";
+	
+	if ($("#lock-duty-" + osc + ":checked").length) {
+		// locked
+		for(let i = 1; i <= oscCount; ++i) {
+			msg += ($("#lock-duty-" + i + ":checked").length ? duty : "") + ",";
+		}
+		msg = msg.substring(0, msg.length - 1);
 	}
-	msg += duty;
+	else {
+		for(let i = 1; i < osc; ++i) {
+			msg += ",";
+		}
+		msg += duty;
+	}
 	return await SendCommand(msg);
 }
 
