@@ -6,7 +6,7 @@
 - SWITCHES UUID: ca000000-fede-fede-0000-000000000003
 - CMD UUID: ca000000-fede-fede-0000-000000000099
 
-Demo: 
+Demo: https://thepirat000.github.io/Tuner/
 
 # Commands
 
