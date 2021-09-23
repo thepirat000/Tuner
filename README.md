@@ -1,6 +1,6 @@
 # About this project
 
-An Arduino project to control up to 8 PWM outputs of ESP32 via bluetooth BLE. The ESP32 PWM outputs can be connected to an IRF transistor in order to handle higher voltages (i.e. a 12v solenoid)
+An Arduino project to control up to 8 PWM outputs of an ESP32 microcontroller via bluetooth BLE. The ESP32 PWM outputs can be connected to an IRF transistor in order to handle higher voltages (i.e. a 12v solenoid)
 
 The frequencies and duty cycles can be configured independently for each of the outputs. 
 
