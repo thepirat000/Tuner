@@ -1,4 +1,14 @@
-# UUID
+# About this project
+
+An Arduino project to control up to 8 PWM outputs of ESP32 via bluetooth BLE. The ESP32 PWM outputs can be connected to an IRF transistor in order to handle higher voltages (i.e. a 12v solenoid)
+
+The frequencies and duty cycles can be configured independently for each of the outputs. 
+
+A web page (HTML, JavaScript) is provided to connect to the ESP32 via bluetooth: https://thepirat000.github.io/Tuner/
+
+<img src="https://user-images.githubusercontent.com/9836380/134441212-d75bf883-20a1-4987-817a-d396acf3baaa.png" width="800"/>
+
+# BLE UUID
 
 - SVC UUID: ca000000-fede-fede-0000-000000000000
 - FREQ UUID: ca000000-fede-fede-0000-000000000001
