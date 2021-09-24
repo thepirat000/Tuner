@@ -110,6 +110,10 @@ std::vector<int> GetPresetRange(int startIndex, int endIndex);
 std::vector<String> GetInitCommand();
 void StoreInitCommand(String cmd);
 void HandleBluetoothReconnect();
+void ProcessRepeatCommand(String command);
+void Repeat(int times, String commandsString);
+void ProcessDelayCommand(String delayCommand);
+void ProcessLoopCommand(String command);
 
 // MAIN
 void setup() {
@@ -245,10 +249,26 @@ void ProcessCommand(String recv) {
     }
   }
   else if (recv.startsWith("?")) {
+    // Help command
     NotifyBLEFreqValue();
     NotifyBLEDutyValue();
     NotifyBLESwitchesValue();
     NotifyBLEPresetLoaded();
+  }
+  else if (recv.startsWith("repeat ")) {
+    if (recv.length() > 7) {
+      ProcessRepeatCommand(recv.substring(7));
+    }
+  }
+  else if (recv.startsWith("loop ")) {
+    if (recv.length() > 5) {
+      ProcessLoopCommand(recv.substring(5));
+    }
+  }
+  else if (recv.startsWith("delay ")) {
+    if (recv.length() > 6) {
+      ProcessDelayCommand(recv.substring(6));
+    }
   }
   else if (isOperand(recv)) {
     // Frequencies (in hz)
@@ -959,4 +979,58 @@ std::vector<int> GetPresetRange(int startIndex, int endIndex) {
     range.push_back(i);
   }
   return range;
+}
+
+void ProcessRepeatCommand(String command) {
+  // Times|cmd1|cmd2...|cmdn
+  int indexPipe = command.indexOf('|');
+  int times = command.substring(0, indexPipe).toInt();
+  Repeat(times, command.substring(indexPipe));
+}
+
+void ProcessLoopCommand(String command) {
+  Repeat(-1, command);
+}
+
+void Repeat(int times, String commandsString) {
+  // times<=0: forever, times>0: n times
+  Log("Repeat " + String(times) + " times: " + commandsString);
+  if (times == 0) {
+    times = -1;
+  }
+  while(times != 0) {
+    std::vector<String> commands = splitString(commandsString, '|');    
+    for(size_t i = 0; i < commands.size(); ++i) {
+      HandleBluetoothReconnect();
+      if (stop) {
+        Log("Stopping");
+        return;
+      }
+      ProcessCommand(commands[i]);
+    }
+    if (times > 0)
+    {
+      times--;
+    }
+  }
+}
+
+void ProcessDelayCommand(String delayCommand) {
+  // Seconds
+  int interval = delayCommand.toFloat() * 1000;
+  Log("Delay " + delayCommand + " secs.");
+  if (interval <= 1000) {
+    delay(interval);
+  } 
+  else {
+    while(interval >= 1000) {
+      if (stop) {
+        Log("Stopping delay");
+        return;
+      }
+      delay(1000);
+      interval = interval - 1000;
+    }
+    delay(interval);
+  }
 }

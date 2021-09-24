@@ -265,6 +265,35 @@ Will stop playing the preset loop (only available via Bluetooth)
 Example:
 `stop`
 
+### Repeat a command sequence
+Repeats a command sequence a given number of times
+
+- Format: _repeat Times|Cmd1|Cmd2|...|CmdN_
+- Being:
+	- Times=Number of times to repeat the command sequence 
+		- value>0: Times to repeat
+		- value<=0: Repeat forever until it's stopped
+	- CmdX=The commands to execute
+
+Example:
+`repeat 10|on|+40,25,30,10|delay 1|+-40,-25,-30,-10|delay 1|off|delay 2|`
+
+### Loop a command sequence
+Repeats a command sequence until stopped (equivalent to `repeat -1|...`)
+
+- Format: _loop Cmd1|Cmd2|...|CmdN_
+- Being:
+	- CmdX=The commands to execute
+
+Example:
+`loop *2,4,2,0.5|delay 10|load 0|delay 5` 
+
+#### Stop playing repeat sequence
+Will stop playing the repeat sequence (only available via Bluetooth)
+
+Example:
+`stop`
+
 ### Init command
 To Set the initial commands to execute after turning on the device
 
@@ -300,3 +329,9 @@ Restart the hardware
 
 Example:
 `restart`
+
+### Delay
+Waits for the given time in seconds
+
+Example:
+`delay 10`
