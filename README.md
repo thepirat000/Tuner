@@ -83,6 +83,8 @@ Examples:
 
 ## Duties
 
+### Set the duty cycles for oscillators
+
 - Format: _/d[,d[,d[,d]]]_
 - Being: d=decimal number 
    - d > 0: duty for the oscillator (1-1023)
