@@ -22,10 +22,22 @@ $(document).ready(function () {
 		let ok = await Scan();
 	});
 	$("#btn-test").click(async function(e) {
-		ShowOscillators();
 		$("#console").show();
+		NavBarClick("home");
 	});
 	
+	$("#btn-play-song").click(async function(e) {
+		await PlaySong();
+	});
+
+	$("#btn-play-seq").click(async function(e) {
+		await PlaySequence();
+	});
+
+	$(".navbar a").click(function (e) {
+		NavBarClick($(this).attr('data-value'));
+	});
+
 	$("#btn-load").click(async function(e) {
 		await Load();
 	});
@@ -35,7 +47,7 @@ $(document).ready(function () {
 	$("#btn-play").click(async function(e) {
 		await Play();
 	});
-	$("#btn-stop").click(async function(e) {
+	$(".stop-button").click(async function(e) {
 		await Stop();
 	});
 	$("#btn-clear").click(function(e) {
@@ -112,9 +124,39 @@ $(document).ready(function () {
 		let osc = parseInt(this.id[this.id.length - 1]);
 		HandleSoloCheck(osc, this.checked);
 	});	
-	
-	
 });
+
+function NavBarClick(target) {
+	switch(target)
+	{
+		case "presets":
+			$(".top-config").hide();
+			$("#console").show();
+			ShowOscillators();
+			$(".main-container>div").not(".top-buttons").hide();
+			break;
+		case "songs":
+			$(".top-songs").show();
+			$("#console").show();
+			ShowOscillators();
+			$(".main-container>div").not(".top-songs").hide();
+			break;
+		case "sequence":
+			$(".top-sequence").show();
+			$("#console").show();
+			ShowOscillators();
+			$(".main-container>div").not(".top-sequence").hide();
+			break;
+		case "settings":
+			HideOscillators();
+			$(".main-container>div").not(".top-config").hide();
+			$(".top-config").show();
+			$("#console").hide();
+			break;
+	}
+	$(".navbar a").removeClass('active');
+	$(".navbar a[data-value='" + target + "']").addClass('active');
+}
 
 function LoadAndSetupConfig() {
 	// Load values
@@ -173,22 +215,43 @@ async function Scan() {
 	} catch(err) {
 		AppendLogLine("Error: " + err);
 		HideOscillators();
+		$(".top-config").show();
 		return false;
 	}
-	$("#title").text(device.name);
-	AppendLogLine("Connecting to '" + device.name + "'. Please wait...");
+	ShowCnnStatus("connecting");
 	ShowWaitCursor();
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
+	GenerateOscillatorsUI();
+	NavBarClick("presets");
+	ShowCnnStatus("connected");
 	SendCommand("?");
-	ShowOscillators();
 	HideWaitCursor();
+
 	return true;
 }
 
+function ShowCnnStatus(status) {
+	switch(status)
+	{
+		case "connected":
+			$("#title").text("Connected to: " + device.name)
+			AppendLogLine("Connected to " + device.name);
+			$("#btn-scan").text("Reconnect");
+			break;
+		case "connecting":
+			$("#title").text("Connecting...");
+			AppendLogLine("Connecting to " + device.name);
+			break;
+		case "disconnected":
+			$("#title").text("Not connected");
+			AppendLogLine("Disconnected");
+			$("#btn-scan").text("Connect");
+			break;
+	}
+}
+
 function ShowOscillators() {
-	GenerateOscillatorsUI();
-	$("#div-config").hide();
 	$("#btn-reconnect").show();
 	$(".top-buttons").show();
 	$("#command-div").show();
@@ -196,7 +259,6 @@ function ShowOscillators() {
 }
 
 function HideOscillators() {
-	$("#div-config").show();
 	$("#btn-reconnect").hide();
 	$(".top-buttons").hide();
 	$("#command-div").hide();
@@ -205,6 +267,7 @@ function HideOscillators() {
 
 async function Disconnect() {
 	if (device && device.gatt.connected) {
+		ShowCnnStatus("disconnected");
 		await device.gatt.disconnect();
 	}
 }
@@ -221,7 +284,7 @@ async function GetDuties() {
 
 async function onDisconnected() {
 	ShowWaitCursor();
-	AppendLogLine("Disconnected");
+	ShowCnnStatus("disconnected");
 	await connectDeviceAndCacheCharacteristics();
 	HideWaitCursor();
 	SendCommand("?");
@@ -232,7 +295,7 @@ async function connectDeviceAndCacheCharacteristics() {
 		return;
 	}
 	try {
-		AppendLogLine("Connecting");
+		ShowCnnStatus("connecting");
 		const server = await device.gatt.connect();
 		const service = await server.getPrimaryService('fe000000-fede-fede-0000-000000000000');
 		characteristicFreqs = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000001'))[0];
@@ -250,11 +313,12 @@ async function connectDeviceAndCacheCharacteristics() {
 		characteristicCmd = (await service.getCharacteristics('ca000000-fede-fede-0000-000000000099'))[0];
 		characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
 		await characteristicCmd.startNotifications();
-		AppendLogLine("Connected");
+		ShowCnnStatus("connected");
 	}
 	catch (err) {
+		ShowCnnStatus("disconnected");
 		HideWaitCursor();
-		HideOscillators();
+		NavBarClick("settings");
 		alert(err);
 	}
 }
@@ -348,7 +412,6 @@ function GenerateOscillatorsUI() {
 
 async function SendConsoleCommand() {
 	let cmd = $("#command").val();
-	AppendLogLine("> " + cmd);
 	let ok = await SendCommand(cmd);
 	if (ok) {
 		$("#command").val("");
@@ -403,6 +466,7 @@ function ShowSwitchValue(osc, value) {
 
 async function SendCommand(cmd) {
 	if (cmd) {
+		AppendLogLine("> " + cmd);
 		let value = encoder.encode(cmd);
 		try {
 			await characteristicCmd.writeValue(value);
@@ -728,6 +792,7 @@ async function Restart() {
 	$("#fullscreen").prop('checked', false);
 	fullScreenRequest();
 	HideOscillators();
+	$(".top-config").show();
 	$("#console").hide();
 }
 	
@@ -738,5 +803,29 @@ function fullScreenRequest() {
 		if (document.exitFullscreen) {
 			document.exitFullscreen();
 		}
+	}
+}
+
+async function PlaySong() {
+	let songIndex = $("#song-index").val();
+	let songTimes = $("#song-times").val() ? $("#song-times").val() : 1;
+	let songSpeed = $("#song-speed").val() ? $("#song-speed").val() : 1;
+	let songVariation = $("#song-variation").val() ? $("#song-variation").val() : -1;
+	if (songIndex) {
+		// play SongIndex[,Iterations[,Speed[,Variation]]]
+		let cmd = "play " + songIndex + "," + songTimes + "," + songSpeed + "," + songVariation;
+		await SendCommand(cmd);
+	}
+}
+
+async function PlaySequence() {
+	let seqRange = $("#seq-index").val();
+	let seqTimes = $("#seq-times").val() ? $("#seq-times").val() : 0;
+	let seqDelay = $("#seq-delay").val() ? $("#seq-delay").val() : 1;
+	let seqVariation = $("#seq-variation").val() ? $("#seq-variation").val() : -1;
+	if (seqRange) {
+		// seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
+		let cmd = "seq " + seqRange + "," + seqDelay + "," + seqTimes + "," + seqVariation;
+		await SendCommand(cmd);
 	}
 }

@@ -8,16 +8,17 @@
 :root {
   color-scheme: light;
   --back-color: #fff;
-  --title-back-color: #08E;
-  --title-color: white;
+  --title-back-color: white;
+  --title-color: rgb(2, 74, 129);
   --console-background-color: #f2f8ff;
+  --top-background-color: #f2f8ff;
   --osc-color: #F9E79F;
   --osc-shadow-color: #D4AC0D;
   --freq-color: #229954;
   --duty-color: #229954;
   --running-freq-color: #909497;
   --running-duty-color: #909497;
-  --border-color: #7F8C8D;
+  --border-color: #08E;
   --main-button-color: #0084ff;
   --step-button-color: #75b936;
   --body-color: #2d2d2d;
@@ -27,21 +28,24 @@
   --slider-color: #04AA6D;
   --switch-on-color: #75b936;
   --thumb-size: 10px;
+  --nav-back-color: var(--border-color);
+  --nav-text-color: #f1efef;
 }
 
 .dark-mode {
   color-scheme: dark;
   --back-color: #000;
-  --title-back-color: #17314a;
+  --title-back-color: black;
   --title-color: #08E;
-  --console-background-color: #252525;
+  --console-background-color: #181818;
+  --top-background-color: #131212;
   --osc-color: #040404;
   --osc-shadow-color: #D4AC0D;
   --freq-color: #12FB71;
   --duty-color: #12FB71;
   --running-freq-color: #909497;
   --running-duty-color: #909497;
-  --border-color: #566B6D;
+  --border-color: #17314a;
   --main-button-color: #215382;
   --step-button-color: #366AB9;
   --body-color: #D6CDCD;
@@ -51,6 +55,8 @@
   --slider-color: #00ffa1;
   --switch-on-color: #64903b;
   --thumb-size: 10px;
+  --nav-back-color: var(--border-color);
+  --nav-text-color: #e2e2e2;
 }
 
 * {
@@ -64,6 +70,41 @@ body {
   background-color: var(--back-color);
 }
 
+/* Style the navigation bar */
+.navbar {
+  width: 100%;
+  background-color: var(--nav-back-color);
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Navbar links */
+.navbar a {
+  float: left;
+  text-align: center;
+  padding: 4px 10px 4px 10px;
+  color: var(--nav-text-color);
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.navbar a:hover {
+  color: white;
+}
+
+.active {
+  background-color: #04AA6D;
+}
+
+/* Add responsiveness - will automatically display the navbar vertically instead of horizontally on screens less than 500 pixels */
+@media screen and (max-width: 300px) {
+  .navbar a {
+    float: none;
+    display: block;
+  }
+}
+
 .banner-message {
   background: var(--back-color);
   padding: 10px;
@@ -72,6 +113,7 @@ body {
   transition: all 0.2s;
   margin: 0 auto;
 }
+
 .clickable {
   text-align: left;
 }
@@ -420,26 +462,51 @@ input[type=range]:focus::-ms-fill-upper {
 	margin-right: 10px;
 }
 
+.main-container>div {
+  background-color: var(--top-background-color);
+}
+
 .top-buttons {
 	margin: auto; 
 	display: flex;
 	align-items: center;
 	justify-content: space-evenly;
 	
-	background-color: var(--console-background-color);
 	border: 1px solid var(--border-color);
 	font-size: x-small;
 	
 }
 
-#div-config {
+.top-config {
 	border: 1px solid var(--border-color);
 	font-size: large;
 }
 
-#div-config div {
+.top-config div {
 	margin-top: 10px;
 	margin-bottom: 10px;
+}
+
+.top-songs {
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: column;
+}
+
+.top-songs input[type=text] {
+  width: 50px;
+}
+
+.top-sequence {
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: column;
+}
+
+.top-sequence input[type=text] {
+  width: 50px;
 }
 
 .clear-button {
@@ -452,6 +519,11 @@ input[type=range]:focus::-ms-fill-upper {
 
 .set-duty-buttons .step-button {
 	font-size: x-small;
+}
+
+.presets {
+  padding-top: 10px;
+  padding-bottom: 6px;
 }
 
 .presets-text {

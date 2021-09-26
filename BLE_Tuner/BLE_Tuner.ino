@@ -294,14 +294,29 @@ bool isOperand(String str) {
 }
 
 // BLE characteristics Callbacks
+String bleMultilineCommandBuffer = "";
+
 class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       String value = String(pCharacteristic->getValue().c_str());
-      if (value.startsWith("stop")) {
-        stop = true;
+
+      if (value.endsWith("\\")) {
+        // Allows to receive a long message in chunks ending with '\'
+        bleMultilineCommandBuffer = bleMultilineCommandBuffer + value.substring(0, value.length() - 1);
       }
       else {
-        _commandBuffer.push(value);
+        if (bleMultilineCommandBuffer.length() > 0) {
+          _commandBuffer.push(bleMultilineCommandBuffer + value);
+          bleMultilineCommandBuffer = "";
+        }
+        else {
+          if (value.startsWith("stop")) {
+            stop = true;
+          }
+          else {
+            _commandBuffer.push(value);
+          }
+        }
       }
     }
 };
@@ -324,6 +339,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 
 void StartBLEServer() {
   BLEDevice::init(SERVICE_NAME);
+  BLEDevice::setMTU(517);
   bleServer = BLEDevice::createServer();
   bleServer->setCallbacks(new MyServerCallbacks());
   BLEService *pService = bleServer->createService(BLEUUID(SERVICE_UUID), 30, 0);
@@ -985,7 +1001,7 @@ void ProcessRepeatCommand(String command) {
   // Times|cmd1|cmd2...|cmdn
   int indexPipe = command.indexOf('|');
   int times = command.substring(0, indexPipe).toInt();
-  Repeat(times, command.substring(indexPipe));
+  Repeat(times, command.substring(indexPipe + 1));
 }
 
 void ProcessLoopCommand(String command) {
@@ -998,6 +1014,7 @@ void Repeat(int times, String commandsString) {
   if (times == 0) {
     times = -1;
   }
+  stop = false;
   while(times != 0) {
     std::vector<String> commands = splitString(commandsString, '|');    
     for(size_t i = 0; i < commands.size(); ++i) {
@@ -1023,6 +1040,7 @@ void ProcessDelayCommand(String delayCommand) {
     delay(interval);
   } 
   else {
+    stop = false;
     while(interval >= 1000) {
       if (stop) {
         Log("Stopping delay");
