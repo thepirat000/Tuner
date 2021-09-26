@@ -126,7 +126,7 @@ void setup() {
 
   std::vector<String> initCmds = GetInitCommand();
   if (initCmds.size() > 0 && initCmds[0].length() > 0) {
-    Log("Init with cmds: " + joinString(initCmds, '|'));
+    Log("Init with cmds: " + joinString(initCmds, ';'));
     for (size_t i = 0; i < initCmds.size(); ++i) {
       _commandBuffer.push(initCmds[i]);
     }
@@ -726,7 +726,7 @@ void StorePreset(int pindex, std::vector<String> preset) {
 
 std::vector<String> GetInitCommand() {
   ESPFlashString espFlashString(INIT_FILE, "load 0");
-  return splitString(espFlashString.get(), '|');
+  return splitString(espFlashString.get(), ';');
 }
 void StoreInitCommand(String cmd) {
   ESPFlashString espFlashString(INIT_FILE);

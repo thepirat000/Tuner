@@ -217,12 +217,10 @@ async function Scan() {
 		$(".top-config").show();
 		return false;
 	}
-	ShowCnnStatus("connecting");
 	ShowWaitCursor();
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
 	NavBarClick("presets");
-	ShowCnnStatus("connected");
 	SendCommand("?");
 	HideWaitCursor();
 
@@ -313,6 +311,10 @@ async function connectDeviceAndCacheCharacteristics() {
 		characteristicCmd.addEventListener('characteristicvaluechanged', handleCmdValueChange);
 		await characteristicCmd.startNotifications();
 		ShowCnnStatus("connected");
+		// send the debug 1 command if needed
+		if ($("#debug").is(':checked')) {
+			await SendCommand("debug 1");
+		}
 	}
 	catch (err) {
 		ShowCnnStatus("disconnected");
@@ -785,20 +787,20 @@ async function Stop() {
 }
 
 async function Restart() {
-	$("#fullscreen").prop('checked', false);
-	fullScreenRequest();
-	HideOscillators();
-	$(".top-config").show();
-	$("#console").hide();
+	await SendCommand("restart");
 }
 	
 function fullScreenRequest() {
-	if ($("#fullscreen").prop('checked')) {
-		document.documentElement.requestFullscreen();
-	} else {
-		if (document.exitFullscreen) {
-			document.exitFullscreen();
+	try {
+		if ($("#fullscreen").prop('checked')) {
+			document.documentElement.requestFullscreen();
+		} else {
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			}
 		}
+	} catch (error) {
+		console.log(error);
 	}
 }
 

@@ -299,7 +299,7 @@ Example:
 ### Init command
 To Set the initial commands to execute after turning on the device
 
-- Format: _init cmd1|cmd2|..._
+- Format: _init cmd1;cmd2;..._
 - Being:
 	- cmdx: Any valid string command 
 
@@ -307,7 +307,7 @@ To Set the initial commands to execute after turning on the device
 `init seq 0,3,1,0`
 
 #### Load the preset at index 0 and then play the song 1, twice
-`init load 2|play 1,2`
+`init load 2;play 1,2`
 
 ### Debug
 
