@@ -6,7 +6,7 @@ let device;
 const encoder = new TextEncoder('utf-8');
 let lastFreqFromMic = 0.0;
 let oscCount = 4;
-let presetCount = 4;
+let presetCount = 8;
 
 $(document).ready(function () {
 	StartMidi();
@@ -19,11 +19,12 @@ $(document).ready(function () {
 	});
 
 	$("#btn-scan").click(async function(e) {
-		let ok = await Scan();
-	});
-	$("#btn-test").click(async function(e) {
-		$("#console").show();
-		NavBarClick("home");
+		if ($(this).text() == "Disconnect") {
+			await Disconnect();
+		}
+		else {
+			await Scan();
+		}
 	});
 	
 	$("#btn-play-song").click(async function(e) {
@@ -170,9 +171,9 @@ function LoadAndSetupConfig() {
 	$(".slider").toggle(slidersEnabled);
 
 	$("#oscCount").val(localStorage.getItem('osc-count') ?? 4);
+	GenerateOscillatorsUI();
+
 	$("#freqRange").val(localStorage.getItem('freq-range') ?? 2000);
-	$("#presetCount").val(localStorage.getItem('preset-count') ?? 8);
-	
 
 	// Setup
 	$("#dark").click(function() {
@@ -194,12 +195,10 @@ function LoadAndSetupConfig() {
 	});
 	$("#oscCount").change(function() {
 		localStorage.setItem('osc-count', this.value);
+		GenerateOscillatorsUI();
 	});	
 	$("#freqRange").change(function() {
 		localStorage.setItem('freq-range', this.value);
-	});	
-	$("#presetCount").change(function() {
-		localStorage.setItem('preset-count', this.value);
 	});	
 }
 
@@ -222,7 +221,6 @@ async function Scan() {
 	ShowWaitCursor();
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
-	GenerateOscillatorsUI();
 	NavBarClick("presets");
 	ShowCnnStatus("connected");
 	SendCommand("?");
@@ -237,7 +235,7 @@ function ShowCnnStatus(status) {
 		case "connected":
 			$("#title").text("Connected to: " + device.name)
 			AppendLogLine("Connected to " + device.name);
-			$("#btn-scan").text("Reconnect");
+			$("#btn-scan").text("Disconnect");
 			break;
 		case "connecting":
 			$("#title").text("Connecting...");
@@ -268,6 +266,7 @@ function HideOscillators() {
 async function Disconnect() {
 	if (device && device.gatt.connected) {
 		ShowCnnStatus("disconnected");
+		device.removeEventListener('gattserverdisconnected', onDisconnected);
 		await device.gatt.disconnect();
 	}
 }
@@ -405,9 +404,6 @@ function GenerateOscillatorsUI() {
 
 	let maxRange = $("#freqRange").val();
 	$(".freq-div .slider").prop('max', maxRange);
-	
-	presetCount = $("#presetCount").val();
-	$("#preset-group-2").toggle(presetCount > 4);
 }
 
 async function SendConsoleCommand() {

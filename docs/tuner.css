@@ -26,7 +26,7 @@
   --note-color: #626567;
   --footer-back-color: lightgray;
   --slider-color: #04AA6D;
-  --switch-on-color: #75b936;
+  --switch-on-color: #04AA6D;
   --thumb-size: 10px;
   --nav-back-color: var(--border-color);
   --nav-text-color: #f1efef;
@@ -53,7 +53,7 @@
   --note-color: #909294;
   --footer-back-color: #404040;
   --slider-color: #00ffa1;
-  --switch-on-color: #64903b;
+  --switch-on-color: #04AA6D;
   --thumb-size: 10px;
   --nav-back-color: var(--border-color);
   --nav-text-color: #e2e2e2;
@@ -83,7 +83,7 @@ body {
 .navbar a {
   float: left;
   text-align: center;
-  padding: 4px 10px 4px 10px;
+  padding: 6px 14px 6px 14px;
   color: var(--nav-text-color);
   text-decoration: none;
   font-size: 15px;
@@ -462,6 +462,10 @@ input[type=range]:focus::-ms-fill-upper {
 	margin-right: 10px;
 }
 
+.main-container {
+  border: 1px solid var(--border-color);
+}
+
 .main-container>div {
   background-color: var(--top-background-color);
 }
@@ -471,14 +475,11 @@ input[type=range]:focus::-ms-fill-upper {
 	display: flex;
 	align-items: center;
 	justify-content: space-evenly;
-	
-	border: 1px solid var(--border-color);
 	font-size: x-small;
-	
 }
 
 .top-config {
-	border: 1px solid var(--border-color);
+  padding: 1px;
 	font-size: large;
 }
 
