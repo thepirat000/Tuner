@@ -120,9 +120,11 @@ void setup() {
   Serial.begin(115200);
   Log("Initializing");
   InitializeVectors();
-  
+
   AttachOutputPins();
   StartBLEServer();
+
+  SetFreqsPWM();
 
   std::vector<String> initCmds = GetInitCommand();
   if (initCmds.size() > 0 && initCmds[0].length() > 0) {
@@ -133,7 +135,6 @@ void setup() {
   } else {
     _commandBuffer.push("load 0");
   }
-
 }
 
 // Loop
