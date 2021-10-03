@@ -503,13 +503,15 @@ input[type=range]:focus::-ms-fill-upper {
 	font-size: x-small;
 }
 
-.noUi-target {
-  transform: scale(0.5, 0.5);
-  font-size: large;
-}
-
 #seq-range {
   margin-top: 18px;
+  margin-left: -4px;
+  transform: scale(0.75, 0.6);
+  font-size: small;
+}
+
+.noUi-handle {
+  width: 20px !important;
 }
 
 .clear-button {
