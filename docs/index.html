@@ -26,6 +26,10 @@
 	
 	<script src="./ext/nu.js" type="text/javascript"></script>
 	<script src="./ext/pitchdetect.js" type="text/javascript"></script>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/wnumb/1.2.0/wNumb.min.js" ></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/12.0.0/nouislider.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/12.0.0/nouislider.min.js" ></script>
 </head>
 <body>
     <div id="big-one" style="max-width: 940px; min-width: 320px; margin: 0 auto;">
@@ -133,22 +137,122 @@
 
 				<div class="top-songs" style="display:none;">
 					<div>
-						<div><span>Index<input id="song-index" type="text" /></span> <span>Times<input id="song-times" type="text" /></span></div>
-						<div><span>Speed<input id="song-speed" type="text" /></span> <span>Variation<input id="song-variation" type="text" /></span></div>
+						<button id="btn-stop-song" class="stop-button">Stop</button>
 					</div>
 					<div>
-						<button id="btn-stop-song" class="stop-button">Stop</button>
+						<label for="song-index">Song </label>
+						<br/>
+						<select name="song-index" id="song-index">
+							<option value="0" selected>1</option>
+							<option value="1">2</option>
+							<option value="2">3</option>
+							<option value="3">4</option>
+						</select>
+					</div>
+					<div>
+						<label for="song-times">Times</label>
+						<br/>
+						<select name="song-times" id="song-times">
+							<option value="0">∞</option>
+							<option value="1" selected>1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="10">10</option>
+							<option value="25">25</option>
+							<option value="50">50</option>
+						</select>
+					</div>
+					<div>
+						<label for="song-speed">Speed</label>
+						<br/>
+						<select name="song-speed" id="song-speed">
+							<option value="0.25">0.25x</option>
+							<option value="0.5">0.5x</option>
+							<option value="1" selected>Normal</option>
+							<option value="2">2x</option>
+							<option value="3">3x</option>
+							<option value="4">4x</option>
+							<option value="5">5x</option>
+							<option value="10">10x</option>
+						</select>
+					</div>
+					<div>
+						<label for="song-variation">Variation</label>
+						<br/>
+						<select name="song-variation" id="song-variation">
+							<option value="-1" selected>Default</option>
+							<option value="0">Random</option>
+							<option value="1">Var. 1</option>
+							<option value="2">Var. 2</option>
+							<option value="3">Var. 3</option>
+							<option value="4">Var. 4</option>
+						</select>
+					</div>
+					<div>
 						<button id="btn-play-song" class="play-button">Play</button> 
 					</div>
 				</div>
 
 				<div class="top-sequence" style="display:none;">
 					<div>
-						<div><span>Index range<input id="seq-index" type="text" /></span> <span>Times<input id="seq-times" type="text" /></span></div>
-						<div><span>Delay<input id="seq-delay" type="text" /></span> <span>Variation<input id="seq-variation" type="text" /></span></div>
+						<button id="btn-stop-seq" class="stop-button">Stop</button>
+					</div>
+
+					<div style="width: 100px;">
+						<div id="seq-range"></div>
+						<label for="seq-range">Range</label>
+					</div>
+
+					<div>
+						<label for="seq-times">Times</label>
+						<br/>
+						<select name="seq-times" id="seq-times">
+							<option value="0" selected>∞</option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="10">10</option>
+							<option value="25">25</option>
+							<option value="50">50</option>
+						</select>
+					</div>
+
+					<div>
+						<label for="seq-delay">Delay</label>
+						<br/>
+						<select name="seq-delay" id="seq-delay">
+							<option value="0.05">50 ms</option>
+							<option value="0.1">100 ms</option>
+							<option value="0.25">250 ms</option>
+							<option value="0.5">500 ms</option>
+							<option value="1" selected>1 s</option>
+							<option value="2">2 s</option>
+							<option value="4">4 s</option>
+							<option value="5">5 s</option>
+							<option value="10">10 s</option>
+							<option value="30">30 s</option>
+							<option value="60">1 min</option>
+							<option value="300">5 mins</option>
+						</select>
+					</div>
+
+					<div>
+						<label for="seq-variation">Variation</label>
+						<br/>
+						<select name="seq-variation" id="seq-variation">
+							<option value="-1" selected>Default</option>
+							<option value="0">Random</option>
+							<option value="1">Var. 1</option>
+							<option value="2">Var. 2</option>
+							<option value="3">Var. 3</option>
+							<option value="4">Var. 4</option>
+						</select>
 					</div>
 					<div>
-						<button id="btn-stop-seq" class="stop-button">Stop</button>
 						<button id="btn-play-seq" class="play-button">Play</button>
 					</div>
 				</div>

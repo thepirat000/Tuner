@@ -390,9 +390,6 @@ input[type=range]:focus::-ms-fill-upper {
 	color: var(--duty-color);
 }
 
-.duty-div .mini-text {
-}
-
 .duty-perc-text {
 	font-size: 18px;
 	cursor: default;
@@ -489,25 +486,30 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .top-songs {
-  padding-top: 10px;
-  display: flex;
-  justify-content: space-evenly;
-  flex-direction: column;
-}
-
-.top-songs input[type=text] {
-  width: 50px;
+	margin: auto; 
+	display: flex;
+	align-items: center;
+	justify-content: space-evenly;
+  gap: 5px;
+	font-size: x-small;
 }
 
 .top-sequence {
-  padding-top: 10px;
-  display: flex;
-  justify-content: space-evenly;
-  flex-direction: column;
+	margin: auto; 
+	display: flex;
+	align-items: center;
+	justify-content: space-evenly;
+  gap: 5px;
+	font-size: x-small;
 }
 
-.top-sequence input[type=text] {
-  width: 50px;
+.noUi-target {
+  transform: scale(0.5, 0.5);
+  font-size: large;
+}
+
+#seq-range {
+  margin-top: 18px;
 }
 
 .clear-button {

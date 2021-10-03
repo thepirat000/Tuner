@@ -13,6 +13,7 @@ $(document).ready(function () {
 	$('.lcs_check').lc_switch();
 
 	LoadAndSetupConfig();
+	SetupSlider();
 
 	$("#btn-restart").click(async function(e) {
 		await Restart();
@@ -200,6 +201,22 @@ function LoadAndSetupConfig() {
 	$("#freqRange").change(function() {
 		localStorage.setItem('freq-range', this.value);
 	});	
+}
+
+function SetupSlider() {
+	var slider = document.getElementById('seq-range');
+
+	noUiSlider.create(slider, {
+		start: [1, 8],
+		connect: true,
+		step: 1,
+		range: {
+			'min': 1,
+			'max': 8			
+		},
+		tooltips: [wNumb({decimals: 0}), wNumb({decimals: 0})]
+		
+	});
 }
 
 async function Scan() {
@@ -817,13 +834,14 @@ async function PlaySong() {
 }
 
 async function PlaySequence() {
-	let seqRange = $("#seq-index").val();
+	let slider = document.getElementById('seq-range');
+	let range = slider.noUiSlider.get();
 	let seqTimes = $("#seq-times").val() ? $("#seq-times").val() : 0;
 	let seqDelay = $("#seq-delay").val() ? $("#seq-delay").val() : 1;
 	let seqVariation = $("#seq-variation").val() ? $("#seq-variation").val() : -1;
-	if (seqRange) {
+	if (range) {
 		// seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]
-		let cmd = "seq " + seqRange + "," + seqDelay + "," + seqTimes + "," + seqVariation;
+		let cmd = "seq " + Math.round(range[0]-1) + "," + Math.round(range[1]-1) + "," + seqDelay + "," + seqTimes + "," + seqVariation;
 		await SendCommand(cmd);
 	}
 }
