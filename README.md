@@ -102,6 +102,46 @@ Examples:
 - Set the duty for OSC 1 to 900 and OSC 4 to 400:
 `/900,-1,-1,400`
 
+## File system low-level commands
+
+### Dir
+List all files in flash memory
+
+- Format: _dir_
+
+Example:
+`dir`
+
+### Type
+Logs the content of a file
+
+- Format: _type [fileName]_
+- Being 
+	- fileName: the full file name (cannot contain spaces)
+
+Example:
+`type /init.cmd`
+
+### Del
+Deletes a file
+
+- Format: _del [fileName]_
+- Being 
+	- fileName: the full file name to delete (cannot contain spaces)
+
+Example:
+`del /p0.txt`
+
+### Create
+Creates a new file
+
+- Format: _create [fileName] [contents]_
+- Being 
+	- fileName: the full file name to create (cannot contain spaces)
+	- contents: the textual contents of the file
+
+Example:
+`create /p0.txt 220,440,620,840|512,512,512,512|1111`
 
 ## Generic commands
 
@@ -163,7 +203,7 @@ Example:
 
 ### Songs
 
-#### Play a song
+#### Play a song by index
 
 - Format: _play SongIndex[,Iterations[,Speed[,Variation]]]_
 - Being: 
@@ -191,6 +231,34 @@ Examples:
 
 - Play the song at index 0, Repeat 2 times, at 1.5x speed, using a randomization for the steps with seed = 5
 `play 0,2,1.5,5`
+
+#### Play a song by file name
+- Format: _play SongFileName[,Iterations[,Speed[,Variation]]]_
+- Being: 
+	- SongFileName=The song full file name (the file must exists, can be created with CREATE command)
+	- Iterations=Times to repeat the song (default is 1)
+		- value>0: Times to repeat
+		- value<=0: Repeat forever until it's stopped
+	- Speed=(optional) Speed to play at (1 is normal speed, 2 is double speed, 0.5 is half speed) (default is 1)
+		- value>0: Multiply speed by x
+	- Variation=(optional) number:
+		- value>0: randomize the steps order with the given number as seed. 
+		- value=0: pseudo randomize steps
+		- value<0: no randomizing (default)
+
+Examples:
+
+- Play the song at file song1, no repetition, at normal speed
+`play song1`
+
+- Play the song at file song2, repeat 10 times, at 5x speed
+`play song2,10,5`
+
+- Play the song at file song3, repeat 20 times, at 4x speed, with pseudo-random steps order
+`play song3,20,4,0`
+
+- Play the song at file song4, Repeat 2 times, at 1.5x speed, using a randomization for the steps with seed = 5
+`play song4,2,1.5,5`
 
 ### Song format
 - Format: _DefaultStepType StepsPSV_

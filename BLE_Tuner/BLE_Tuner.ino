@@ -38,9 +38,9 @@ Docs/Links:
 #define CHARACTERISTIC_CMD_UUID     "ca000000-fede-fede-0000-000000000099"       // Bluetooth characteristic to send commands and get the current status 
 
 #define PRESET_FILE_PREFIX "/p"
-#define PRESET_FILE_SUFFIX ".txt"
+#define PRESET_FILE_SUFFIX ""
 
-#define INIT_FILE "/init.cmd"
+#define INIT_FILE "/init"
 
 #define LED_PIN 2
 #define MAX_PRESET 8  // Presets MAX count
@@ -99,6 +99,8 @@ void ProcessPlayCommand(String command);
 void ProcessSeqCommand(String command);
 void ProcessSoloCommand(int pindex);
 void PlaySong(int songIndex, int repeat, float tempoDivider, int variation);
+void PlaySongFile(String fileName, int repeat, float speed, int variation);
+void PlaySongString(String song, int repeat, float speed, int variation);
 void Log(String msg);
 std::vector<std::string> SplitStringByNumber(const std::string &str, int len);
 void SetFreqPWM(int oscIndex, float freq, bool setup=false);
@@ -114,12 +116,16 @@ void ProcessRepeatCommand(String command);
 void Repeat(int times, String commandsString);
 void ProcessDelayCommand(String delayCommand);
 void ProcessLoopCommand(String command);
+void InitializeFileSystem();
+void ProcessFileSystemCommand(String command, String fileName="", String contents="");
 
 // MAIN
 void setup() {
   Serial.begin(115200);
   Log("Initializing");
   InitializeVectors();
+  
+  InitializeFileSystem();
 
   AttachOutputPins();
   StartBLEServer();
@@ -171,6 +177,8 @@ void HandleBluetoothReconnect() {
 
 // ************ PROCESS COMMAND ***************
 void ProcessCommand(String recv) {
+  String originalRecv = recv;
+  originalRecv.trim();
   recv.trim();
   recv.toLowerCase();
   Log("Recv: '" + recv + "'");
@@ -255,6 +263,7 @@ void ProcessCommand(String recv) {
     NotifyBLEDutyValue();
     NotifyBLESwitchesValue();
     NotifyBLEPresetLoaded();
+    PrintValues(_freqs, _duties);  
   }
   else if (recv.startsWith("repeat ")) {
     if (recv.length() > 7) {
@@ -271,11 +280,36 @@ void ProcessCommand(String recv) {
       ProcessDelayCommand(recv.substring(6));
     }
   }
+  else if (recv.startsWith("dir")) {
+    ProcessFileSystemCommand("dir");
+  }
+  else if (recv.startsWith("type ")) {
+    if (recv.length() > 5) {
+      ProcessFileSystemCommand("type", recv.substring(5));
+    }
+  }
+  else if (recv.startsWith("del ")) {
+    if (recv.length() > 4) {
+      ProcessFileSystemCommand("del", recv.substring(4));
+    }
+  }
+  else if (recv.startsWith("create ")) {
+    if (originalRecv.length() > 7) {
+      recv = originalRecv.substring(7);
+      recv.trim();
+      int spaceIndex = recv.indexOf(' ');
+      if (spaceIndex > 0) {
+        String fileName = recv.substring(0, spaceIndex);
+        fileName.toLowerCase();
+        String contents = recv.substring(spaceIndex + 1);
+        ProcessFileSystemCommand("create", fileName, contents);
+      }
+    }
+  }
   else if (isOperand(recv)) {
     // Frequencies (in hz)
     UpdateFrequencyValues(recv, false);
   }
-  PrintValues(_freqs, _duties);  
 }
 
 void InitializeVectors() {
@@ -375,6 +409,7 @@ void AttachOutputPins() {
     TurnOn(i);
   }
 }
+
 void DetachOutputPins() {
   for (int i = 0; i < MAX_OUTPUT; i++) { 
     TurnOff(i);
@@ -672,6 +707,7 @@ void Load(int pindex) {
   last_preset_loaded = pindex;
   NotifyBLEPresetLoaded();
   _lastLoadedFreqs = _freqs;
+  PrintValues(_freqs, _duties);
 }
 
 void Save(int pindex) {
@@ -729,6 +765,7 @@ std::vector<String> GetInitCommand() {
   ESPFlashString espFlashString(INIT_FILE, "load 0");
   return splitString(espFlashString.get(), ';');
 }
+
 void StoreInitCommand(String cmd) {
   ESPFlashString espFlashString(INIT_FILE);
   Log("Store Init: " + cmd);
@@ -777,6 +814,7 @@ void ProcessSoloCommand(int pindex) {
 }
 
 // Format: play SongIndex[,Iterations[,Speed[,Variation]]]
+// or:  play SongFileName[,Iterations[,Speed[,Variation]]]
 void ProcessPlayCommand(String command) {
   if (command.length() <= 5) {
     // Default params
@@ -784,13 +822,9 @@ void ProcessPlayCommand(String command) {
   } 
   else {
     std::vector<String> params = splitString(command.substring(5), ',');
-    int song;
     int repeat = 1;
     float speed = 1.00;
     int variation = -1;
-    if (params.size() > 0) {
-      song = params[0].toInt();
-    }
     if (params.size() > 1) {
       repeat = params[1].toInt();
     }
@@ -800,7 +834,13 @@ void ProcessPlayCommand(String command) {
     if (params.size() > 3) {
       variation = params[3].toInt();
     }
-    PlaySong(song, repeat, speed, variation);
+    if (isDigit(params[0].charAt(0))) {
+      // Play [index],...
+      PlaySong(params[0].toInt(), repeat, speed, variation);
+    } else {
+      // Play [songFile],...
+      PlaySongFile(params[0], repeat, speed, variation);
+    }
   }
 }
 
@@ -838,9 +878,23 @@ void ProcessSeqCommand(String command) {
 
 void PlaySong(int songIndex, int repeat, float speed, int variation) {
   String song = _songs[songIndex];
+  PlaySongString(song, repeat, speed, variation);
+}
+
+void PlaySongFile(String fileName, int repeat, float speed, int variation) {
+  if (!fileName.startsWith("/")) {
+    fileName = "/" + fileName;
+  }
+  if (SPIFFS.exists(fileName)) {
+    ESPFlashString espFlashString(fileName.c_str(), "");
+    PlaySongString(espFlashString.get(), repeat, speed, variation);
+  }
+}
+
+void PlaySongString(String song, int repeat, float speed, int variation) {  
   std::default_random_engine rndSeeded(variation);
   String variationString = variation < 0 ? "original variation" : variation > 0 ? ("variation #" + String(variation)) : "random variation";
-  Log("Play song " + String(songIndex) + " " + variationString + " " + (repeat <= 0 ? "infinite" : String(repeat)) + " times @ " + String(speed) + "x");
+  Log("Play song " + song + " " + variationString + " " + (repeat <= 0 ? "infinite" : String(repeat)) + " times @ " + String(speed) + "x");
   if (song.length() > 0) {
     Log("Begin song");
     stop = false;
@@ -1051,5 +1105,49 @@ void ProcessDelayCommand(String delayCommand) {
       interval = interval - 1000;
     }
     delay(interval);
+  }
+}
+
+void InitializeFileSystem() {
+  SPIFFS.begin(true);
+}
+
+// DIR, DEL, TYPE, CREATE
+void ProcessFileSystemCommand(String command, String fileName, String contents) {
+  command.trim();
+  command.toLowerCase();
+  fileName.trim();
+  if (fileName.length() > 0 && !fileName.startsWith("/")) {
+    fileName = "/" + fileName;
+  }
+  if (command == "dir") {
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    while(file) {
+      Log(file.name());
+      file = root.openNextFile();
+    }
+  } else if (command == "type" && fileName.length() > 0) {
+    if (SPIFFS.exists(fileName)) {
+      ESPFlashString espFlashString(fileName.c_str(), "");
+      Log(fileName + " contents:");
+      Log(espFlashString.get());
+    } else {
+      Log(fileName + " does not exists");
+    }
+  } else if (command == "del" && fileName.length() > 0) {
+    if (SPIFFS.exists(fileName)) {
+      SPIFFS.remove(fileName);
+      Log(fileName + " deleted");
+    } else {
+      Log(fileName + " does not exists");
+    }
+  } else if (command == "create" && fileName.length() > 0) {
+    if (SPIFFS.exists(fileName)) {
+      Log(fileName + " already exists");
+    } else {
+      ESPFlashString espFlashString(fileName.c_str(), contents);
+      Log(fileName + " created");
+    }
   }
 }
