@@ -6,7 +6,8 @@ The frequencies and duty cycles can be configured independently for each of the 
 
 A web page (HTML, JavaScript) is provided to connect to the ESP32 via bluetooth: https://thepirat000.github.io/Tuner/
 
-<img src="https://user-images.githubusercontent.com/9836380/134441212-d75bf883-20a1-4987-817a-d396acf3baaa.png" width="800"/>
+![image](https://user-images.githubusercontent.com/9836380/136728030-9904a474-4f59-4258-b943-739931371db5.png)
+
 
 # BLE UUID
 
