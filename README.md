@@ -284,11 +284,13 @@ Examples:
 				- m: Multiply the current frequency
 				- A: Increment the base frequency and set current as base + operand
 				- a: Increment the current frequency 
+				- L or l: Loads the freqs, duties and switches from a preset
+				- S or s: Saves the current freqs, duties and switches values in a preset
 				- =: Repeat the step #operand (first step is 1, etc)
 				- NULL: If no StepType is specified, the DefaultStepType is used
 
 ### Sample Song:
-`mF440,520:1:512,512|2,1.5:1|f460,540:2|a1,1:1|=4|A10:1`
+`mF440,520:1:512,512|2,1.5:1|f460,540:2|a1,1:1|=4|A10:1|L0`
 
 - Description
 
@@ -299,6 +301,7 @@ Examples:
 		- 4th step: Increment the first two oscillators current frequencies by 1, and wait 1 second
 		- 5th step: Repeat the 4th step
 		- 6th step: Set the first oscillator value as the base frequency + 10 hz, and wait 1 second
+		- 7th step: Loads the preset at index 0
 
 #### Stop playing a song
 Will stop playing the current song (only available via Bluetooth)

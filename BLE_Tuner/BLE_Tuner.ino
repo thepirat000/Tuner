@@ -923,7 +923,6 @@ void PlaySongString(String song, int repeat, float speed, int variation) {
         HandleBluetoothReconnect();
         if (stop) {
           Log("Stopping");
-          Load(last_preset_loaded);
           return;
         }
         std::vector<String> values;
@@ -945,6 +944,7 @@ void PlaySongString(String song, int repeat, float speed, int variation) {
         std::vector<float> operands = splitParseVector(values[0], -1.0);
         // set frequencies 
         for(size_t oscIndex = 0; oscIndex < operands.size(); ++oscIndex) {
+          bool changeInFreq = true;
           switch (stepType) {
             case 'F': // Set base and current freq
               _lastLoadedFreqs[oscIndex] = operands[oscIndex];
@@ -965,11 +965,28 @@ void PlaySongString(String song, int repeat, float speed, int variation) {
             case 'a': // Add current
               _freqs[oscIndex] = _freqs[oscIndex] + operands[oscIndex];
               break;
+            case 'L': // Load a preset (will set the base and current freqs, duty and switches)
+            case 'l': 
+              if (oscIndex == 0) {
+                Load((int)operands[0]);
+              }
+              changeInFreq = false;
+              break;
+            case 'S': // Save a preset (will set the base freqs)
+            case 's':             
+              if (oscIndex == 0) {
+                Save((int)operands[0]);
+              }
+              changeInFreq = false;
+              break;  
             default:
+              changeInFreq = false;
               break;
           }
-          Log("  Set " + String(oscIndex) + " freq to " + String(_freqs[oscIndex]) + " Hz");
-          SetFreqPWM(oscIndex, _freqs[oscIndex]);
+          if (changeInFreq) {
+            Log("  Set " + String(oscIndex) + " freq to " + String(_freqs[oscIndex]) + " Hz");
+            SetFreqPWM(oscIndex, _freqs[oscIndex]);
+          }
         }
         NotifyBLEFreqValue();
 
@@ -996,8 +1013,6 @@ void PlaySongString(String song, int repeat, float speed, int variation) {
       }
     }
     Log("End song");
-    // Restore cache freqs, duties
-    Load(last_preset_loaded);
   }
 }
 
