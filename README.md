@@ -141,8 +141,13 @@ Creates a new file
 	- fileName: the full file name to create (cannot contain spaces)
 	- contents: the textual contents of the file
 
-Example:
+Examples:
+
+Create a preset file:
 `create /p0.txt 220,440,620,840|512,512,512,512|1111`
+
+Create a song file:
+`create /song1 mF440,520:1:512,512|2,1.5:1|f460,540:2|a1,1:1|=4|A10:1|L0`
 
 ## Generic commands
 
