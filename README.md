@@ -131,7 +131,7 @@ Deletes a file
 	- fileName: the full file name to delete (cannot contain spaces)
 
 Example:
-`del /p0.txt`
+`del /p0`
 
 ### Create
 Creates a new file
@@ -144,7 +144,7 @@ Creates a new file
 Examples:
 
 Create a preset file:
-`create /p0.txt 220,440,620,840|512,512,512,512|1111`
+`create /p0 220,440,620,840|512,512,512,512|1111`
 
 Create a song file:
 `create /song1 mF440,520:1:512,512|2,1.5:1|f460,540:2|a1,1:1|=4|A10:1|L0`
