@@ -1,3 +1,9 @@
+/****** By ThePirat 2021 ***** 
+
+Docs/Links:
+- MIDI: https://webaudio.github.io/web-midi-api/#midimessageevent-interface
+*/
+
 let characteristicCmd;
 let characteristicDuties;
 let characteristicFreqs;
@@ -238,7 +244,7 @@ async function Scan() {
 	device.addEventListener('gattserverdisconnected', onDisconnected);
 	await connectDeviceAndCacheCharacteristics();
 	NavBarClick("presets");
-	SendCommand("?");
+	await SendCommand("?");
 	HideWaitCursor();
 
 	return true;
@@ -301,7 +307,7 @@ async function onDisconnected() {
 	ShowCnnStatus("disconnected");
 	await connectDeviceAndCacheCharacteristics();
 	HideWaitCursor();
-	SendCommand("?");
+	await SendCommand("?");
 }
 
 async function connectDeviceAndCacheCharacteristics() {
@@ -439,7 +445,7 @@ function ShowFreqValue(osc, value) {
 	if (prevValue != value) {
 		let freq = parseInt(value);
 		$("#freq-" + osc).text(freq);
-		$("#freq-note-" + osc).text(GetNote(freq));
+		$("#freq-note-" + osc).text(FreqToNoteName(freq));
 		SetSliderFreqValue(osc, value)
 		$("#freq-div-" + osc).stop(true,true);
 		$("#freq-div-" + osc).effect('highlight',{},500); 
@@ -479,13 +485,22 @@ function ShowSwitchValue(osc, value) {
 	}
 }
 
-async function SendCommand(cmd) {
+async function SendCommand(cmd, retries = 0, wait = 0) {
 	if (cmd) {
 		AppendLogLine("> " + cmd);
 		let value = encoder.encode(cmd);
 		try {
 			await characteristicCmd.writeValue(value);
-		} catch { return false; }
+		} catch (ex) { 
+			if (ex.message.indexOf("GATT operation already in progress") >= 0) {
+				if (retries-- > 0) {
+					console.log("Will Retry GATT operation! " + retries);
+					await sleep(wait);
+					return await SendCommand(cmd, retries, wait * 2);
+				}
+			}
+			return false; 
+		}
 		return true;
 	}
 }
@@ -494,10 +509,10 @@ function SetFreqText(osc, value) {
 	// User is sliding the freq slider, show a visual feedback
 	let freq = parseInt(value);
 	$("#freq-" + osc).text(freq).css('color', 'var(--running-freq-color)');
-	$("#freq-note-" + osc).text(GetNote(freq));
+	$("#freq-note-" + osc).text(FreqToNoteName(freq));
 }
 
-function GetNote(freq) {
+function FreqToNoteName(freq) {
 	if (freq > 0) {
 		let note = new Note();
 		note.setFrequency(freq);
@@ -663,32 +678,62 @@ function StartMidi() {
 	navigator.requestMIDIAccess()
 		.then(midi => {
 			for (var input of midi.inputs.values()) {
-				input.onmidimessage = onMIDIMessage;
+				input.onmidimessage = OnMIDIMessage;
 			}
 		});
 }
 
-async function onMIDIMessage(message) {
+async function OnMIDIMessage(message) {
+	// Process MIDI event -> Command mapping
+	let cmd = GetCommandForMidiEvent(message.data);
+	if (cmd) {
+		await SendCommand(cmd, 4, 100);
+	}
+
+	// Process the MIDI-FREQ tuning input
+	await ProcessMidiTuningEvent(message.data);
+}
+
+// Returns the message to send via bluetooth when a MIDI event is received
+function GetCommandForMidiEvent(data) {
+	let isNoteOn = (data[0] & 0xf0) == 0x90 && data[2] != 0;
+	let isNoteOff = ((data[0] & 0xf0) == 0x80) || ((data[0] & 0xf0) == 0x90 && data[2] == 0);
+	let noteName = (isNoteOn || isNoteOff) ? FreqToNoteName(MidiNoteToFreq(data[1])) : "N/A";
+	let noteAsOsc = { "C4": 1, "D4": 2, "E4": 3, "F4": 4 };
+
+	if (noteAsOsc.hasOwnProperty(noteName)) {
+		let osc = noteAsOsc[noteName];
+		if (isNoteOn) {
+			let noteVelocity = isNoteOn ? data[2] : 0;
+			let duty = noteVelocity <= 90 ? Math.round(512 / 90 * noteVelocity) + 1 : Math.round(767 / 127 * noteVelocity);
+			let dutyStr = ["/n", "/,n", "/,,n", "/,,,n"][osc-1].replace("n", duty)
+			return "Repeat 1|On " + osc + "|" + dutyStr;
+		} else {
+			return "Off " + osc;
+		}
+	}
+	return null;
+}
+
+async function ProcessMidiTuningEvent(data) {
 	let checked = $("input[name=midi]:checked");
 	if (checked.length == 0) {
 		return;
-	}
-	
-    var command = message.data[0];
-    var note = message.data[1];
-    var velocity = (message.data.length > 2) ? message.data[2] : 0; // a velocity value might not be included with a noteOff command
-
+	}	
+    var command = data[0];
+    var note = data[1];
+    var velocity = (data.length > 2) ? data[2] : 0; // a velocity value might not be included with a noteOff command
 	for(let input of checked) {
 		let osc = input.id.substring(input.id.length - 1);
-		switch (command) {
-			case 144: 
+		switch (command & 0xf0) {
+			case 0x90:
 				if (velocity > 0) {
 					await noteOn(note, velocity, osc, true);
 				} else {
 					await noteOff(note, osc, true);
 				}
 				break;
-			case 128: 
+			case 0x80:
 				await noteOff(note, osc, true);
 				break;
 		}
@@ -698,7 +743,7 @@ async function onMIDIMessage(message) {
 async function noteOn(note, velocity, osc, sustain) {
 	let duty = velocityToDuty(velocity);
 	if (duty > 0) {
-		let freq = noteToFreq(note);
+		let freq = MidiNoteToFreq(note);
 		SetFreqText(osc, freq);
 		SetDutyText(osc, duty);
 		SetSliderFreqValue(osc, freq)
@@ -723,9 +768,9 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function noteToFreq(note) {
+function MidiNoteToFreq(midiNote) {
     let a = 440;
-    return (a / 32) * (2 ** ((note - 9) / 12));
+    return (a / 32) * (2 ** ((midiNote - 9) / 12));
 }
 
 function velocityToDuty(velocity) {
