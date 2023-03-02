@@ -13,10 +13,11 @@ const encoder = new TextEncoder('utf-8');
 let lastFreqFromMic = 0.0;
 let oscCount = 4;
 let presetCount = 8;
+let keyboardListening = true;
 
 $(document).ready(function () {
 	StartMidi();
-	$('.lcs_check').lc_switch();
+	$('.lcs_check').lc_switch('', 'OFF');
 
 	LoadAndSetupConfig();
 	SetupSlider();
@@ -889,4 +890,39 @@ async function PlaySequence() {
 		let cmd = "seq " + Math.round(range[0]-1) + "," + Math.round(range[1]-1) + "," + seqDelay + "," + seqTimes + "," + seqVariation;
 		await SendCommand(cmd);
 	}
+}
+
+// Keyboard processing
+document.addEventListener('keydown', async (e)=> {
+	if (keyboardListening && !e.repeat && !$(e.target).is("input")) {
+		let cmd = GetCommandForKeyboardEvent(e, true);
+		if (cmd) {
+			console.log(cmd);
+			await SendCommand(cmd, 4, 100);
+		}
+	}
+});
+	
+document.addEventListener('keyup', async (e) => {    
+	if (keyboardListening && !$(e.target).is("input")) {
+		let cmd = GetCommandForKeyboardEvent(e, false);
+		if (cmd) {
+			await SendCommand(cmd, 4, 100);
+		}
+	}
+});
+
+function GetCommandForKeyboardEvent(data, isKeyDown) {
+	let keyAsOsc = { "1": 1, "2": 2, "3": 3, "4": 4 };
+
+	if (keyAsOsc.hasOwnProperty(data.key)) {
+		let osc = keyAsOsc[data.key];
+		if (isKeyDown) {
+			return "On " + osc;
+		} else {
+			return "Off " + osc;
+		}
+	}
+
+	return null;
 }
