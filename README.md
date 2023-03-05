@@ -47,7 +47,7 @@ same as:
 
 > The frequency set does not trigger the frequency values saving to the config file.
 
-### Multipliers
+### Multipliers (*)
 
 - Format: _*d[,d[,d[,d]]]_
 - Being: d=decimal number 
@@ -66,7 +66,7 @@ Examples:
 - Set the frequency of OSC 1 to the last written config value multiplied by 2.5:
 `*-2.5`
 
-### Increments
+### Increments (+)
 
 - Format: _+d[,d[,d[,d]]]_
 - Being: d=decimal number 
@@ -82,7 +82,7 @@ Examples:
 - Decrement the  oscillator frequency of OSC 1 by 100 Hertz:
 `+-100`
 
-## Duties
+## Duties (/)
 
 ### Set the duty cycles for oscillators
 
@@ -146,14 +146,23 @@ Examples:
 Create a preset file:
 `create /p0 220,440,620,840|512,512,512,512|1111`
 
+The preset file can be loaded with "load" command: `load 0`
+
 Create a song file:
 `create /song1 mF440,520:1:512,512|2,1.5:1|f460,540:2|a1,1:1|=4|A10:1|L0`
 
+The song file can be played with "play" command: `play /song1`
+
+Create a command file:
+`create /up-down repeat 10|+1|delay 0.2 ; repeat 10|+-1|delay 0.2 ; off`
+
+The command file can be executed with "exec" command: `exec /up-down`
+
 ## Generic commands
 
-### Switch oscillators
+### Switch oscillators 
 
-#### Turn off 
+#### Turn off (off)
 Turn off an oscillator
 - Format: _off [n]_
 - Being 
@@ -165,7 +174,7 @@ Example:
 
 Will turn off the first oscillator
 
-#### Turn on
+#### Turn on (on)
 Turn on an oscillator
 - Format: _on [n]_
 - Being: 
@@ -209,7 +218,7 @@ Example:
 
 ### Songs
 
-#### Play a song by index
+#### Play a song by index (play)
 
 - Format: _play SongIndex[,Iterations[,Speed[,Variation]]]_
 - Being: 
@@ -238,7 +247,7 @@ Examples:
 - Play the song at index 0, Repeat 2 times, at 1.5x speed, using a randomization for the steps with seed = 5
 `play 0,2,1.5,5`
 
-#### Play a song by file name
+#### Play a song by file name (play)
 - Format: _play SongFileName[,Iterations[,Speed[,Variation]]]_
 - Being: 
 	- SongFileName=The song full file name (the file must exists, can be created with CREATE command)
@@ -308,13 +317,13 @@ Examples:
 		- 6th step: Set the first oscillator value as the base frequency + 10 hz, and wait 1 second
 		- 7th step: Loads the preset at index 0
 
-#### Stop playing a song
+#### Stop playing a song (stop)
 Will stop playing the current song (only available via Bluetooth)
 
 Example:
 `stop`
 
-### Play presets sequence
+### Play presets sequence (seq)
 
 - Format: _seq [StartIndex[,EndIndex[,Interval[,Iterations[,Variation]]]]]_
 - Being: 
@@ -338,13 +347,13 @@ Examples:
 `seq 0,15,10,5,0` 
 
 
-#### Stop playing presets loop
+#### Stop playing presets loop (stop)
 Will stop playing the preset loop (only available via Bluetooth)
 
 Example:
 `stop`
 
-### Repeat a command sequence
+### Repeat a command sequence (repeat)
 Repeats a command sequence a given number of times
 
 - Format: _repeat Times|Cmd1|Cmd2|...|CmdN_
@@ -367,13 +376,38 @@ Repeats a command sequence until stopped (equivalent to `repeat -1|...`)
 Example:
 `loop *2,4,2,0.5|delay 10|load 0|delay 5` 
 
-#### Stop playing repeat sequence
+#### Stop playing repeat sequence (stop)
 Will stop playing the repeat sequence (only available via Bluetooth)
 
 Example:
 `stop`
 
-### Init command
+### Multiple commands (do)
+To sequentially execute commands given as a semicolon (;) separated list of commands.
+
+- Format: _do cmd1;cmd2;..._
+- Being:
+	- cmdx: Any valid command (except the commands "do", "create" and "init")
+
+Examples:
+
+`do on;load 0;delay 1;seq 0,3` 
+Turn on all the oscillators, loads the first preset, waits for 1 second and finally plays the presets 0 to 3 in order.
+
+`do repeat 10|+1|delay 0.5 ; repeat 10|+-1|delay 0.5 ; off`
+Repeat 10 times an increment of 1 hz in the first oscillator, then repeat 10 times a decrement of 1 hz in the first oscillator and finally turn off the oscillators
+
+### Execute command (exec)
+To execute the content of a previously saved file.
+
+- Format: _exec [fileName]_
+- Being 
+	- fileName: the full file name to execute (cannot contain spaces)
+
+Example:
+`exec /up-down`
+
+### Init command (init)
 To Set the initial commands to execute after turning on the device
 
 - Format: _init cmd1;cmd2;..._

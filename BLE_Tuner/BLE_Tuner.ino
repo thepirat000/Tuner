@@ -48,6 +48,7 @@ bool stop = false;  // Stop playing flag
 bool debug_ble = false; // Debug via BLE
 int last_preset_loaded = 0;
 
+
 // MAIN
 void setup() {
   Serial.begin(115200);
@@ -61,13 +62,8 @@ void setup() {
 
   SetFreqsPWM();
 
-  std::vector<String> initCmds = GetInitCommand();
-  if (initCmds.size() > 0 && initCmds[0].length() > 0) {
-    Log("Init with cmds: " + joinString(initCmds, ';'));
-    for (size_t i = 0; i < initCmds.size(); ++i) {
-      _commandBuffer.push(initCmds[i]);
-    }
-  } else {
+  String command = GetInitCommand();
+  if (!ExecuteMultiCommand(command)) {
     _commandBuffer.push("load 0");
   }
 }
@@ -111,7 +107,15 @@ void ProcessCommand(String recv) {
   recv.trim();
   recv.toLowerCase();
   Log("Recv: '" + recv + "'");
-  if (recv.startsWith("/")) {
+    
+  if (recv.startsWith("do ")) {
+    if (originalRecv.length() > 3) {
+      recv = originalRecv.substring(3);
+      recv.trim();
+      ExecuteMultiCommand(recv);
+    }
+  }
+  else if (recv.startsWith("/")) {
     // Duties
     recv = recv.substring(1);
     UpdateDutyValues(recv, false);
@@ -232,6 +236,16 @@ void ProcessCommand(String recv) {
         fileName.toLowerCase();
         String contents = recv.substring(spaceIndex + 1);
         ProcessFileSystemCommand("create", fileName, contents);
+      }
+    }
+  }
+  else if (recv.startsWith("exec ")) {
+    if (originalRecv.length() > 5) {
+      recv = originalRecv.substring(5);
+      recv.trim();
+      String fContent = GetFileContents(recv, "");
+      if (fContent.length() > 0) {
+        ProcessCommand(fContent);
       }
     }
   }
@@ -690,9 +704,16 @@ void StorePreset(int pindex, std::vector<String> preset) {
   espFlashString.set(value);
 }
 
-std::vector<String> GetInitCommand() {
-  ESPFlashString espFlashString(INIT_FILE, "load 0");
-  return splitString(espFlashString.get(), ';');
+String GetInitCommand() {
+  return GetFileContents(INIT_FILE, "load 0");
+}
+
+String GetFileContents(String fileName, String defaultValue) {
+  if (SPIFFS.exists(fileName)) {
+    ESPFlashString espFlashString(fileName.c_str(), defaultValue.c_str());
+    return espFlashString.get();
+  }
+  return defaultValue;
 }
 
 void StoreInitCommand(String cmd) {
@@ -1094,4 +1115,17 @@ void ProcessFileSystemCommand(String command, String fileName, String contents) 
       Log(fileName + " created");
     }
   }
+}
+
+// Executes multiple commands (semicolon separated commands)
+bool ExecuteMultiCommand(String commands) {
+  std::vector<String> cmds = splitString(commands, ';');
+  if (cmds.size() > 0 && cmds[0].length() > 0) {
+    Log("Will execute cmds: " + commands);
+    for (size_t i = 0; i < cmds.size(); ++i) {
+      _commandBuffer.push(cmds[i]);
+    }
+    return true;
+  }
+  return false;
 }
