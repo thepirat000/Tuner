@@ -17,7 +17,7 @@ let keyboardListening = true;
 
 $(document).ready(function () {
 	StartMidi();
-	$('.lcs_check').lc_switch('', 'OFF');
+	$('.lcs_check').lc_switch('ON', 'OFF');
 
 	LoadAndSetupConfig();
 	SetupSlider();
@@ -804,7 +804,7 @@ async function HandleSoloCheck(osc, checked) {
 	if (checked) {
 		$("#oscillators input[name=solo]").prop('checked', false);
 		$("#solo-osc-" + osc).prop('checked', true);
-		await SendCommand("solo " + (osc-1));
+		await SendCommand("solo " + osc);
 	} else {
 		await SendCommand("on");
 	}
@@ -897,7 +897,7 @@ document.addEventListener('keydown', async (e)=> {
 	if (keyboardListening && !e.repeat && !$(e.target).is("input")) {
 		let cmd = GetCommandForKeyboardEvent(e, true);
 		if (cmd) {
-			console.log(cmd);
+			e.preventDefault();
 			await SendCommand(cmd, 4, 100);
 		}
 	}
@@ -907,6 +907,7 @@ document.addEventListener('keyup', async (e) => {
 	if (keyboardListening && !$(e.target).is("input")) {
 		let cmd = GetCommandForKeyboardEvent(e, false);
 		if (cmd) {
+			e.preventDefault();
 			await SendCommand(cmd, 4, 100);
 		}
 	}
@@ -917,10 +918,22 @@ function GetCommandForKeyboardEvent(data, isKeyDown) {
 
 	if (keyAsOsc.hasOwnProperty(data.key)) {
 		let osc = keyAsOsc[data.key];
-		if (isKeyDown) {
-			return "On " + osc;
-		} else {
-			return "Off " + osc;
+
+		if (data.altKey) {
+			// SOLO
+			if (isKeyDown) {
+				return "solo " + osc;
+			}
+		} else if (data.ctrlKey || data.metaKey) {
+			// TOGGLE
+			if (isKeyDown) {
+				let turnedOn = $("#osc-" + osc + " .lcs_on").length > 0;
+				return (turnedOn ? "off " : "on ") + osc;
+			}
+		}
+		else {
+			// ON/OFF
+			return (isKeyDown ? "on " : "off ") + osc;
 		}
 	}
 

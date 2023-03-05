@@ -752,9 +752,9 @@ void ProcessOnOffCommand(String cmd) {
   NotifyBLESwitchesValue();
 }
 
-void ProcessSoloCommand(int pindex) {
+void ProcessSoloCommand(int oscNumber) {
   for(int i = 0; i < MAX_PRESET; ++i) {
-    if (i == pindex) {
+    if (i == (oscNumber - 1)) {
       TurnOn(i);
     } else {
       TurnOff(i);

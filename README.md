@@ -387,7 +387,7 @@ To sequentially execute commands given as a semicolon (;) separated list of comm
 
 - Format: _do cmd1;cmd2;..._
 - Being:
-	- cmdx: Any valid command (except the commands "do", "create" and "init")
+	- cmdx: Any valid command (except the commands "do", "create", "exec" and "init")
 
 Examples:
 
