@@ -154,7 +154,7 @@ Create a song file:
 The song file can be played with "play" command: `play /song1`
 
 Create a command file:
-`create /up-down repeat 10|+1|delay 0.2 ; repeat 10|+-1|delay 0.2 ; off`
+`create /up-down do repeat 10|+1|delay 0.2 ; repeat 10|+-1|delay 0.2 ; off`
 
 The command file can be executed with "exec" command: `exec /up-down`
 
