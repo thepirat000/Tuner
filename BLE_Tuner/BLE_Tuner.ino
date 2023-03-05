@@ -240,13 +240,11 @@ void ProcessCommand(String recv) {
     }
   }
   else if (recv.startsWith("exec ")) {
+    // EXEC command
     if (originalRecv.length() > 5) {
       recv = originalRecv.substring(5);
       recv.trim();
-      String fContent = GetFileContents(recv, "");
-      if (fContent.length() > 0) {
-        ProcessCommand(fContent);
-      }
+      ProcessExecCommand(recv);      
     }
   }
   else if (isOperand(recv)) {
@@ -1128,4 +1126,30 @@ bool ExecuteMultiCommand(String commands) {
     return true;
   }
   return false;
+}
+
+String ReplaceParams(String command, std::vector<String> &parameters) {
+  for (size_t i = 0; i < parameters.size(); ++i) {
+    parameters[i].trim();
+    command.replace("{" + String(i) + "}", parameters[i]);
+  }
+  Log("Replaced to " + command);
+  return command;
+}
+
+// Process the EXEC command
+void ProcessExecCommand(String argument) {
+  std::vector<String> args = splitString(argument, ' ');
+  String fContent = GetFileContents(args[0], "");
+  if (args.size() > 1 && fContent.length() > 0) {
+    // Replace parameters
+    Log("Will replace params " + args[1]);
+    std::vector<String> parameters = splitString(args[1], ',');
+    fContent = ReplaceParams(fContent, parameters);
+  }
+  
+  if (fContent.length() > 0) {
+    Log("Will process command " + fContent);
+    ProcessCommand(fContent);
+  }
 }

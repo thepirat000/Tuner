@@ -158,6 +158,11 @@ Create a command file:
 
 The command file can be executed with "exec" command: `exec /up-down`
 
+Create a parametrized command file:
+`create /up-down do repeat {0}|+{1}|delay {2} ; repeat {0}|+-{1}|delay {2} ; off`
+
+The command file can be executed with "exec" command: `exec /up-down 10,1,0.2`
+
 ## Generic commands
 
 ### Switch oscillators 
@@ -400,12 +405,13 @@ Repeat 10 times an increment of 1 hz in the first oscillator, then repeat 10 tim
 ### Execute command (exec)
 To execute the content of a previously saved file.
 
-- Format: _exec [fileName]_
+- Format: _exec fileName [param1,param2,...]_
 - Being 
-	- fileName: the full file name to execute (cannot contain spaces)
+	- fileName: the full file name to execute (mandatory, cannot contain spaces)
+	- paramN: A parameter for the execution (optional). The parameters are replaced by placeholders in the form "{i}", being i the index of the parameter being passed
 
 Example:
-`exec /up-down`
+`exec /up-down 100,1,0.2`
 
 ### Init command (init)
 To Set the initial commands to execute after turning on the device

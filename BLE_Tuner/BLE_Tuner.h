@@ -72,3 +72,5 @@ void ProcessLoopCommand(String command);
 void InitializeFileSystem();
 void ProcessFileSystemCommand(String command, String fileName="", String contents="");
 bool ExecuteMultiCommand(String commands);
+String ReplaceParams(String command, std::vector<String> &parameters);
+void ProcessExecCommand(String argument);
