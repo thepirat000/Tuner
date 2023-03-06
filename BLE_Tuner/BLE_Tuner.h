@@ -21,6 +21,8 @@
 
 // Connect each of these PINS to a MOSFET driving 12v to a coil/electromaget (i.e. D2, D4, D5, D18, etc)
 const int PINOUT[] = {2, 4, 5, 18, 19, 21, 22, 23 }; 
+// GPIO13 as Touch pin, to allow bypassing the INIT command in case it's needed
+const int TOUCHPIN = 13;
 
 // Preloaded songs. (Format: Check README.md)
 const std::vector<String> SONGS = {

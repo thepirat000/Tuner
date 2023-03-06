@@ -48,7 +48,6 @@ bool stop = false;  // Stop playing flag
 bool debug_ble = false; // Debug via BLE
 int last_preset_loaded = 0;
 
-
 // MAIN
 void setup() {
   Serial.begin(115200);
@@ -62,9 +61,14 @@ void setup() {
 
   SetFreqsPWM();
 
-  String command = GetInitCommand();
-  if (!ExecuteMultiCommand(command)) {
-    _commandBuffer.push("load 0");
+  int touchValue = touchRead(TOUCHPIN);
+  if (touchValue < 20) {
+    Log("Skip INIT");
+  } else {
+    String command = GetInitCommand();
+    if (!ExecuteMultiCommand(command)) {
+      _commandBuffer.push("load 0");
+    }
   }
 }
 
