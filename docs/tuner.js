@@ -14,6 +14,7 @@ let lastFreqFromMic = 0.0;
 let oscCount = 4;
 let presetCount = 8;
 let keyboardListening = true;
+let sustain = false;
 
 $(document).ready(function () {
 	StartMidi();
@@ -685,14 +686,18 @@ function StartMidi() {
 }
 
 async function OnMIDIMessage(message) {
+	// Process the MIDI-FREQ tuning input
+	let handled = await ProcessMidiTuningEvent(message.data);
+
+	if (handled) {
+		return;
+	}
+
 	// Process MIDI event -> Command mapping
 	let cmd = GetCommandForMidiEvent(message.data);
 	if (cmd) {
 		await SendCommand(cmd, 4, 100);
 	}
-
-	// Process the MIDI-FREQ tuning input
-	await ProcessMidiTuningEvent(message.data);
 }
 
 // Returns the message to send via bluetooth when a MIDI event is received
@@ -719,8 +724,10 @@ function GetCommandForMidiEvent(data) {
 async function ProcessMidiTuningEvent(data) {
 	let checked = $("input[name=midi]:checked");
 	if (checked.length == 0) {
-		return;
+		return false;
 	}	
+
+	let handled = false;
     var command = data[0];
     var note = data[1];
     var velocity = (data.length > 2) ? data[2] : 0; // a velocity value might not be included with a noteOff command
@@ -728,20 +735,31 @@ async function ProcessMidiTuningEvent(data) {
 		let osc = input.id.substring(input.id.length - 1);
 		switch (command & 0xf0) {
 			case 0x90:
+				// Note on with velocity
 				if (velocity > 0) {
 					await noteOn(note, velocity, osc, true);
 				} else {
 					await noteOff(note, osc, true);
 				}
+				handled = true;
 				break;
 			case 0x80:
+				// Note off
 				await noteOff(note, osc, true);
+				handled = true;
 				break;
+			case 0xB0:
+				// Sustain
+				sustain = (velocity > 0);
+				break;
+
 		}
-	}		
+	}
+	
+	return handled;
 }
 
-async function noteOn(note, velocity, osc, sustain) {
+async function noteOn(note, velocity, osc) {
 	let duty = velocityToDuty(velocity);
 	if (duty > 0) {
 		let freq = MidiNoteToFreq(note);
@@ -758,7 +776,7 @@ async function noteOn(note, velocity, osc, sustain) {
 	}
 }
 
-async function noteOff(note, osc, sustain) {
+async function noteOff(note, osc) {
 	if (!sustain) {
 		SetDutyText(osc, 0);
 		await SendDutyUpdate(osc, 0);

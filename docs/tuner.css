@@ -245,8 +245,6 @@ button:disabled {
 	border: 1px solid var(--border-color);
 	font-size: x-small;
 	margin: 8px 2px 2px 2px;
-	cursor: default;
-	
 }
 
 #oscillators {
