@@ -1,0 +1,1 @@
+do repeat 10|+1|delay 0.5 ; repeat 10|+-1|delay 0.5 ; off
